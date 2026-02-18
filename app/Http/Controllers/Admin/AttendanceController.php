@@ -8,6 +8,7 @@ use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AttendanceController extends Controller
 {
@@ -42,6 +43,57 @@ class AttendanceController extends Controller
             'search'      => $search,
         ]);
     }
+
+
+    public function reportPdf(Request $request)
+{
+    $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+    $endDate   = $request->get('end_date', now()->endOfMonth()->format('Y-m-d'));
+
+    $attendances = Attendance::with('student.studentClass')
+        ->whereBetween('date', [$startDate, $endDate])
+        ->orderBy('date')
+        ->get();
+
+    // Statistik
+    $total     = $attendances->count();
+    $present   = $attendances->where('status', 'Present')->count();
+    $permitted = $attendances->where('status', 'Permitted')->count();
+    $sick      = $attendances->where('status', 'Sick')->count();
+    $absent    = $attendances->where('status', 'Absent')->count();
+
+    // Rekapitulasi per siswa
+    $recap = $attendances->groupBy('student_id')->map(function ($rows) {
+        $student = $rows->first()->student;
+        return [
+            'name'      => $student->full_name,
+            'nisn'      => $student->nisn,
+            'class'     => $student->studentClass?->name ?? '-',
+            'present'   => $rows->where('status', 'Present')->count(),
+            'permitted' => $rows->where('status', 'Permitted')->count(),
+            'sick'      => $rows->where('status', 'Sick')->count(),
+            'absent'    => $rows->where('status', 'Absent')->count(),
+            'total'     => $rows->count(),
+        ];
+    })->values();
+
+    $logoBase64 = base64_encode(file_get_contents(public_path('images/logo_alislam.png')));
+
+    $pdf = Pdf::loadView('report-pdf-attendances', [
+        'attendances' => $attendances,
+        'recap'       => $recap,
+        'total'       => $total,
+        'present'     => $present,
+        'permitted'   => $permitted,
+        'sick'        => $sick,
+        'absent'      => $absent,
+        'startDate'   => $startDate,
+        'endDate'     => $endDate,
+        'logoBase64'  => $logoBase64,
+    ])->setPaper('a4', 'landscape');
+
+    return $pdf->stream('laporan-absensi-' . now()->format('Ymd') . '.pdf');
+}
 
     /**
      * Menyimpan data absensi baru.

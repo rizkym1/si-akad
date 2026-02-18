@@ -46,7 +46,7 @@ export function AddAttendanceModal({ students }: { students: Student[] }) {
             <DialogTrigger asChild>
                 <button
                     style={{ backgroundColor: '#4b986c', color: 'white' }}
-                    className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all hover:opacity-90 active:scale-95"
+                    className="flex items-center gap-2 rounded-lg px-5 py-2 text-xs font-semibold shadow-md transition-all active:scale-95"
                 >
                     + Tambah Absensi
                 </button>

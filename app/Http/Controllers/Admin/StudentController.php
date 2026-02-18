@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class StudentController extends Controller
 {
@@ -32,7 +33,67 @@ class StudentController extends Controller
         ]);
     }
 
-    
+//     public function card(Student $student)
+// {
+//     return view('card', [
+//         'student' => $student->load('studentClass'),
+//     ]);
+// }
+
+ /**
+     * Cetak kartu siswa PDF — satu siswa
+     */
+     /**
+     * Cetak kartu siswa PDF
+     * Menggunakan A4 standar — kartu di-render di tengah halaman
+     * Tidak perlu custom paper size, DomPDF tidak akan split halaman
+     */
+    public function cardPdf(Student $student)
+    {
+        $student->load('studentClass');
+
+        $qrUrl = 'https://quickchart.io/qr?size=120&text='
+            . urlencode(route('admin.students.show', $student->id));
+
+        $qrBase64 = base64_encode(file_get_contents($qrUrl));
+
+        $pdf = Pdf::loadView('card-pdf', [
+            'student'  => $student,
+            'qrBase64' => $qrBase64,
+        ])
+        ->setPaper('A4', 'portrait')   // A4 standar — dijamin 1 halaman
+        ->setOption([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled'      => true,
+            'dpi'                  => 150,
+        ]);
+
+        return $pdf->stream('kartu-siswa-' . $student->id . '.pdf');
+    }
+
+    public function reportPdf()
+{
+    $students = Student::with('studentClass')->orderBy('full_name')->get();
+
+    $total      = $students->count();
+    $totalMale  = $students->where('gender', 'male')->count();
+    $totalFemale = $students->where('gender', 'female')->count();
+    $perClass   = $students->groupBy(fn($s) => $s->studentClass?->name ?? 'Tanpa Kelas')
+                           ->map->count();
+
+    $logoBase64 = base64_encode(file_get_contents(public_path('images/logo_alislam.png')));
+
+    $pdf = Pdf::loadView('report-pdf', [
+        'students'    => $students,
+        'total'       => $total,
+        'totalMale'   => $totalMale,
+        'totalFemale' => $totalFemale,
+        'perClass'    => $perClass,
+        'logoBase64'  => $logoBase64,
+    ])->setPaper('a4', 'portrait');
+
+    return $pdf->stream('laporan-siswa-' . now()->format('Ymd') . '.pdf');
+}
 
     /**
      * Show the form for creating a new resource.

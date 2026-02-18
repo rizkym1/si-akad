@@ -142,13 +142,28 @@ export default function StudentIndex({
                                     />
                                 )}
                             </div>
-                            <div className="sm:mt-0 sm:ml-5 sm:flex-none">
+                            <div className="sm:mt-0 sm:ml-5 sm:flex sm:flex-none sm:space-x-2">
+                                {/* Tombol Cetak Laporan */}
+                                <a
+                                    href={route('admin.students.report.pdf')}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        backgroundColor: '#0369a1',
+                                        color: 'white',
+                                    }}
+                                    className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
+                                >
+                                    🖨️ Cetak Laporan
+                                </a>
+
+                                {/* Tombol Tambah Siswa */}
                                 <Link
                                     href={route('admin.students.create')}
                                     style={{
                                         backgroundColor: '#4b986c',
                                         color: 'white',
-                                    }} // Warna Hijau Primary Anda
+                                    }}
                                     className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
                                 >
                                     + Tambah Siswa
@@ -314,6 +329,23 @@ export default function StudentIndex({
                                                                     cancelText="Batal"
                                                                     confirmText="Hapus"
                                                                 />
+                                                                {/* Tombol Cetak Kartu */}
+                                                                <a
+                                                                    href={route(
+                                                                        'admin.students.card.pdf',
+                                                                        student.id,
+                                                                    )}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            '#0F766E  ',
+                                                                        color: 'white',
+                                                                    }}
+                                                                    className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-orange-400 focus:outline-none"
+                                                                >
+                                                                    Cetak Kartu
+                                                                </a>
                                                             </div>
                                                         </td>
                                                     </tr>

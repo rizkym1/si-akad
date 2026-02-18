@@ -46,6 +46,21 @@ const statusColor: Record<string, string> = {
     Absent: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
 };
 
+const monthOptions = [
+    { value: '01', label: 'Januari' },
+    { value: '02', label: 'Februari' },
+    { value: '03', label: 'Maret' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'Mei' },
+    { value: '06', label: 'Juni' },
+    { value: '07', label: 'Juli' },
+    { value: '08', label: 'Agustus' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'Oktober' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'Desember' },
+];
+
 export default function AttendanceIndex({
     attendances,
     students,
@@ -71,6 +86,36 @@ export default function AttendanceIndex({
     search: string;
 }) {
     const [selected, setSelected] = useState<string[]>([]);
+
+    // ── MODAL FILTER STATE ──
+    const now = new Date();
+    const [showModal, setShowModal] = useState(false);
+    const [filterMode, setFilterMode] = useState<'month' | 'academic'>('month');
+    const [filterMonth, setFilterMonth] = useState(
+        String(now.getMonth() + 1).padStart(2, '0'),
+    );
+    const [filterYear, setFilterYear] = useState(String(now.getFullYear()));
+
+    // Generate tahun pelajaran (Juli s/d Juni)
+    const academicYearOptions = Array.from({ length: 5 }, (_, i) => {
+        const start = now.getFullYear() - i;
+        const end = start + 1;
+        return {
+            value: `${start}-${end}`,
+            label: `${start}/${end}`,
+            startDate: `${start}-07-01`,
+            endDate: `${end}-06-30`,
+        };
+    });
+
+    const [filterAcademicYear, setFilterAcademicYear] = useState(
+        academicYearOptions[0].value,
+    );
+
+    // Generate tahun (5 tahun ke belakang)
+    const yearOptions = Array.from({ length: 6 }, (_, i) =>
+        String(now.getFullYear() - i),
+    );
 
     const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
@@ -98,9 +143,202 @@ export default function AttendanceIndex({
         });
     };
 
+    const handleCetak = () => {
+        let startDate = '';
+        let endDate = '';
+
+        if (filterMode === 'month') {
+            startDate = `${filterYear}-${filterMonth}-01`;
+            const lastDay = new Date(
+                parseInt(filterYear),
+                parseInt(filterMonth),
+                0,
+            ).getDate();
+            endDate = `${filterYear}-${filterMonth}-${String(lastDay).padStart(2, '0')}`;
+        } else {
+            const selected = academicYearOptions.find(
+                (y) => y.value === filterAcademicYear,
+            );
+            startDate = selected?.startDate ?? '';
+            endDate = selected?.endDate ?? '';
+        }
+
+        const url =
+            route('admin.attendances.report.pdf') +
+            `?start_date=${startDate}&end_date=${endDate}`;
+
+        window.open(url, '_blank');
+        setShowModal(false);
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen Absensi" />
+
+            {/* ── MODAL FILTER ── */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
+                        {/* Header Modal */}
+                        <div className="mb-4 flex items-center justify-between">
+                            <h2 className="text-base font-bold text-gray-800 dark:text-white">
+                                🖨️ Filter Laporan Absensi
+                            </h2>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Tab Mode Filter */}
+                        <div className="mb-4 flex rounded-lg border border-gray-200 p-1 dark:border-gray-600">
+                            <button
+                                onClick={() => setFilterMode('month')}
+                                className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-all ${
+                                    filterMode === 'month'
+                                        ? 'bg-blue-600 text-white shadow'
+                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                                }`}
+                            >
+                                📅 Per Bulan
+                            </button>
+                            <button
+                                onClick={() => setFilterMode('academic')}
+                                className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-all ${
+                                    filterMode === 'academic'
+                                        ? 'bg-blue-600 text-white shadow'
+                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                                }`}
+                            >
+                                🏫 Tahun Pelajaran
+                            </button>
+                        </div>
+
+                        {/* Form Per Bulan */}
+                        {filterMode === 'month' && (
+                            <>
+                                <div className="mb-4">
+                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Bulan
+                                    </label>
+                                    <select
+                                        value={filterMonth}
+                                        onChange={(e) =>
+                                            setFilterMonth(e.target.value)
+                                        }
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    >
+                                        {monthOptions.map((m) => (
+                                            <option
+                                                key={m.value}
+                                                value={m.value}
+                                            >
+                                                {m.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="mb-4">
+                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Tahun
+                                    </label>
+                                    <select
+                                        value={filterYear}
+                                        onChange={(e) =>
+                                            setFilterYear(e.target.value)
+                                        }
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    >
+                                        {yearOptions.map((y) => (
+                                            <option key={y} value={y}>
+                                                {y}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                    Periode:{' '}
+                                    <strong>
+                                        {
+                                            monthOptions.find(
+                                                (m) => m.value === filterMonth,
+                                            )?.label
+                                        }{' '}
+                                        {filterYear}
+                                    </strong>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Form Per Tahun Pelajaran */}
+                        {filterMode === 'academic' && (
+                            <>
+                                <div className="mb-4">
+                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Tahun Pelajaran
+                                    </label>
+                                    <select
+                                        value={filterAcademicYear}
+                                        onChange={(e) =>
+                                            setFilterAcademicYear(
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    >
+                                        {academicYearOptions.map((y) => (
+                                            <option
+                                                key={y.value}
+                                                value={y.value}
+                                            >
+                                                {y.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                    Periode:{' '}
+                                    <strong>
+                                        {
+                                            academicYearOptions.find(
+                                                (y) =>
+                                                    y.value ===
+                                                    filterAcademicYear,
+                                            )?.label
+                                        }
+                                    </strong>
+                                    <br />
+                                    <span className="text-blue-500">
+                                        1 Juli s/d 30 Juni tahun berikutnya
+                                    </span>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Tombol Aksi */}
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleCetak}
+                                style={{
+                                    backgroundColor: '#0369a1',
+                                    color: 'white',
+                                }}
+                                className="rounded-lg px-4 py-2 text-sm font-semibold transition hover:opacity-90"
+                            >
+                                🖨️ Cetak PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
@@ -160,7 +398,18 @@ export default function AttendanceIndex({
                                     />
                                 )}
                             </div>
-                            <div className="sm:mt-0 sm:ml-5 sm:flex-none">
+                            <div className="sm:mt-0 sm:ml-5 sm:flex sm:flex-none sm:space-x-2">
+                                {/* Tombol Cetak Laporan */}
+                                <button
+                                    onClick={() => setShowModal(true)}
+                                    style={{
+                                        backgroundColor: '#0369a1',
+                                        color: 'white',
+                                    }}
+                                    className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold shadow-sm transition-all hover:opacity-90 active:scale-95"
+                                >
+                                    🖨️ Cetak Laporan
+                                </button>
                                 <AddAttendanceModal students={students} />
                             </div>
                         </div>
@@ -289,7 +538,6 @@ export default function AttendanceIndex({
                                                                         students
                                                                     }
                                                                 />
-
                                                                 <DeleteDialog
                                                                     trigger={
                                                                         <button className="inline-flex items-center rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-600 focus:ring-2 focus:ring-red-400 focus:outline-none">

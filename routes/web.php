@@ -34,11 +34,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('users', UserController::class);
         Route::post('/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
         Route::resource('students', StudentController::class);
+        Route::get('students/{student}/card/pdf', [StudentController::class, 'cardPdf'])->name('students.card.pdf');
+        Route::get('students/report/pdf', [StudentController::class, 'reportPdf'])->name('students.report.pdf');
         Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete'])->name('students.bulk-delete');
         Route::resource('student-classes', StudentClassController::class);
         Route::post('/student-classes/bulk-delete', [StudentClassController::class, 'bulkDelete'])->name('student-classes.bulk-delete');
         Route::resource('attendances', AttendanceController::class);
         Route::post('/attendances/bulk-delete', [AttendanceController::class, 'bulkDelete'])->name('attendances.bulk-delete');
+        Route::get('attendances/report/pdf', [AttendanceController::class, 'reportPdf'])->name('attendances.report.pdf');
         // Route untuk mendapatkan daftar siswa (digunakan oleh modal)
     Route::get('students/list', [StudentController::class, 'list'])
         ->name('students.list');
