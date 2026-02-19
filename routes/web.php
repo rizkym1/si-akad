@@ -1,15 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\StudentClassController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\RoomController;
-use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
-use App\Models\Student;
 use Inertia\Inertia;
 
 Route::get('home/{nama}', [HomeController::class, 'index']);
@@ -43,8 +41,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/attendances/bulk-delete', [AttendanceController::class, 'bulkDelete'])->name('attendances.bulk-delete');
         Route::get('attendances/report/pdf', [AttendanceController::class, 'reportPdf'])->name('attendances.report.pdf');
         // Route untuk mendapatkan daftar siswa (digunakan oleh modal)
-    Route::get('students/list', [StudentController::class, 'list'])
+        Route::get('students/list', [StudentController::class, 'list'])
         ->name('students.list');
+        Route::resource('academic-years', AcademicYearController::class);
+        Route::post('/academic-years/bulk-delete', [AcademicYearController::class, 'bulkDelete'])->name('academic-years.bulk-delete');
     });
 });
 

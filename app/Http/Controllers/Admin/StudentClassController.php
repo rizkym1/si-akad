@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\StudentClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -17,24 +18,29 @@ class StudentClassController extends Controller
     {
         $search = $request->input('search');
 
-        $studentClasses = StudentClass::query()
+        $studentClasses = StudentClass::with('academicYear')
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                      ->orWhere('nisn', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%' . $search . '%');
             })
             ->paginate(10)
-            ->withQueryString(); // Pertahankan parameter pencarian saat pagination
+            ->withQueryString();
 
         return Inertia::render('admin/student-classes/index', [
             'studentClasses' => $studentClasses,
+            'academicYears'  => AcademicYear::orderBy('start_date', 'desc')->get(['id', 'name', 'is_active']),
+            'search'         => $search,
+            'entries'        => $request->input('entries', 10),
         ]);
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'academic_year' => ['required', 'string', 'max:20'], // Contoh: "2024/2025"
+            'name'             => ['required', 'string', 'max:255'],
+            'academic_year_id' => ['required', 'exists:academic_years,id'],
         ]);
 
         StudentClass::create($validated);
@@ -44,15 +50,14 @@ class StudentClassController extends Controller
 
     /**
      * Update the specified resource in storage.
-     * Digunakan untuk modal edit (tanpa halaman edit tersendiri)
      */
     public function update(Request $request, string $id)
     {
         $studentClass = StudentClass::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'academic_year' => ['required', 'string', 'max:20'],
+            'name'             => ['required', 'string', 'max:255'],
+            'academic_year_id' => ['required', 'exists:academic_years,id'],
         ]);
 
         $studentClass->update($validated);
@@ -76,10 +81,9 @@ class StudentClassController extends Controller
      */
     public function bulkDelete(Request $request)
     {
-        $ids = $request->ids; // Array of IDs
+        $ids = $request->ids;
         StudentClass::whereIn('id', $ids)->delete();
 
         return Redirect::route('admin.student-classes.index')->with('success', 'Kelas terpilih berhasil dihapus.');
     }
-
 }

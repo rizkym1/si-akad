@@ -38,6 +38,11 @@ const adminNavItems: NavItem[] = [
         icon: User2,
     },
     {
+        title: 'Manajemen Tahun Pelajaran',
+        href: '/admin/academic-years',
+        icon: CalendarCheck,
+    },
+    {
         title: 'Manajemen Kelas',
         href: '/admin/student-classes',
         icon: School,

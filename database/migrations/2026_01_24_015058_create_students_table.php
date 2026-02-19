@@ -34,6 +34,10 @@ return new class extends Migration
                   ->nullable()
                   ->constrained('classes', 'id') // ← asumsi tabel classes pakai primary key 'id' default
                   ->nullOnDelete();
+            $table->foreignId('academic_year_id')
+                ->nullable()
+                ->constrained('academic_years')
+                ->nullOnDelete();
             $table->timestamps();
         });
     }

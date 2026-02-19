@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('classes', function (Blueprint $table) {
             $table->id();  // ← primary key default 'id'
             $table->string('name'); // nama_kelas → name
-            $table->string('academic_year'); 
+            $table->foreignId('academic_year_id')
+                  ->nullable()
+                  ->constrained('academic_years')
+                  ->nullOnDelete(); 
             $table->timestamps();
         });
     }

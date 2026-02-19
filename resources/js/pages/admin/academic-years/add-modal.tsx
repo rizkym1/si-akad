@@ -14,26 +14,19 @@ import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
 
-interface Student {
-    id: number;
-    full_name: string;
-}
-
-export function AddAttendanceModal({ students }: { students: Student[] }) {
+export function AddAcademicYearModal() {
     const [open, setOpen] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
-        student_id: '',
-        date: '',
-        status: 'Absent',
-        notes: '',
+        name: '',
+        start_date: '',
+        end_date: '',
+        is_active: false as boolean,
     });
-
-    // Tidak perlu useEffect & fetch lagi ✅
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('admin.attendances.store'), {
+        post(route('admin.academic-years.store'), {
             onSuccess: () => {
                 reset();
                 setOpen(false);
@@ -48,124 +41,127 @@ export function AddAttendanceModal({ students }: { students: Student[] }) {
                     style={{ backgroundColor: '#4b986c', color: 'white' }}
                     className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
                 >
-                    + Tambah Absensi
+                    + Tambah Tahun Pelajaran
                 </button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-foreground">
-                            Tambah Absensi Baru
+                            Tambah Tahun Pelajaran Baru
                         </DialogTitle>
                         <DialogDescription className="text-muted-foreground">
-                            Isi form berikut untuk menambahkan data absensi baru
+                            Isi form berikut untuk menambahkan tahun pelajaran
+                            baru
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="grid gap-4 py-4">
-                        {/* Siswa */}
+                        {/* Nama Tahun Pelajaran */}
                         <div className="grid gap-2">
-                            <Label
-                                htmlFor="student_id"
-                                className="text-foreground"
-                            >
-                                Siswa <span className="text-red-500">*</span>
-                            </Label>
-                            <select
-                                id="student_id"
-                                value={data.student_id}
-                                onChange={(e) =>
-                                    setData('student_id', e.target.value)
-                                }
-                                className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus:ring-primary"
-                                required
-                            >
-                                <option value="">Pilih Siswa</option>
-                                {students.map((student) => (
-                                    <option key={student.id} value={student.id}>
-                                        {student.full_name}
-                                    </option>
-                                ))}
-                            </select>
-                            <InputError
-                                message={errors.student_id}
-                                className="mt-1"
-                            />
-                        </div>
-
-                        {/* Tanggal */}
-                        <div className="grid gap-2">
-                            <Label htmlFor="date" className="text-foreground">
-                                Tanggal <span className="text-red-500">*</span>
+                            <Label htmlFor="name" className="text-foreground">
+                                Tahun Pelajaran{' '}
+                                <span className="text-red-500">*</span>
                             </Label>
                             <Input
-                                id="date"
-                                type="date"
-                                value={data.date}
+                                id="name"
+                                type="text"
+                                placeholder="contoh: 2024/2025"
+                                value={data.name}
                                 onChange={(e) =>
-                                    setData('date', e.target.value)
+                                    setData('name', e.target.value)
                                 }
                                 className="border-border bg-card focus:ring-primary"
                                 required
                             />
                             <InputError
-                                message={errors.date}
+                                message={errors.name}
                                 className="mt-1"
                             />
                         </div>
 
-                        {/* Status */}
+                        {/* Tanggal Mulai */}
                         <div className="grid gap-2">
-                            <Label htmlFor="status" className="text-foreground">
-                                Status <span className="text-red-500">*</span>
-                            </Label>
-                            <select
-                                id="status"
-                                value={data.status}
-                                onChange={(e) =>
-                                    setData('status', e.target.value)
-                                }
-                                className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus:ring-primary"
-                                required
+                            <Label
+                                htmlFor="start_date"
+                                className="text-foreground"
                             >
-                                <option value="Present">Hadir</option>
-                                <option value="Permitted">Izin</option>
-                                <option value="Sick">Sakit</option>
-                                <option value="Absent">Alpa</option>
-                            </select>
+                                Tanggal Mulai{' '}
+                                <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="start_date"
+                                type="date"
+                                value={data.start_date}
+                                onChange={(e) =>
+                                    setData('start_date', e.target.value)
+                                }
+                                className="border-border bg-card focus:ring-primary"
+                                required
+                            />
                             <InputError
-                                message={errors.status}
+                                message={errors.start_date}
                                 className="mt-1"
                             />
                         </div>
 
-                        {/* Catatan */}
+                        {/* Tanggal Selesai */}
                         <div className="grid gap-2">
-                            <Label htmlFor="notes" className="text-foreground">
-                                Catatan
+                            <Label
+                                htmlFor="end_date"
+                                className="text-foreground"
+                            >
+                                Tanggal Selesai{' '}
+                                <span className="text-red-500">*</span>
                             </Label>
-                            <textarea
-                                id="notes"
-                                value={data.notes}
+                            <Input
+                                id="end_date"
+                                type="date"
+                                value={data.end_date}
                                 onChange={(e) =>
-                                    setData('notes', e.target.value)
+                                    setData('end_date', e.target.value)
                                 }
-                                rows={3}
-                                placeholder="Catatan tambahan (opsional)"
-                                className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus:ring-primary"
+                                className="border-border bg-card focus:ring-primary"
+                                required
                             />
                             <InputError
-                                message={errors.notes}
+                                message={errors.end_date}
                                 className="mt-1"
                             />
                         </div>
+
+                        {/* Status Aktif */}
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="is_active"
+                                checked={data.is_active}
+                                onChange={(e) =>
+                                    setData('is_active', e.target.checked)
+                                }
+                                className="h-4 w-4 rounded text-blue-600"
+                            />
+                            <Label
+                                htmlFor="is_active"
+                                className="cursor-pointer text-foreground"
+                            >
+                                Jadikan Tahun Pelajaran Aktif
+                            </Label>
+                        </div>
+                        <InputError
+                            message={errors.is_active}
+                            className="mt-1"
+                        />
                     </div>
 
                     <DialogFooter className="gap-2">
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => setOpen(false)}
+                            onClick={() => {
+                                reset();
+                                setOpen(false);
+                            }}
                             className="border-border hover:bg-secondary/20"
                         >
                             Batal

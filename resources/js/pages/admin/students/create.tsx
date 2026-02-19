@@ -25,10 +25,21 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// ✅ Update interface: academic_year sekarang object dari relasi
+interface StudentClass {
+    id: number;
+    name: string;
+    academic_year_id: number | null;
+    academic_year: {
+        id: number;
+        name: string;
+    } | null;
+}
+
 export default function CreateStudent({
     student_classes,
 }: {
-    student_classes: Array<{ id: number; name: string; academic_year: string }>;
+    student_classes: StudentClass[];
 }) {
     const { data, setData, post, processing, errors } = useForm<{
         full_name: string;
@@ -326,10 +337,12 @@ export default function CreateStudent({
                                                                 key={item.id}
                                                                 value={item.id.toString()}
                                                             >
+                                                                {/* ✅ Akses .name dari relasi academicYear */}
                                                                 {item.name} -{' '}
-                                                                {
-                                                                    item.academic_year
-                                                                }
+                                                                {item
+                                                                    .academic_year
+                                                                    ?.name ??
+                                                                    '-'}
                                                             </SelectItem>
                                                         ),
                                                     )
@@ -343,7 +356,6 @@ export default function CreateStudent({
                                                 )}
                                             </SelectContent>
                                         </Select>
-
                                         <InputError
                                             message={errors.class_id}
                                             className="mt-2"

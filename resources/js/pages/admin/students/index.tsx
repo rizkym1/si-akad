@@ -11,7 +11,7 @@ interface Student {
     full_name: string;
     nickname: string | null;
     nisn: string;
-    date_of_birth: string; // format: "YYYY-MM-DD"
+    date_of_birth: string;
     gender: 'male' | 'female' | null;
     religion: string | null;
     child_order: number | null;
@@ -26,8 +26,15 @@ interface Student {
     guardian_address: string | null;
     photo: string | null;
     class_id: number | null;
+    academic_year_id: number | null;
     created_at: string;
     updated_at: string;
+}
+
+interface AcademicYear {
+    id: number;
+    name: string;
+    is_active: boolean;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -39,6 +46,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function StudentIndex({
     students,
+    academicYears,
     i,
     entries,
     search,
@@ -57,12 +65,19 @@ export default function StudentIndex({
         prev_page_url: string | null;
         next_page_url: string | null;
     };
+    academicYears: AcademicYear[];
     i: number;
     entries: any;
     search: string;
 }) {
     const { props } = usePage();
     const [selected, setSelected] = useState<string[]>([]);
+
+    // ── MODAL FILTER STATE ──
+    const [showModal, setShowModal] = useState(false);
+    const [filterAcademicYearId, setFilterAcademicYearId] = useState<number>(
+        academicYears.find((y) => y.is_active)?.id ?? academicYears[0]?.id,
+    );
 
     const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
@@ -80,9 +95,95 @@ export default function StudentIndex({
         );
     };
 
+    const handleCetak = () => {
+        const url =
+            route('admin.students.report.pdf') +
+            `?academic_year_id=${filterAcademicYearId}`;
+        window.open(url, '_blank');
+        setShowModal(false);
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen Siswa" />
+
+            {/* ── MODAL FILTER TAHUN PELAJARAN ── */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
+                        {/* Header Modal */}
+                        <div className="mb-4 flex items-center justify-between">
+                            <h2 className="text-base font-bold text-gray-800 dark:text-white">
+                                🖨️ Cetak Laporan Siswa
+                            </h2>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Pilih Tahun Pelajaran */}
+                        <div className="mb-4">
+                            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Tahun Pelajaran
+                            </label>
+                            <select
+                                value={filterAcademicYearId}
+                                onChange={(e) =>
+                                    setFilterAcademicYearId(
+                                        Number(e.target.value),
+                                    )
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            >
+                                {academicYears.map((y) => (
+                                    <option key={y.id} value={y.id}>
+                                        {y.name} {y.is_active ? '(Aktif)' : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Info Periode */}
+                        <div className="mb-6 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                            Tahun Pelajaran:{' '}
+                            <strong>
+                                {
+                                    academicYears.find(
+                                        (y) => y.id === filterAcademicYearId,
+                                    )?.name
+                                }
+                            </strong>
+                            <br />
+                            <span className="text-blue-500">
+                                1 Juli s/d 30 Juni tahun berikutnya
+                            </span>
+                        </div>
+
+                        {/* Tombol Aksi */}
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleCetak}
+                                style={{
+                                    backgroundColor: '#0369a1',
+                                    color: 'white',
+                                }}
+                                className="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition hover:opacity-90"
+                            >
+                                🖨️ Cetak PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
@@ -142,12 +243,10 @@ export default function StudentIndex({
                                     />
                                 )}
                             </div>
-                            <div className="sm:mt-0 sm:ml-5 sm:flex sm:flex-none sm:space-x-2">
-                                {/* Tombol Cetak Laporan */}
-                                <a
-                                    href={route('admin.students.report.pdf')}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                            <div className="sm:mt-0 sm:ml-5 sm:flex sm:flex-none sm:gap-3">
+                                {/* Tombol Cetak Laporan → buka modal */}
+                                <button
+                                    onClick={() => setShowModal(true)}
                                     style={{
                                         backgroundColor: '#0369a1',
                                         color: 'white',
@@ -155,11 +254,15 @@ export default function StudentIndex({
                                     className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
                                 >
                                     🖨️ Cetak Laporan
-                                </a>
+                                </button>
 
                                 {/* Tombol Tambah Siswa */}
                                 <Link
-                                    href={route('admin.students.create')}
+                                    onClick={() =>
+                                        router.visit(
+                                            route('admin.students.create'),
+                                        )
+                                    }
                                     style={{
                                         backgroundColor: '#4b986c',
                                         color: 'white',
@@ -282,13 +385,13 @@ export default function StudentIndex({
                                                         </td>
                                                         <td className="px-6 py-2 text-center">
                                                             <div className="flex justify-center space-x-2">
-                                                                {/* Tombol Detail - Menggunakan style yang sama dengan tombol "Tambah Siswa" tapi lebih compact */}
+                                                                {/* Tombol Detail */}
                                                                 <Link
                                                                     href={route(
                                                                         'admin.students.show',
                                                                         student.id,
                                                                     )}
-                                                                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 focus:ring-2 focus:ring-gray-300 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                                                                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                                                                 >
                                                                     Detail
                                                                 </Link>
@@ -303,7 +406,7 @@ export default function StudentIndex({
                                                                         backgroundColor:
                                                                             '#f59e0b',
                                                                         color: 'white',
-                                                                    }} // Warna orange/amber manual
+                                                                    }}
                                                                     className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-orange-400 focus:outline-none"
                                                                 >
                                                                     Edit
@@ -329,6 +432,7 @@ export default function StudentIndex({
                                                                     cancelText="Batal"
                                                                     confirmText="Hapus"
                                                                 />
+
                                                                 {/* Tombol Cetak Kartu */}
                                                                 <a
                                                                     href={route(
@@ -339,10 +443,10 @@ export default function StudentIndex({
                                                                     rel="noopener noreferrer"
                                                                     style={{
                                                                         backgroundColor:
-                                                                            '#0F766E  ',
+                                                                            '#0F766E',
                                                                         color: 'white',
                                                                     }}
-                                                                    className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-orange-400 focus:outline-none"
+                                                                    className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-teal-400 focus:outline-none"
                                                                 >
                                                                     Cetak Kartu
                                                                 </a>

@@ -25,12 +25,23 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// ✅ Update interface: academic_year sekarang object dari relasi
+interface StudentClass {
+    id: number;
+    name: string;
+    academic_year_id: number | null;
+    academic_year: {
+        id: number;
+        name: string;
+    } | null;
+}
+
 export default function EditStudent({
     student,
     student_classes,
 }: {
     student: any;
-    student_classes: Array<{ id: number; name: string; academic_year: string }>;
+    student_classes: StudentClass[];
 }) {
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -105,7 +116,6 @@ export default function EditStudent({
                                         <Input
                                             id="full_name"
                                             type="text"
-                                            name="full_name"
                                             value={data.full_name}
                                             className="mt-1 block w-full"
                                             onChange={(e) =>
@@ -129,7 +139,6 @@ export default function EditStudent({
                                         <Input
                                             id="nickname"
                                             type="text"
-                                            name="nickname"
                                             value={data.nickname}
                                             className="mt-1 block w-full"
                                             onChange={(e) =>
@@ -150,7 +159,6 @@ export default function EditStudent({
                                         <Input
                                             id="nisn"
                                             type="text"
-                                            name="nisn"
                                             value={data.nisn}
                                             className="mt-1 block w-full"
                                             onChange={(e) =>
@@ -171,7 +179,6 @@ export default function EditStudent({
                                         <Input
                                             id="place_of_birth"
                                             type="text"
-                                            name="place_of_birth"
                                             value={data.place_of_birth}
                                             className="mt-1 block w-full"
                                             onChange={(e) =>
@@ -194,7 +201,6 @@ export default function EditStudent({
                                         <Input
                                             id="date_of_birth"
                                             type="date"
-                                            name="date_of_birth"
                                             value={data.date_of_birth}
                                             className="mt-1 block w-full"
                                             onChange={(e) =>
@@ -284,7 +290,6 @@ export default function EditStudent({
                                         <Input
                                             id="child_order"
                                             type="number"
-                                            name="child_order"
                                             value={data.child_order}
                                             className="mt-1 block w-full"
                                             onChange={(e) =>
@@ -300,6 +305,7 @@ export default function EditStudent({
                                         />
                                     </div>
 
+                                    {/* ✅ Dropdown Kelas dengan relasi academic_year */}
                                     <div>
                                         <Label htmlFor="class_id">Kelas</Label>
                                         <Select
@@ -331,10 +337,12 @@ export default function EditStudent({
                                                                 key={item.id}
                                                                 value={item.id.toString()}
                                                             >
+                                                                {/* ✅ Akses .name dari relasi academicYear */}
                                                                 {item.name} -{' '}
-                                                                {
-                                                                    item.academic_year
-                                                                }
+                                                                {item
+                                                                    .academic_year
+                                                                    ?.name ??
+                                                                    '-'}
                                                             </SelectItem>
                                                         ),
                                                     )
@@ -359,9 +367,7 @@ export default function EditStudent({
                                             Foto Siswa (Kosongkan jika tidak
                                             diubah)
                                         </Label>
-
                                         <div className="mt-2 mb-4 flex items-center gap-4">
-                                            {/* Preview Foto */}
                                             <div className="h-24 w-24 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
                                                 {photoPreview ? (
                                                     <img
@@ -381,13 +387,10 @@ export default function EditStudent({
                                                     </div>
                                                 )}
                                             </div>
-
-                                            {/* Input File */}
                                             <div className="flex-1">
                                                 <Input
                                                     id="photo"
                                                     type="file"
-                                                    name="photo"
                                                     className="block w-full"
                                                     onChange={(e) => {
                                                         const file =
@@ -395,7 +398,6 @@ export default function EditStudent({
                                                                 .files?.[0] ||
                                                             null;
                                                         setData('photo', file);
-
                                                         if (file) {
                                                             const reader =
                                                                 new FileReader();
@@ -422,7 +424,6 @@ export default function EditStudent({
                                                 </p>
                                             </div>
                                         </div>
-
                                         <InputError
                                             message={errors.photo}
                                             className="mt-2"

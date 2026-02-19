@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Student;
 use App\Models\StudentClass;
 use Illuminate\Http\Request;
@@ -26,27 +27,18 @@ class StudentController extends Controller
                       ->orWhere('nisn', 'like', '%' . $search . '%');
             })
             ->paginate(10)
-            ->withQueryString(); // Pertahankan parameter pencarian saat pagination
+            ->withQueryString();
 
         return Inertia::render('admin/students/index', [
-            'students' => $students,
+            'students'      => $students,
+            'academicYears' => AcademicYear::orderBy('start_date', 'desc')->get(['id', 'name', 'is_active']),
+            'search'        => $search,
+            'entries'       => $request->input('entries', 10),
         ]);
     }
 
-//     public function card(Student $student)
-// {
-//     return view('card', [
-//         'student' => $student->load('studentClass'),
-//     ]);
-// }
-
- /**
-     * Cetak kartu siswa PDF — satu siswa
-     */
-     /**
+    /**
      * Cetak kartu siswa PDF
-     * Menggunakan A4 standar — kartu di-render di tengah halaman
-     * Tidak perlu custom paper size, DomPDF tidak akan split halaman
      */
     public function cardPdf(Student $student)
     {
@@ -61,7 +53,7 @@ class StudentController extends Controller
             'student'  => $student,
             'qrBase64' => $qrBase64,
         ])
-        ->setPaper('A4', 'portrait')   // A4 standar — dijamin 1 halaman
+        ->setPaper('A4', 'portrait')
         ->setOption([
             'isHtml5ParserEnabled' => true,
             'isRemoteEnabled'      => true,
@@ -71,17 +63,35 @@ class StudentController extends Controller
         return $pdf->stream('kartu-siswa-' . $student->id . '.pdf');
     }
 
-    public function reportPdf()
+    /**
+     * Cetak laporan siswa PDF
+     */
+    public function reportPdf(Request $request)
 {
-    $students = Student::with('studentClass')->orderBy('full_name')->get();
+    $academicYearId = $request->query('academic_year_id');
 
-    $total      = $students->count();
-    $totalMale  = $students->where('gender', 'male')->count();
+    $academicYear = $academicYearId
+        ? AcademicYear::find($academicYearId)
+        : AcademicYear::where('is_active', true)->first();
+
+    $students = Student::with(['studentClass.academicYear'])
+        ->when($academicYear, function ($q) use ($academicYear) {
+            $q->whereHas('studentClass', function ($q) use ($academicYear) {
+                $q->where('academic_year_id', $academicYear->id);
+            });
+        })
+        ->orderBy('full_name')
+        ->get();
+
+    $total       = $students->count();
+    $totalMale   = $students->where('gender', 'male')->count();
     $totalFemale = $students->where('gender', 'female')->count();
-    $perClass   = $students->groupBy(fn($s) => $s->studentClass?->name ?? 'Tanpa Kelas')
-                           ->map->count();
+    $perClass    = $students->groupBy(fn($s) => $s->studentClass?->name ?? 'Tanpa Kelas')
+                            ->map->count();
 
     $logoBase64 = base64_encode(file_get_contents(public_path('images/logo_alislam.png')));
+
+    $periode = $academicYear?->name ?? 'Semua Periode';
 
     $pdf = Pdf::loadView('report-pdf', [
         'students'    => $students,
@@ -90,6 +100,7 @@ class StudentController extends Controller
         'totalFemale' => $totalFemale,
         'perClass'    => $perClass,
         'logoBase64'  => $logoBase64,
+        'periode'     => $periode,
     ])->setPaper('a4', 'portrait');
 
     return $pdf->stream('laporan-siswa-' . now()->format('Ymd') . '.pdf');
@@ -101,70 +112,72 @@ class StudentController extends Controller
     public function create()
     {
         return Inertia::render('admin/students/create', [
-        'student_classes' => StudentClass::all(['id', 'name', 'academic_year']),
+            'student_classes' => StudentClass::with('academicYear')
+                                    ->get(['id', 'name', 'academic_year_id']),
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'full_name' => ['required', 'string', 'max:255'],
-        'nickname' => ['nullable', 'string', 'max:255'],
-        'place_of_birth' => ['nullable', 'string', 'max:255'],
-        'nisn' => ['required', 'string', 'max:255', 'unique:students,nisn'],
-        'date_of_birth' => ['required', 'date'],
-        'gender' => ['nullable', 'in:male,female'],
-        'religion' => ['nullable', 'string', 'max:255'],
-        'child_order' => ['nullable', 'integer', 'min:1'],
-        'father_name' => ['nullable', 'string', 'max:255'],
-        'mother_name' => ['nullable', 'string', 'max:255'],
-        'phone' => ['nullable', 'string', 'max:255'],
-        'father_job' => ['nullable', 'string', 'max:255'],
-        'mother_job' => ['nullable', 'string', 'max:255'],
-        'address' => ['nullable', 'string'],
-        'guardian_name' => ['nullable', 'string', 'max:255'],
-        'guardian_job' => ['nullable', 'string', 'max:255'],
-        'guardian_address' => ['nullable', 'string'],
-        'class_id' => ['nullable', 'exists:student_classes,id'],
-        'photo' => ['nullable', 'image', 'max:2048'], // maks 2MB, hanya gambar
-    ]);
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'full_name'        => ['required', 'string', 'max:255'],
+            'nickname'         => ['nullable', 'string', 'max:255'],
+            'place_of_birth'   => ['nullable', 'string', 'max:255'],
+            'nisn'             => ['required', 'string', 'max:255', 'unique:students,nisn'],
+            'date_of_birth'    => ['required', 'date'],
+            'gender'           => ['nullable', 'in:male,female'],
+            'religion'         => ['nullable', 'string', 'max:255'],
+            'child_order'      => ['nullable', 'integer', 'min:1'],
+            'father_name'      => ['nullable', 'string', 'max:255'],
+            'mother_name'      => ['nullable', 'string', 'max:255'],
+            'phone'            => ['nullable', 'string', 'max:255'],
+            'father_job'       => ['nullable', 'string', 'max:255'],
+            'mother_job'       => ['nullable', 'string', 'max:255'],
+            'address'          => ['nullable', 'string'],
+            'guardian_name'    => ['nullable', 'string', 'max:255'],
+            'guardian_job'     => ['nullable', 'string', 'max:255'],
+            'guardian_address' => ['nullable', 'string'],
+            'class_id'         => ['nullable', 'exists:student_classes,id'],
+            'photo'            => ['nullable', 'image', 'max:2048'],
+        ]);
 
-    // Handle upload foto
-    $photoPath = null;
-    if ($request->hasFile('photo')) {
-        $photoPath = $request->file('photo')->store('students/photos', 'public');
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('students/photos', 'public');
+        }
+
+        Student::create(array_merge($validated, [
+            'photo' => $photoPath,
+        ]));
+
+        return to_route('admin.students.index')->with('success', 'Siswa berhasil ditambahkan.');
     }
-
-    Student::create(array_merge($validated, [
-        'photo' => $photoPath, // simpan path relatif
-    ]));
-
-    return to_route('admin.students.index')->with('success', 'Siswa berhasil ditambahkan.');
-}
-
-
-    public function show($id)
-{
-    $student = Student::with('studentClass')->findOrFail($id);
-    
-    return Inertia::render('admin/students/detail', [
-        'student' => $student
-    ]);
-}
-
 
     /**
      * Display the specified resource.
+     */
+    public function show($id)
+    {
+        $student = Student::with('studentClass.academicYear')->findOrFail($id);
+        return Inertia::render('admin/students/detail', [
+            'student' => $student,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
      */
     public function edit(Student $student)
     {
         
         return Inertia::render('admin/students/edit', [
-            'student' => $student,
-            'student_classes' => StudentClass::all(['id', 'name', 'academic_year']),
+            'student'         => $student,
+            // ✅ Pakai relasi academicYear, hapus kolom academic_year
+            'student_classes' => StudentClass::with('academicYear')
+                                    ->get(['id', 'name', 'academic_year_id']),
         ]);
     }
 
@@ -172,84 +185,76 @@ public function store(Request $request)
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-{
-    $student = Student::findOrFail($id);
+    {
+        $student = Student::findOrFail($id);
 
-    $validated = $request->validate([
-        'full_name' => ['required', 'string', 'max:255'],
-        'nickname' => ['nullable', 'string', 'max:255'],
-        'place_of_birth' => ['nullable', 'string', 'max:255'],
-        // Menambahkan pengecualian ID pada unique validation
-        'nisn' => ['required', 'string', 'max:255', 'unique:students,nisn,' . $student->id],
-        'date_of_birth' => ['required', 'date'],
-        'gender' => ['nullable', 'in:male,female'],
-        'religion' => ['nullable', 'string', 'max:255'],
-        'child_order' => ['nullable', 'integer', 'min:1'],
-        'father_name' => ['nullable', 'string', 'max:255'],
-        'mother_name' => ['nullable', 'string', 'max:255'],
-        'phone' => ['nullable', 'string', 'max:255'],
-        'father_job' => ['nullable', 'string', 'max:255'],
-        'mother_job' => ['nullable', 'string', 'max:255'],
-        'address' => ['nullable', 'string'],
-        'guardian_name' => ['nullable', 'string', 'max:255'],
-        'guardian_job' => ['nullable', 'string', 'max:255'],
-        'guardian_address' => ['nullable', 'string'],
-        // Ganti 'classes' menjadi 'student_classes' jika Anda sudah me-rename tabelnya
-        'class_id' => ['nullable', 'exists:student_classes,id'], 
-        'photo' => ['nullable', 'image', 'max:2048'],
-    ]);
+        $validated = $request->validate([
+            'full_name'        => ['required', 'string', 'max:255'],
+            'nickname'         => ['nullable', 'string', 'max:255'],
+            'place_of_birth'   => ['nullable', 'string', 'max:255'],
+            'nisn'             => ['required', 'string', 'max:255', 'unique:students,nisn,' . $student->id],
+            'date_of_birth'    => ['required', 'date'],
+            'gender'           => ['nullable', 'in:male,female'],
+            'religion'         => ['nullable', 'string', 'max:255'],
+            'child_order'      => ['nullable', 'integer', 'min:1'],
+            'father_name'      => ['nullable', 'string', 'max:255'],
+            'mother_name'      => ['nullable', 'string', 'max:255'],
+            'phone'            => ['nullable', 'string', 'max:255'],
+            'father_job'       => ['nullable', 'string', 'max:255'],
+            'mother_job'       => ['nullable', 'string', 'max:255'],
+            'address'          => ['nullable', 'string'],
+            'guardian_name'    => ['nullable', 'string', 'max:255'],
+            'guardian_job'     => ['nullable', 'string', 'max:255'],
+            'guardian_address' => ['nullable', 'string'],
+            'class_id'         => ['nullable', 'exists:student_classes,id'],
+            'photo'            => ['nullable', 'image', 'max:2048'],
+        ]);
 
-    // Handle Upload Foto
-    if ($request->hasFile('photo')) {
-        // Hapus foto lama dari storage jika ada
-        if ($student->photo) {
-            Storage::disk('public')->delete($student->photo);
+        if ($request->hasFile('photo')) {
+            if ($student->photo) {
+                Storage::disk('public')->delete($student->photo);
+            }
+            $validated['photo'] = $request->file('photo')->store('students/photos', 'public');
+        } else {
+            unset($validated['photo']);
         }
-        // Simpan foto baru dan update array $validated
-        $validated['photo'] = $request->file('photo')->store('students/photos', 'public');
-    } else {
-        // Pastikan photo lama tidak terhapus jika tidak ada upload baru
-        unset($validated['photo']);
+
+        $student->update($validated);
+
+        return redirect()->route('admin.students.index')->with('success', 'Siswa berhasil diperbarui.');
     }
-
-    $student->update($validated);
-
-    return redirect()->route('admin.students.index')->with('success', 'Siswa berhasil diperbarui.');
-}
-
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-{
-    $student = Student::findOrFail($id);
+    {
+        $student = Student::findOrFail($id);
 
-    // Hapus file foto dari storage jika ada
-    if ($student->photo) {
-        Storage::disk('public')->delete($student->photo);
-    }
-
-    // Hapus data dari database
-    $student->delete();
-
-    return Redirect::route('admin.students.index')->with('success', 'Data siswa berhasil dihapus.');
-}
-
-public function bulkDelete(Request $request)
-{
-    $ids = $request->ids; // Array of IDs
-    $students = Student::whereIn('id', $ids)->get();
-
-    foreach ($students as $student) {
         if ($student->photo) {
             Storage::disk('public')->delete($student->photo);
         }
+
         $student->delete();
+
+        return Redirect::route('admin.students.index')->with('success', 'Data siswa berhasil dihapus.');
     }
 
-    return Redirect::route('admin.students.index')->with('success', 'Data siswa terpilih berhasil dihapus.');
-}
+    /**
+     * Bulk delete selected resources.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $ids      = $request->ids;
+        $students = Student::whereIn('id', $ids)->get();
 
+        foreach ($students as $student) {
+            if ($student->photo) {
+                Storage::disk('public')->delete($student->photo);
+            }
+            $student->delete();
+        }
 
+        return Redirect::route('admin.students.index')->with('success', 'Data siswa terpilih berhasil dihapus.');
+    }
 }

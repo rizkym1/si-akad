@@ -24,6 +24,15 @@ interface Attendance {
     updated_at: string;
 }
 
+// ✅ Interface AcademicYear dari DB
+interface AcademicYear {
+    id: number;
+    name: string;
+    start_date: string;
+    end_date: string;
+    is_active: boolean;
+}
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Manajemen Absensi',
@@ -64,6 +73,7 @@ const monthOptions = [
 export default function AttendanceIndex({
     attendances,
     students,
+    academicYears, // ✅ Terima dari controller
     entries,
     search,
 }: {
@@ -82,12 +92,12 @@ export default function AttendanceIndex({
         next_page_url: string | null;
     };
     students: Student[];
+    academicYears: AcademicYear[]; // ✅
     entries: any;
     search: string;
 }) {
     const [selected, setSelected] = useState<string[]>([]);
 
-    // ── MODAL FILTER STATE ──
     const now = new Date();
     const [showModal, setShowModal] = useState(false);
     const [filterMode, setFilterMode] = useState<'month' | 'academic'>('month');
@@ -96,21 +106,15 @@ export default function AttendanceIndex({
     );
     const [filterYear, setFilterYear] = useState(String(now.getFullYear()));
 
-    // Generate tahun pelajaran (Juli s/d Juni)
-    const academicYearOptions = Array.from({ length: 5 }, (_, i) => {
-        const start = now.getFullYear() - i;
-        const end = start + 1;
-        return {
-            value: `${start}-${end}`,
-            label: `${start}/${end}`,
-            startDate: `${start}-07-01`,
-            endDate: `${end}-06-30`,
-        };
-    });
+    // ✅ Default pilih tahun pelajaran yang aktif dari DB
+    const defaultAcademicYear =
+        academicYears.find((y) => y.is_active)?.id ??
+        academicYears[0]?.id ??
+        null;
 
-    const [filterAcademicYear, setFilterAcademicYear] = useState(
-        academicYearOptions[0].value,
-    );
+    const [filterAcademicYearId, setFilterAcademicYearId] = useState<
+        number | null
+    >(defaultAcademicYear);
 
     // Generate tahun (5 tahun ke belakang)
     const yearOptions = Array.from({ length: 6 }, (_, i) =>
@@ -156,11 +160,12 @@ export default function AttendanceIndex({
             ).getDate();
             endDate = `${filterYear}-${filterMonth}-${String(lastDay).padStart(2, '0')}`;
         } else {
-            const selected = academicYearOptions.find(
-                (y) => y.value === filterAcademicYear,
+            // ✅ Ambil start_date & end_date dari data DB
+            const selected = academicYears.find(
+                (y) => y.id === filterAcademicYearId,
             );
-            startDate = selected?.startDate ?? '';
-            endDate = selected?.endDate ?? '';
+            startDate = selected?.start_date ?? '';
+            endDate = selected?.end_date ?? '';
         }
 
         const url =
@@ -179,7 +184,6 @@ export default function AttendanceIndex({
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
-                        {/* Header Modal */}
                         <div className="mb-4 flex items-center justify-between">
                             <h2 className="text-base font-bold text-gray-800 dark:text-white">
                                 🖨️ Filter Laporan Absensi
@@ -272,7 +276,7 @@ export default function AttendanceIndex({
                             </>
                         )}
 
-                        {/* Form Per Tahun Pelajaran */}
+                        {/* ✅ Form Per Tahun Pelajaran dari DB */}
                         {filterMode === 'academic' && (
                             <>
                                 <div className="mb-4">
@@ -280,40 +284,61 @@ export default function AttendanceIndex({
                                         Tahun Pelajaran
                                     </label>
                                     <select
-                                        value={filterAcademicYear}
+                                        value={filterAcademicYearId ?? ''}
                                         onChange={(e) =>
-                                            setFilterAcademicYear(
-                                                e.target.value,
+                                            setFilterAcademicYearId(
+                                                Number(e.target.value),
                                             )
                                         }
                                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     >
-                                        {academicYearOptions.map((y) => (
-                                            <option
-                                                key={y.value}
-                                                value={y.value}
-                                            >
-                                                {y.label}
+                                        {academicYears.map((y) => (
+                                            <option key={y.id} value={y.id}>
+                                                {y.name}{' '}
+                                                {y.is_active ? '(Aktif)' : ''}
                                             </option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                                    Periode:{' '}
-                                    <strong>
-                                        {
-                                            academicYearOptions.find(
-                                                (y) =>
-                                                    y.value ===
-                                                    filterAcademicYear,
-                                            )?.label
-                                        }
-                                    </strong>
-                                    <br />
-                                    <span className="text-blue-500">
-                                        1 Juli s/d 30 Juni tahun berikutnya
-                                    </span>
-                                </div>
+
+                                {/* ✅ Preview periode dari start_date & end_date DB */}
+                                {filterAcademicYearId &&
+                                    (() => {
+                                        const selected = academicYears.find(
+                                            (y) =>
+                                                y.id === filterAcademicYearId,
+                                        );
+                                        return selected ? (
+                                            <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                                Periode:{' '}
+                                                <strong>{selected.name}</strong>
+                                                <br />
+                                                <span className="text-blue-500">
+                                                    {new Date(
+                                                        selected.start_date,
+                                                    ).toLocaleDateString(
+                                                        'id-ID',
+                                                        {
+                                                            day: 'numeric',
+                                                            month: 'long',
+                                                            year: 'numeric',
+                                                        },
+                                                    )}{' '}
+                                                    s/d{' '}
+                                                    {new Date(
+                                                        selected.end_date,
+                                                    ).toLocaleDateString(
+                                                        'id-ID',
+                                                        {
+                                                            day: 'numeric',
+                                                            month: 'long',
+                                                            year: 'numeric',
+                                                        },
+                                                    )}
+                                                </span>
+                                            </div>
+                                        ) : null;
+                                    })()}
                             </>
                         )}
 
@@ -360,10 +385,7 @@ export default function AttendanceIndex({
                                     onChange={(e) => {
                                         router.get(
                                             route('admin.attendances.index'),
-                                            {
-                                                search: e.target.value,
-                                                entries: entries,
-                                            },
+                                            { search: e.target.value, entries },
                                             {
                                                 preserveState: true,
                                                 replace: true,
@@ -398,15 +420,14 @@ export default function AttendanceIndex({
                                     />
                                 )}
                             </div>
-                            <div className="sm:mt-0 sm:ml-5 sm:flex sm:flex-none sm:space-x-2">
-                                {/* Tombol Cetak Laporan */}
+                            <div className="sm:mt-0 sm:ml-5 sm:flex sm:flex-none sm:gap-3">
                                 <button
                                     onClick={() => setShowModal(true)}
                                     style={{
                                         backgroundColor: '#0369a1',
                                         color: 'white',
                                     }}
-                                    className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold shadow-sm transition-all hover:opacity-90 active:scale-95"
+                                    className="flex cursor-pointer items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
                                 >
                                     🖨️ Cetak Laporan
                                 </button>
@@ -529,7 +550,7 @@ export default function AttendanceIndex({
                                                             {item.notes ?? '-'}
                                                         </td>
                                                         <td className="px-6 py-2 text-center">
-                                                            <div className="flex justify-center space-x-2">
+                                                            <div className="flex justify-center gap-1.5">
                                                                 <EditAttendanceModal
                                                                     attendance={
                                                                         item
@@ -540,7 +561,7 @@ export default function AttendanceIndex({
                                                                 />
                                                                 <DeleteDialog
                                                                     trigger={
-                                                                        <button className="inline-flex items-center rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-600 focus:ring-2 focus:ring-red-400 focus:outline-none">
+                                                                        <button className="inline-flex items-center rounded bg-red-500 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-red-600">
                                                                             Hapus
                                                                         </button>
                                                                     }

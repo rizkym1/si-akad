@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('booking_details', function (Blueprint $table) {
+        Schema::create('academic_years', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->constrained()->onDelete('cascade');
-            $table->foreignId('room_id')->constrained()->onDelete('cascade'); // assuming a 'rooms' table exists
-            $table->dateTime('start');
-            $table->dateTime('end');
+            $table->string('name');           // contoh: "2024/2025"
+            $table->date('start_date');       // 2024-07-01
+            $table->date('end_date');         // 2025-06-30
+            $table->boolean('is_active')->default(false); // tahun pelajaran aktif
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('booking_details');
+        Schema::dropIfExists('academic_years');
     }
 };

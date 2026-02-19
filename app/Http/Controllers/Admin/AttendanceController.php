@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -15,34 +16,39 @@ class AttendanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-     public function index(Request $request)
-    {
-        $search = $request->input('search');
-        $entries = $request->input('entries', 10);
 
-        $attendances = Attendance::query()
-            ->with('student')
-            ->when($search, function ($query, $search) {
-                $query->where('status', 'like', '%' . $search . '%')
-                      ->orWhere('date', 'like', '%' . $search . '%')
-                      ->orWhereHas('student', function ($query) use ($search) {
-                          $query->where('full_name', 'like', '%' . $search . '%');
-                      });
-            })
-            ->latest('date')
-            ->paginate($entries)
-            ->withQueryString();
+public function index(Request $request)
+{
+    $search  = $request->input('search');
+    $entries = $request->input('entries', 10);
 
-            // Kirim data siswa langsung dari sini
-        $students = Student::select('id', 'full_name')->orderBy('full_name')->get();
+    $attendances = Attendance::query()
+        ->with('student')
+        ->when($search, function ($query, $search) {
+            $query->where('status', 'like', '%' . $search . '%')
+                  ->orWhere('date', 'like', '%' . $search . '%')
+                  ->orWhereHas('student', function ($query) use ($search) {
+                      $query->where('full_name', 'like', '%' . $search . '%');
+                  });
+        })
+        ->latest('date')
+        ->paginate($entries)
+        ->withQueryString();
 
-        return Inertia::render('admin/attendances/index', [
-            'attendances' => $attendances,
-            'students'    => $students,
-            'entries'     => $entries,
-            'search'      => $search,
-        ]);
-    }
+    $students = Student::select('id', 'full_name')->orderBy('full_name')->get();
+
+    // ✅ Kirim academicYears ke frontend
+    $academicYears = AcademicYear::orderBy('start_date', 'desc')
+        ->get(['id', 'name', 'start_date', 'end_date', 'is_active']);
+
+    return Inertia::render('admin/attendances/index', [
+        'attendances'   => $attendances,
+        'students'      => $students,
+        'academicYears' => $academicYears,
+        'entries'       => $entries,
+        'search'        => $search,
+    ]);
+}
 
 
     public function reportPdf(Request $request)

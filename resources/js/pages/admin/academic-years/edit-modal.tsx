@@ -9,6 +9,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useEffect, useState } from 'react';
@@ -16,50 +17,42 @@ import { FormEvent, useEffect, useState } from 'react';
 interface AcademicYear {
     id: number;
     name: string;
+    start_date: string;
+    end_date: string;
     is_active: boolean;
 }
 
-interface StudentClass {
-    id: number;
-    name: string;
-    academic_year_id: number | null;
-    academic_year: {
-        id: number;
-        name: string;
-        is_active: boolean;
-    } | null;
+interface EditAcademicYearModalProps {
+    academicYear: AcademicYear;
 }
 
-interface EditStudentClassModalProps {
-    studentClass: StudentClass;
-    academicYears: AcademicYear[];
-}
-
-export function EditStudentClassModal({
-    studentClass,
-    academicYears,
-}: EditStudentClassModalProps) {
+export function EditAcademicYearModal({
+    academicYear,
+}: EditAcademicYearModalProps) {
     const [open, setOpen] = useState(false);
 
     const { data, setData, put, processing, errors, reset } = useForm({
-        name: studentClass.name,
-        academic_year_id:
-            studentClass.academic_year_id ?? academicYears[0]?.id ?? 0,
+        name: academicYear.name,
+        start_date: academicYear.start_date,
+        end_date: academicYear.end_date,
+        is_active: academicYear.is_active,
     });
 
+    // Reset form data ketika modal dibuka dengan data baru
     useEffect(() => {
         if (open) {
             setData({
-                name: studentClass.name,
-                academic_year_id:
-                    studentClass.academic_year_id ?? academicYears[0]?.id ?? 0,
+                name: academicYear.name,
+                start_date: academicYear.start_date,
+                end_date: academicYear.end_date,
+                is_active: academicYear.is_active,
             });
         }
-    }, [open, studentClass]);
+    }, [open, academicYear]);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        put(route('admin.student-classes.update', studentClass.id), {
+        put(route('admin.academic-years.update', academicYear.id), {
             onSuccess: () => {
                 setOpen(false);
             },
@@ -80,32 +73,32 @@ export function EditStudentClassModal({
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-foreground">
-                            Edit Kelas
+                            Edit Tahun Pelajaran
                         </DialogTitle>
                         <DialogDescription className="text-muted-foreground">
-                            Perbarui informasi kelas di bawah ini
+                            Perbarui informasi tahun pelajaran di bawah ini
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="grid gap-4 py-4">
-                        {/* Nama Kelas */}
+                        {/* Nama Tahun Pelajaran */}
                         <div className="grid gap-2">
                             <Label
                                 htmlFor="edit-name"
                                 className="text-foreground"
                             >
-                                Nama Kelas{' '}
+                                Nama Tahun Pelajaran{' '}
                                 <span className="text-red-500">*</span>
                             </Label>
-                            <input
+                            <Input
                                 id="edit-name"
                                 type="text"
-                                placeholder="Contoh: 10-A, Kelas 1A"
+                                placeholder="contoh: 2024/2025"
                                 value={data.name}
                                 onChange={(e) =>
                                     setData('name', e.target.value)
                                 }
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                className="border-border bg-card focus:ring-primary"
                                 required
                             />
                             <InputError
@@ -114,38 +107,78 @@ export function EditStudentClassModal({
                             />
                         </div>
 
-                        {/* Tahun Pelajaran */}
+                        {/* Tanggal Mulai */}
                         <div className="grid gap-2">
                             <Label
-                                htmlFor="edit-academic_year_id"
+                                htmlFor="edit-start_date"
                                 className="text-foreground"
                             >
-                                Tahun Pelajaran{' '}
+                                Tanggal Mulai{' '}
                                 <span className="text-red-500">*</span>
                             </Label>
-                            <select
-                                id="edit-academic_year_id"
-                                value={data.academic_year_id}
+                            <Input
+                                id="edit-start_date"
+                                type="date"
+                                value={data.start_date}
                                 onChange={(e) =>
-                                    setData(
-                                        'academic_year_id',
-                                        Number(e.target.value),
-                                    )
+                                    setData('start_date', e.target.value)
                                 }
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                className="border-border bg-card focus:ring-primary"
                                 required
-                            >
-                                {academicYears.map((y) => (
-                                    <option key={y.id} value={y.id}>
-                                        {y.name} {y.is_active ? '(Aktif)' : ''}
-                                    </option>
-                                ))}
-                            </select>
+                            />
                             <InputError
-                                message={errors.academic_year_id}
+                                message={errors.start_date}
                                 className="mt-1"
                             />
                         </div>
+
+                        {/* Tanggal Selesai */}
+                        <div className="grid gap-2">
+                            <Label
+                                htmlFor="edit-end_date"
+                                className="text-foreground"
+                            >
+                                Tanggal Selesai{' '}
+                                <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="edit-end_date"
+                                type="date"
+                                value={data.end_date}
+                                onChange={(e) =>
+                                    setData('end_date', e.target.value)
+                                }
+                                className="border-border bg-card focus:ring-primary"
+                                required
+                            />
+                            <InputError
+                                message={errors.end_date}
+                                className="mt-1"
+                            />
+                        </div>
+
+                        {/* Status Aktif */}
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="edit-is_active"
+                                checked={data.is_active}
+                                onChange={(e) =>
+                                    setData('is_active', e.target.checked)
+                                }
+                                className="h-4 w-4 rounded text-blue-600"
+                            />
+                            <Label
+                                htmlFor="edit-is_active"
+                                className="cursor-pointer text-foreground"
+                            >
+                                Jadikan Tahun Pelajaran Aktif
+                            </Label>
+                        </div>
+                        <InputError
+                            message={errors.is_active}
+                            className="mt-1"
+                        />
                     </div>
 
                     <DialogFooter className="gap-2">

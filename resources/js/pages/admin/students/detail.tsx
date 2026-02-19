@@ -29,7 +29,41 @@ function SectionCard({
     );
 }
 
-export default function ShowStudent({ student }: { student: any }) {
+// ✅ Interface untuk student_class dengan relasi academic_year
+interface StudentClass {
+    id: number;
+    name: string;
+    academic_year: {
+        id: number;
+        name: string;
+    } | null;
+}
+
+interface Student {
+    id: number;
+    full_name: string;
+    nickname: string | null;
+    nisn: string;
+    place_of_birth: string | null;
+    date_of_birth: string | null;
+    gender: string | null;
+    religion: string | null;
+    child_order: number | null;
+    photo: string | null;
+    class_id: number | null;
+    student_class: StudentClass | null;
+    father_name: string | null;
+    mother_name: string | null;
+    phone: string | null;
+    father_job: string | null;
+    mother_job: string | null;
+    address: string | null;
+    guardian_name: string | null;
+    guardian_job: string | null;
+    guardian_address: string | null;
+}
+
+export default function ShowStudent({ student }: { student: Student }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Detail Siswa" />
@@ -61,7 +95,7 @@ export default function ShowStudent({ student }: { student: any }) {
                                     </span>
                                     <span className="rounded bg-gray-100 px-2 py-1 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
                                         {student.student_class
-                                            ? `${student.student_class.name} - ${student.student_class.academic_year}`
+                                            ? `${student.student_class.name} - ${student.student_class.academic_year?.name ?? '-'}`
                                             : '-'}
                                     </span>
                                 </div>
@@ -83,7 +117,9 @@ export default function ShowStudent({ student }: { student: any }) {
                                     <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
                                         Nama Panggilan
                                     </label>
-                                    <p className="mt-1">{student.nickname}</p>
+                                    <p className="mt-1">
+                                        {student.nickname || '-'}
+                                    </p>
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -143,13 +179,15 @@ export default function ShowStudent({ student }: { student: any }) {
                                         {student.child_order || '-'}
                                     </p>
                                 </div>
+
+                                {/* ✅ Kelas dengan relasi academic_year */}
                                 <div>
                                     <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
                                         Kelas
                                     </label>
                                     <p className="mt-1">
                                         {student.student_class
-                                            ? `${student.student_class.name} - ${student.student_class.academic_year}`
+                                            ? `${student.student_class.name} - ${student.student_class.academic_year?.name ?? '-'}`
                                             : '-'}
                                     </p>
                                 </div>

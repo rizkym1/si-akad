@@ -46,6 +46,11 @@
             font-weight: bold;
             margin-top: 2pt;
         }
+        .header-info .report-subtitle {
+            font-size: 9pt;
+            color: #166534;
+            margin-top: 2pt;
+        }
         .header-info .report-date {
             font-size: 8.5pt;
             color: #555;
@@ -189,6 +194,8 @@
             <td class="header-info">
                 <div class="school-name">Raudhatul Atfhal Al-Islam</div>
                 <div class="report-title">LAPORAN DATA SISWA</div>
+                {{-- ✅ Tampilkan nama tahun pelajaran yang dipilih --}}
+                <div class="report-subtitle">Tahun Pelajaran: {{ $periode }}</div>
                 <div class="report-date">Dicetak pada: {{ now()->translatedFormat('d F Y') }}</div>
             </td>
         </tr>
@@ -224,6 +231,7 @@
         <thead>
             <tr>
                 <th>Kelas</th>
+                <th>Tahun Pelajaran</th>
                 <th>Jumlah Siswa</th>
             </tr>
         </thead>
@@ -231,6 +239,8 @@
             @foreach($perClass as $class => $count)
             <tr>
                 <td>{{ $class }}</td>
+                {{-- ✅ Tampilkan nama tahun pelajaran dari relasi --}}
+                <td>{{ $periode }}</td>
                 <td>{{ $count }} siswa</td>
             </tr>
             @endforeach
@@ -248,6 +258,7 @@
                 <th>Nama Lengkap</th>
                 <th>NISN</th>
                 <th>Kelas</th>
+                <th>Tahun Pelajaran</th>
                 <th>JK</th>
                 <th>TTL</th>
                 <th>Nama Ayah</th>
@@ -261,7 +272,14 @@
                 <td style="text-align:center">{{ $i + 1 }}</td>
                 <td>{{ $student->full_name }}</td>
                 <td style="text-align:center">{{ $student->nisn }}</td>
-                <td style="text-align:center">{{ $student->studentClass?->name ?? '-' }}</td>
+                {{-- ✅ Nama kelas dari relasi studentClass --}}
+                <td style="text-align:center">
+                    {{ $student->studentClass?->name ?? '-' }}
+                </td>
+                {{-- ✅ Nama tahun pelajaran dari relasi studentClass.academicYear --}}
+                <td style="text-align:center">
+                    {{ $student->studentClass?->academicYear?->name ?? '-' }}
+                </td>
                 <td style="text-align:center">
                     @if($student->gender === 'male')
                         <span class="badge-male">L</span>
@@ -269,7 +287,10 @@
                         <span class="badge-female">P</span>
                     @endif
                 </td>
-                <td>{{ $student->place_of_birth }}, {{ \Carbon\Carbon::parse($student->date_of_birth)->format('d-m-Y') }}</td>
+                <td>
+                    {{ $student->place_of_birth }},
+                    {{ \Carbon\Carbon::parse($student->date_of_birth)->format('d-m-Y') }}
+                </td>
                 <td>{{ $student->father_name ?? '-' }}</td>
                 <td>{{ $student->mother_name ?? '-' }}</td>
                 <td>{{ $student->phone ?? '-' }}</td>

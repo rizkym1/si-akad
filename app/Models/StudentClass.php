@@ -20,7 +20,7 @@ class StudentClass extends Model
      */
     protected $fillable = [
         'name',
-        'academic_year',
+        'academic_year_id',
     ];
 
     /**
@@ -35,5 +35,10 @@ class StudentClass extends Model
     public function students(): HasMany
     {
         return $this->hasMany(Student::class, 'class_id');
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
     }
 }

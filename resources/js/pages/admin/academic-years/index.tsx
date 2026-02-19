@@ -5,37 +5,33 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { AddStudentClassModal } from './add-modal';
-import { EditStudentClassModal } from './edit-modal';
+import { AddAcademicYearModal } from './add-modal';
+import { EditAcademicYearModal } from './edit-modal';
 
-interface StudentClass {
+interface AcademicYear {
     id: number;
     name: string;
-    academic_year_id: number | null;
-    academic_year: {
-        id: number;
-        name: string;
-        is_active: boolean;
-    } | null;
+    start_date: string;
+    end_date: string;
+    is_active: boolean;
     created_at: string;
     updated_at: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Manajemen Kelas',
-        href: '/admin/student-classes',
+        title: 'Manajemen Tahun Pelajaran',
+        href: '/admin/academic-years',
     },
 ];
 
-export default function StudentClassIndex({
-    studentClasses,
+export default function AcademicYearIndex({
+    academicYears,
     entries,
     search,
-    academicYears,
 }: {
-    studentClasses: {
-        data: StudentClass[];
+    academicYears: {
+        data: AcademicYear[];
         from: number;
         to: number;
         total: number;
@@ -50,13 +46,12 @@ export default function StudentClassIndex({
     };
     entries: any;
     search: string;
-    academicYears: any[];
 }) {
     const [selected, setSelected] = useState<string[]>([]);
 
     const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setSelected(studentClasses.data.map((item) => item.id.toString()));
+            setSelected(academicYears.data.map((item) => item.id.toString()));
         } else {
             setSelected([]);
         }
@@ -70,9 +65,17 @@ export default function StudentClassIndex({
         );
     };
 
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Manajemen Kelas" />
+            <Head title="Manajemen Tahun Pelajaran" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
@@ -80,7 +83,7 @@ export default function StudentClassIndex({
                         <div className="mb-4 flex flex-col items-center justify-between sm:flex-row">
                             <div className="w-full sm:flex sm:space-x-4 md:mt-0">
                                 <Entries
-                                    route={route('admin.student-classes.index')}
+                                    route={route('admin.academic-years.index')}
                                     search={search}
                                     entries={entries}
                                 />
@@ -88,14 +91,12 @@ export default function StudentClassIndex({
                             <div className="sm:mt-0 sm:ml-16 sm:flex sm:flex-none sm:space-x-4">
                                 <input
                                     type="text"
-                                    placeholder="Cari kelas..."
+                                    placeholder="Cari tahun pelajaran..."
                                     className="w-full rounded-lg border px-3 py-2 text-sm sm:w-auto dark:bg-gray-800"
                                     defaultValue={search || ''}
                                     onChange={(e) => {
                                         router.get(
-                                            route(
-                                                'admin.student-classes.index',
-                                            ),
+                                            route('admin.academic-years.index'),
                                             {
                                                 search: e.target.value,
                                                 entries: entries,
@@ -114,12 +115,12 @@ export default function StudentClassIndex({
                                                 Hapus ({selected.length})
                                             </button>
                                         }
-                                        title="Hapus Kelas Terpilih"
-                                        description={`Anda akan menghapus ${selected.length} kelas. Lanjutkan?`}
+                                        title="Hapus Tahun Pelajaran Terpilih"
+                                        description={`Anda akan menghapus ${selected.length} tahun pelajaran. Lanjutkan?`}
                                         onConfirm={() => {
                                             router.post(
                                                 route(
-                                                    'admin.student-classes.bulk-delete',
+                                                    'admin.academic-years.bulk-delete',
                                                 ),
                                                 { ids: selected },
                                                 {
@@ -135,14 +136,12 @@ export default function StudentClassIndex({
                                 )}
                             </div>
                             <div className="sm:mt-0 sm:ml-5 sm:flex-none">
-                                <AddStudentClassModal
-                                    academicYears={academicYears}
-                                />
+                                <AddAcademicYearModal />
                             </div>
                         </div>
 
                         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                            {studentClasses.data.length > 0 ? (
+                            {academicYears.data.length > 0 ? (
                                 <>
                                     <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
                                         <thead className="bg-white text-sm text-gray-700 uppercase dark:bg-gray-800">
@@ -158,10 +157,10 @@ export default function StudentClassIndex({
                                                             toggleSelectAll
                                                         }
                                                         checked={
-                                                            studentClasses.data
+                                                            academicYears.data
                                                                 .length > 0 &&
                                                             selected.length ===
-                                                                studentClasses
+                                                                academicYears
                                                                     .data.length
                                                         }
                                                     />
@@ -176,13 +175,25 @@ export default function StudentClassIndex({
                                                     scope="col"
                                                     className="px-6 py-3 text-center"
                                                 >
-                                                    NAMA KELAS
+                                                    TAHUN PELAJARAN
                                                 </th>
                                                 <th
                                                     scope="col"
                                                     className="px-6 py-3 text-center"
                                                 >
-                                                    TAHUN AJARAN
+                                                    TANGGAL MULAI
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-6 py-3 text-center"
+                                                >
+                                                    TANGGAL SELESAI
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-6 py-3 text-center"
+                                                >
+                                                    STATUS
                                                 </th>
                                                 <th
                                                     scope="col"
@@ -193,7 +204,7 @@ export default function StudentClassIndex({
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {studentClasses.data.map(
+                                            {academicYears.data.map(
                                                 (item, index) => (
                                                     <tr
                                                         key={item.id}
@@ -215,24 +226,38 @@ export default function StudentClassIndex({
                                                             />
                                                         </td>
                                                         <td className="px-6 py-4 text-center font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                                                            {studentClasses.from +
+                                                            {academicYears.from +
                                                                 index}
                                                         </td>
-                                                        <td className="px-6 py-2 text-center">
+                                                        <td className="px-6 py-2 text-center font-medium text-gray-900 dark:text-white">
                                                             {item.name}
                                                         </td>
                                                         <td className="px-6 py-2 text-center">
-                                                            {item.academic_year
-                                                                ?.name ?? '-'}
+                                                            {formatDate(
+                                                                item.start_date,
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-2 text-center">
+                                                            {formatDate(
+                                                                item.end_date,
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-2 text-center">
+                                                            {item.is_active ? (
+                                                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                                                    Aktif
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                                                    Tidak Aktif
+                                                                </span>
+                                                            )}
                                                         </td>
                                                         <td className="px-6 py-2 text-center">
                                                             <div className="flex justify-center space-x-2">
-                                                                <EditStudentClassModal
-                                                                    studentClass={
+                                                                <EditAcademicYearModal
+                                                                    academicYear={
                                                                         item
-                                                                    }
-                                                                    academicYears={
-                                                                        academicYears
                                                                     }
                                                                 />
 
@@ -242,12 +267,12 @@ export default function StudentClassIndex({
                                                                             Hapus
                                                                         </button>
                                                                     }
-                                                                    title="Hapus Kelas"
-                                                                    description={`Yakin ingin menghapus kelas "${item.name}"?`}
+                                                                    title="Hapus Tahun Pelajaran"
+                                                                    description={`Yakin ingin menghapus tahun pelajaran "${item.name}"?`}
                                                                     onConfirm={() => {
                                                                         router.delete(
                                                                             route(
-                                                                                'admin.student-classes.destroy',
+                                                                                'admin.academic-years.destroy',
                                                                                 item.id,
                                                                             ),
                                                                         );
@@ -264,13 +289,13 @@ export default function StudentClassIndex({
                                     </table>
                                     <div className="mb-2 px-6 py-3">
                                         <InertiaPagination
-                                            pagination={studentClasses}
+                                            pagination={academicYears}
                                         />
                                     </div>
                                 </>
                             ) : (
                                 <div className="mb-3 rounded bg-gray-500 p-3 text-white shadow-sm">
-                                    Tidak ada data kelas.
+                                    Tidak ada data tahun pelajaran.
                                 </div>
                             )}
                         </div>
