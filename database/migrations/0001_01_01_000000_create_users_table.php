@@ -17,6 +17,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['admin', 'guru', 'kepala_sekolah'])->default('admin');
+            $table->string('photo')->nullable();
+            $table->string('nik')->nullable();
+            $table->string('homeroom_teacher')->nullable(); // Bisa juga berupa foreign key jika mengacu ke tabel kelas
+            $table->enum('gender', ['L', 'P'])->nullable();
+            $table->string('education')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

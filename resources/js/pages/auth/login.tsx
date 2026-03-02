@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 import { register } from '@/routes';
 import { request } from '@/routes/password';
-import { Form, Head } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 
 interface LoginProps {
@@ -19,11 +19,9 @@ interface LoginProps {
 export default function Login({ status, canResetPassword }: LoginProps) {
     return (
         <AuthLayout
-            title="Log in to your account"
-            description="Enter your email and password below to log in"
+            title="Sistem Informasi Buku Induk"
+            description="Masukkan email dan password Anda untuk login"
         >
-            <Head title="Log in" />
-
             <Form
                 {...AuthenticatedSessionController.store.form()}
                 resetOnSuccess={['password']}

@@ -125,41 +125,6 @@
         }
         .center { text-align: center; }
 
-        /* ── DETAIL ABSENSI ── */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10pt;
-        }
-        .data-table th {
-            background: #16a34a;
-            color: #fff;
-            font-size: 7.5pt;
-            padding: 4pt;
-            text-align: center;
-        }
-        .data-table td {
-            font-size: 7.5pt;
-            padding: 3pt 4pt;
-            border-bottom: .5pt solid #e5e7eb;
-            vertical-align: middle;
-        }
-        .data-table tr:nth-child(even) td {
-            background: #f0fdf4;
-        }
-
-        /* ── BADGE STATUS ── */
-        .badge {
-            border-radius: 3pt;
-            padding: 1pt 5pt;
-            font-size: 7pt;
-            font-weight: bold;
-        }
-        .badge-present   { background: #dcfce7; color: #166534; }
-        .badge-permitted { background: #fef3c7; color: #92400e; }
-        .badge-sick      { background: #dbeafe; color: #1d4ed8; }
-        .badge-absent    { background: #fee2e2; color: #991b1b; }
-
         /* ── FOOTER ── */
         .footer-table {
             width: 100%;
@@ -189,12 +154,10 @@
                 <img src="data:image/png;base64,{{ $logoBase64 }}" alt="Logo">
             </td>
             <td class="header-info">
-                <div class="school-name">Raudhatul Atfhal Al-Islam</div>
+                <div class="school-name">Raudhatul Athfal Al-Islam</div>
                 <div class="report-title">LAPORAN DATA ABSENSI SISWA</div>
                 <div class="report-period">
-                    Periode: {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }}
-                    s/d {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}
-                    &nbsp;|&nbsp; Dicetak: {{ now()->translatedFormat('d F Y') }}
+                    Periode: {{ $periode }} &nbsp;|&nbsp; Dicetak: {{ now()->translatedFormat('d F Y') }}
                 </div>
             </td>
         </tr>
@@ -207,50 +170,54 @@
         <tr>
             <td>
                 <div class="stat-number">{{ $total }}</div>
-                <div class="stat-label">Total Absensi</div>
+                <div class="stat-label">Total Kehadiran Sistem</div>
             </td>
             <td>
                 <div class="stat-number hadir">{{ $present }}</div>
-                <div class="stat-label">Hadir</div>
+                <div class="stat-label">Total Hadir</div>
             </td>
             <td>
                 <div class="stat-number izin">{{ $permitted }}</div>
-                <div class="stat-label">Izin</div>
+                <div class="stat-label">Total Izin</div>
             </td>
             <td>
                 <div class="stat-number sakit">{{ $sick }}</div>
-                <div class="stat-label">Sakit</div>
+                <div class="stat-label">Total Sakit</div>
             </td>
             <td>
                 <div class="stat-number alpha">{{ $absent }}</div>
-                <div class="stat-label">Alpha</div>
+                <div class="stat-label">Total Alpha</div>
             </td>
         </tr>
     </table>
 
     {{-- ── REKAP PER SISWA ── --}}
-    <div class="section-title">Rekapitulasi per Siswa</div>
+    <div class="section-title">Rekapitulasi Absensi per Siswa</div>
     <table class="recap-table">
         <thead>
             <tr>
                 <th style="width:20pt">No</th>
                 <th>Nama Lengkap</th>
                 <th>NISN</th>
+                <th>L/P</th>
                 <th>Kelas</th>
                 <th>Hadir</th>
                 <th>Izin</th>
                 <th>Sakit</th>
                 <th>Alpha</th>
-                <th>Total Hari</th>
+                <th>Total Input</th>
                 <th>% Hadir</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($recap as $i => $row)
+            @forelse($recap as $i => $row)
             <tr>
                 <td class="center">{{ $i + 1 }}</td>
                 <td>{{ $row['name'] }}</td>
                 <td class="center">{{ $row['nisn'] }}</td>
+                <td class="center">
+                    {{ in_array($row['gender'] ?? '', ['Laki-Laki', 'L', 'male']) ? 'Laki-laki' : (in_array($row['gender'] ?? '', ['Perempuan', 'P', 'female']) ? 'Perempuan' : ($row['gender'] ?? '-')) }}
+                </td>
                 <td class="center">{{ $row['class'] }}</td>
                 <td class="center" style="color:#166534; font-weight:bold;">{{ $row['present'] }}</td>
                 <td class="center" style="color:#92400e; font-weight:bold;">{{ $row['permitted'] }}</td>
@@ -261,58 +228,17 @@
                     {{ $row['total'] > 0 ? round(($row['present'] / $row['total']) * 100) : 0 }}%
                 </td>
             </tr>
-            @endforeach
+            @empty
+            <tr>
+                <td colspan="11" class="center" style="padding: 10px;">Tidak ada data absensi untuk periode ini.</td>
+            </tr>
+            @endforelse
         </tbody>
     </table>
 
     <hr class="divider-thin">
-
-    {{-- ── DETAIL ABSENSI ── --}}
-    <div class="section-title">Detail Absensi Harian</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width:20pt">No</th>
-                <th>Tanggal</th>
-                <th>Nama Siswa</th>
-                <th>NISN</th>
-                <th>Kelas</th>
-                <th>Status</th>
-                <th>Catatan</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($attendances as $i => $att)
-            <tr>
-                <td class="center">{{ $i + 1 }}</td>
-                <td class="center">{{ $att->date->translatedFormat('d F Y') }}</td>
-                <td>{{ $att->student->full_name }}</td>
-                <td class="center">{{ $att->student->nisn }}</td>
-                <td class="center">{{ $att->student->studentClass?->name ?? '-' }}</td>
-                <td class="center">
-                    @switch($att->status)
-                        @case('Present')
-                            <span class="badge badge-present">Hadir</span>
-                            @break
-                        @case('Permitted')
-                            <span class="badge badge-permitted">Izin</span>
-                            @break
-                        @case('Sick')
-                            <span class="badge badge-sick">Sakit</span>
-                            @break
-                        @case('Absent')
-                            <span class="badge badge-absent">Alpha</span>
-                            @break
-                    @endswitch
-                </td>
-                <td>{{ $att->notes ?? '-' }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
 
     {{-- ── FOOTER ── --}}
-    <hr class="divider-thin">
     <table class="footer-table">
         <tr>
             <td></td>

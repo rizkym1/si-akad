@@ -1,35 +1,30 @@
-import { DeleteDialog } from '@/components/ui/delete-dialog';
-import { Entries } from '@/components/ui/entries';
-import { InertiaPagination } from '@/components/ui/inertia-pagination';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { AddAttendanceModal } from './add-modal';
-import { EditAttendanceModal } from './edit-modal';
 
 interface Student {
     id: number;
     full_name: string;
+    nisn: string;
+    gender: string;
+    attendances: Attendance[];
 }
 
 interface Attendance {
     id: number;
     student_id: number;
-    date: string;
-    status: 'Present' | 'Permitted' | 'Sick' | 'Absent';
-    notes: string | null;
-    student: Student;
-    created_at: string;
-    updated_at: string;
+    school_year_id: number;
+    present: number;
+    sick: number;
+    permitted: number;
+    absent: number;
 }
 
-// ✅ Interface AcademicYear dari DB
-interface AcademicYear {
+// ✅ Interface School dari DB
+interface SchoolYear {
     id: number;
     name: string;
-    start_date: string;
-    end_date: string;
     is_active: boolean;
 }
 
@@ -40,137 +35,98 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const statusLabel: Record<string, string> = {
-    Present: 'Hadir',
-    Permitted: 'Izin',
-    Sick: 'Sakit',
-    Absent: 'Alpa',
-};
-
-const statusColor: Record<string, string> = {
-    Present:
-        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-    Permitted: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    Sick: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-    Absent: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-};
-
-const monthOptions = [
-    { value: '01', label: 'Januari' },
-    { value: '02', label: 'Februari' },
-    { value: '03', label: 'Maret' },
-    { value: '04', label: 'April' },
-    { value: '05', label: 'Mei' },
-    { value: '06', label: 'Juni' },
-    { value: '07', label: 'Juli' },
-    { value: '08', label: 'Agustus' },
-    { value: '09', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
-];
-
 export default function AttendanceIndex({
-    attendances,
     students,
-    academicYears, // ✅ Terima dari controller
-    entries,
+    schoolYears,
+    classes,
+    activeSchoolYear,
+    activeClass,
     search,
 }: {
-    attendances: {
-        data: Attendance[];
-        from: number;
-        to: number;
-        total: number;
-        per_page: number;
-        current_page: number;
-        last_page: number;
-        links: any[];
-        first_page_url: string | null;
-        last_page_url: string | null;
-        prev_page_url: string | null;
-        next_page_url: string | null;
-    };
     students: Student[];
-    academicYears: AcademicYear[]; // ✅
-    entries: any;
+    schoolYears: SchoolYear[];
+    classes: { id: number; name: string }[];
+    activeSchoolYear: number | null;
+    activeClass: number | null;
     search: string;
 }) {
-    const [selected, setSelected] = useState<string[]>([]);
-
-    const now = new Date();
     const [showModal, setShowModal] = useState(false);
-    const [filterMode, setFilterMode] = useState<'month' | 'academic'>('month');
-    const [filterMonth, setFilterMonth] = useState(
-        String(now.getMonth() + 1).padStart(2, '0'),
+    const [filterSchoolYearId, setFilterSchoolYearId] = useState<number | null>(
+        activeSchoolYear,
     );
-    const [filterYear, setFilterYear] = useState(String(now.getFullYear()));
-
-    // ✅ Default pilih tahun pelajaran yang aktif dari DB
-    const defaultAcademicYear =
-        academicYears.find((y) => y.is_active)?.id ??
-        academicYears[0]?.id ??
-        null;
-
-    const [filterAcademicYearId, setFilterAcademicYearId] = useState<
-        number | null
-    >(defaultAcademicYear);
-
-    // Generate tahun (5 tahun ke belakang)
-    const yearOptions = Array.from({ length: 6 }, (_, i) =>
-        String(now.getFullYear() - i),
+    const [filterClassId, setFilterClassId] = useState<number | null>(
+        activeClass,
     );
 
-    const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.checked) {
-            setSelected(attendances.data.map((item) => item.id.toString()));
-        } else {
-            setSelected([]);
-        }
+    // State untuk menyimpan nilai inputan
+    // Bentuk: { student_id: { present, sick, permitted, absent } }
+    const [formData, setFormData] = useState<
+        Record<
+            number,
+            { present: number; sick: number; permitted: number; absent: number }
+        >
+    >(() => {
+        const initial: Record<any, any> = {};
+        students.forEach((student) => {
+            const att = student.attendances?.[0]; // Ambil data absensi jika ada
+            initial[student.id] = {
+                present: att?.present || 0,
+                sick: att?.sick || 0,
+                permitted: att?.permitted || 0,
+                absent: att?.absent || 0,
+            };
+        });
+        return initial;
+    });
+
+    const handleInputChange = (
+        studentId: number,
+        field: keyof (typeof formData)[number],
+        value: string,
+    ) => {
+        const numValue = parseInt(value) || 0;
+        setFormData((prev) => ({
+            ...prev,
+            [studentId]: {
+                ...prev[studentId],
+                [field]: numValue >= 0 ? numValue : 0, // Hindari negatif
+            },
+        }));
     };
 
-    const toggleSelection = (id: string) => {
-        setSelected((prev) =>
-            prev.includes(id)
-                ? prev.filter((item) => item !== id)
-                : [...prev, id],
+    const handleSave = () => {
+        if (!filterSchoolYearId) {
+            alert('Pilih Tahun Pelajaran terlebih dahulu!');
+            return;
+        }
+
+        const attendancesToSave = Object.entries(formData).map(
+            ([studentId, data]) => ({
+                student_id: parseInt(studentId),
+                ...data,
+            }),
+        );
+
+        router.post(
+            route('admin.attendances.store'),
+            {
+                school_year_id: filterSchoolYearId,
+                attendances: attendancesToSave,
+            },
+            {
+                preserveScroll: true,
+            },
         );
     };
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('id-ID', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    };
-
     const handleCetak = () => {
-        let startDate = '';
-        let endDate = '';
+        let url = '';
 
-        if (filterMode === 'month') {
-            startDate = `${filterYear}-${filterMonth}-01`;
-            const lastDay = new Date(
-                parseInt(filterYear),
-                parseInt(filterMonth),
-                0,
-            ).getDate();
-            endDate = `${filterYear}-${filterMonth}-${String(lastDay).padStart(2, '0')}`;
-        } else {
-            // ✅ Ambil start_date & end_date dari data DB
-            const selected = academicYears.find(
-                (y) => y.id === filterAcademicYearId,
-            );
-            startDate = selected?.start_date ?? '';
-            endDate = selected?.end_date ?? '';
-        }
+        const schoolYear = schoolYears.find((y) => y.id === filterSchoolYearId);
+        if (!schoolYear) return;
 
-        const url =
+        url =
             route('admin.attendances.report.pdf') +
-            `?start_date=${startDate}&end_date=${endDate}`;
+            `?school_year_id=${schoolYear.id}`;
 
         window.open(url, '_blank');
         setShowModal(false);
@@ -196,151 +152,45 @@ export default function AttendanceIndex({
                             </button>
                         </div>
 
-                        {/* Tab Mode Filter */}
-                        <div className="mb-4 flex rounded-lg border border-gray-200 p-1 dark:border-gray-600">
-                            <button
-                                onClick={() => setFilterMode('month')}
-                                className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-all ${
-                                    filterMode === 'month'
-                                        ? 'bg-blue-600 text-white shadow'
-                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-                                }`}
-                            >
-                                📅 Per Bulan
-                            </button>
-                            <button
-                                onClick={() => setFilterMode('academic')}
-                                className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-all ${
-                                    filterMode === 'academic'
-                                        ? 'bg-blue-600 text-white shadow'
-                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-                                }`}
-                            >
-                                🏫 Tahun Pelajaran
-                            </button>
-                        </div>
+                        {/* Form Per Tahun Pelajaran dari DB */}
+                        <>
+                            <div className="mb-4">
+                                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Tahun Pelajaran
+                                </label>
+                                <select
+                                    value={filterSchoolYearId ?? ''}
+                                    onChange={(e) =>
+                                        setFilterSchoolYearId(
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                >
+                                    {schoolYears.map((y) => (
+                                        <option key={y.id} value={y.id}>
+                                            {y.name}{' '}
+                                            {y.is_active ? '(Aktif)' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                        {/* Form Per Bulan */}
-                        {filterMode === 'month' && (
-                            <>
-                                <div className="mb-4">
-                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Bulan
-                                    </label>
-                                    <select
-                                        value={filterMonth}
-                                        onChange={(e) =>
-                                            setFilterMonth(e.target.value)
-                                        }
-                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    >
-                                        {monthOptions.map((m) => (
-                                            <option
-                                                key={m.value}
-                                                value={m.value}
-                                            >
-                                                {m.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="mb-4">
-                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Tahun
-                                    </label>
-                                    <select
-                                        value={filterYear}
-                                        onChange={(e) =>
-                                            setFilterYear(e.target.value)
-                                        }
-                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    >
-                                        {yearOptions.map((y) => (
-                                            <option key={y} value={y}>
-                                                {y}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                                    Periode:{' '}
-                                    <strong>
-                                        {
-                                            monthOptions.find(
-                                                (m) => m.value === filterMonth,
-                                            )?.label
-                                        }{' '}
-                                        {filterYear}
-                                    </strong>
-                                </div>
-                            </>
-                        )}
-
-                        {/* ✅ Form Per Tahun Pelajaran dari DB */}
-                        {filterMode === 'academic' && (
-                            <>
-                                <div className="mb-4">
-                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Tahun Pelajaran
-                                    </label>
-                                    <select
-                                        value={filterAcademicYearId ?? ''}
-                                        onChange={(e) =>
-                                            setFilterAcademicYearId(
-                                                Number(e.target.value),
-                                            )
-                                        }
-                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    >
-                                        {academicYears.map((y) => (
-                                            <option key={y.id} value={y.id}>
-                                                {y.name}{' '}
-                                                {y.is_active ? '(Aktif)' : ''}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* ✅ Preview periode dari start_date & end_date DB */}
-                                {filterAcademicYearId &&
-                                    (() => {
-                                        const selected = academicYears.find(
-                                            (y) =>
-                                                y.id === filterAcademicYearId,
-                                        );
-                                        return selected ? (
-                                            <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                                                Periode:{' '}
-                                                <strong>{selected.name}</strong>
-                                                <br />
-                                                <span className="text-blue-500">
-                                                    {new Date(
-                                                        selected.start_date,
-                                                    ).toLocaleDateString(
-                                                        'id-ID',
-                                                        {
-                                                            day: 'numeric',
-                                                            month: 'long',
-                                                            year: 'numeric',
-                                                        },
-                                                    )}{' '}
-                                                    s/d{' '}
-                                                    {new Date(
-                                                        selected.end_date,
-                                                    ).toLocaleDateString(
-                                                        'id-ID',
-                                                        {
-                                                            day: 'numeric',
-                                                            month: 'long',
-                                                            year: 'numeric',
-                                                        },
-                                                    )}
-                                                </span>
-                                            </div>
-                                        ) : null;
-                                    })()}
-                            </>
-                        )}
+                            {/* ✅ Preview periode dari start_date & end_date DB */}
+                            {filterSchoolYearId &&
+                                (() => {
+                                    const selected = schoolYears.find(
+                                        (y) => y.id === filterSchoolYearId,
+                                    );
+                                    return selected ? (
+                                        <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                            Periode:{' '}
+                                            <strong>{selected.name}</strong>
+                                            <br />
+                                        </div>
+                                    ) : null;
+                                })()}
+                        </>
 
                         {/* Tombol Aksi */}
                         <div className="flex justify-end gap-2">
@@ -368,24 +218,100 @@ export default function AttendanceIndex({
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
                     <div className="mx-auto px-4 py-4 text-gray-900 sm:px-6 lg:px-8 dark:text-gray-100">
-                        <div className="mb-4 flex flex-col items-center justify-between sm:flex-row">
-                            <div className="w-full sm:flex sm:space-x-4 md:mt-0">
-                                <Entries
-                                    route={route('admin.attendances.index')}
-                                    search={search}
-                                    entries={entries}
-                                />
+                        <div className="mb-4 flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
+                            {/* Kiri: Filter Tahun & Kelas */}
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                    <label className="text-sm font-medium whitespace-nowrap text-gray-700 dark:text-gray-300">
+                                        Tahun Pelajaran:
+                                    </label>
+                                    <select
+                                        value={filterSchoolYearId ?? ''}
+                                        onChange={(e) => {
+                                            setFilterSchoolYearId(
+                                                Number(e.target.value),
+                                            );
+                                            router.get(
+                                                route(
+                                                    'admin.attendances.index',
+                                                ),
+                                                {
+                                                    search,
+                                                    school_year_id:
+                                                        e.target.value,
+                                                    class_id: filterClassId,
+                                                },
+                                                {
+                                                    preserveState: true,
+                                                    replace: true,
+                                                },
+                                            );
+                                        }}
+                                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    >
+                                        {schoolYears.map((y) => (
+                                            <option key={y.id} value={y.id}>
+                                                {y.name}{' '}
+                                                {y.is_active ? '(Aktif)' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                    <label className="text-sm font-medium whitespace-nowrap text-gray-700 dark:text-gray-300">
+                                        Kelas:
+                                    </label>
+                                    <select
+                                        value={filterClassId ?? ''}
+                                        onChange={(e) => {
+                                            const classVal = e.target.value
+                                                ? Number(e.target.value)
+                                                : null;
+                                            setFilterClassId(classVal);
+                                            router.get(
+                                                route(
+                                                    'admin.attendances.index',
+                                                ),
+                                                {
+                                                    search,
+                                                    school_year_id:
+                                                        filterSchoolYearId,
+                                                    class_id: classVal,
+                                                },
+                                                {
+                                                    preserveState: true,
+                                                    replace: true,
+                                                },
+                                            );
+                                        }}
+                                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    >
+                                        <option value="">Semua Kelas</option>
+                                        {classes.map((c) => (
+                                            <option key={c.id} value={c.id}>
+                                                {c.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-                            <div className="sm:mt-0 sm:ml-16 sm:flex sm:flex-none sm:space-x-4">
+
+                            {/* Kanan: Pencarian & Tombol */}
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                                 <input
                                     type="text"
-                                    placeholder="Cari absensi..."
-                                    className="w-full rounded-lg border px-3 py-2 text-sm sm:w-auto dark:bg-gray-800"
+                                    placeholder="Cari siswa..."
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none sm:w-64 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     defaultValue={search || ''}
                                     onChange={(e) => {
                                         router.get(
                                             route('admin.attendances.index'),
-                                            { search: e.target.value, entries },
+                                            {
+                                                search: e.target.value,
+                                                school_year_id:
+                                                    filterSchoolYearId,
+                                                class_id: filterClassId,
+                                            },
                                             {
                                                 preserveState: true,
                                                 replace: true,
@@ -393,207 +319,204 @@ export default function AttendanceIndex({
                                         );
                                     }}
                                 />
-                                {selected.length > 0 && (
-                                    <DeleteDialog
-                                        trigger={
-                                            <button className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700">
-                                                Hapus ({selected.length})
-                                            </button>
-                                        }
-                                        title="Hapus Absensi Terpilih"
-                                        description={`Anda akan menghapus ${selected.length} data absensi. Lanjutkan?`}
-                                        onConfirm={() => {
-                                            router.post(
-                                                route(
-                                                    'admin.attendances.bulk-delete',
-                                                ),
-                                                { ids: selected },
-                                                {
-                                                    preserveScroll: true,
-                                                    onSuccess: () =>
-                                                        setSelected([]),
-                                                },
-                                            );
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setShowModal(true)}
+                                        style={{
+                                            backgroundColor: '#0369a1',
+                                            color: 'white',
                                         }}
-                                        cancelText="Batal"
-                                        confirmText="Hapus Semua"
-                                    />
-                                )}
-                            </div>
-                            <div className="sm:mt-0 sm:ml-5 sm:flex sm:flex-none sm:gap-3">
-                                <button
-                                    onClick={() => setShowModal(true)}
-                                    style={{
-                                        backgroundColor: '#0369a1',
-                                        color: 'white',
-                                    }}
-                                    className="flex cursor-pointer items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
-                                >
-                                    🖨️ Cetak Laporan
-                                </button>
-                                <AddAttendanceModal students={students} />
+                                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition-all hover:opacity-90 active:scale-95 sm:w-auto"
+                                    >
+                                        🖨️ Cetak
+                                    </button>
+                                    <button
+                                        onClick={handleSave}
+                                        style={{
+                                            backgroundColor: '#0369a1',
+                                            color: 'white',
+                                        }}
+                                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-md transition-all hover:opacity-90 active:scale-95 sm:w-auto"
+                                    >
+                                        Simpan
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                            {attendances.data.length > 0 ? (
-                                <>
-                                    <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
-                                        <thead className="bg-white text-sm text-gray-700 uppercase dark:bg-gray-800">
-                                            <tr className="border-t border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600">
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
+                        <div className="relative overflow-x-auto border border-gray-200 shadow-md sm:rounded-lg dark:border-gray-700">
+                            {students.length > 0 ? (
+                                <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
+                                    <thead className="bg-gray-50 text-sm font-semibold text-gray-700 uppercase dark:bg-gray-800 dark:text-gray-300">
+                                        <tr className="border-b dark:border-gray-700">
+                                            <th
+                                                scope="col"
+                                                className="w-16 px-6 py-4 text-center"
+                                            >
+                                                No
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="w-40 px-6 py-4"
+                                            >
+                                                NISN
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="px-6 py-4"
+                                            >
+                                                Nama Lengkap
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="w-28 px-4 py-4 text-center whitespace-nowrap"
+                                            >
+                                                L/P
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="w-28 px-4 py-4 text-center"
+                                            >
+                                                Hadir
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="w-28 px-4 py-4 text-center"
+                                            >
+                                                Sakit
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="w-28 px-4 py-4 text-center"
+                                            >
+                                                Ijin
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="w-28 px-4 py-4 text-center"
+                                            >
+                                                Alpa
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {students.map((student, index) => (
+                                            <tr
+                                                key={student.id}
+                                                className="border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+                                            >
+                                                <td className="px-6 py-3 text-center text-gray-900 dark:text-gray-200">
+                                                    {index + 1}
+                                                </td>
+                                                <td className="px-6 py-3 font-medium text-gray-900 dark:text-gray-200">
+                                                    {student.nisn || '-'}
+                                                </td>
+                                                <td className="px-6 py-3 font-medium text-gray-900 dark:text-gray-200">
+                                                    {student.full_name}
+                                                </td>
+                                                <td className="px-4 py-3 text-center text-gray-900 dark:text-gray-200">
+                                                    {
+                                                        // A. Cek jika datanya adalah Laki-laki (termasuk huruf L atau male)
+                                                        student.gender ===
+                                                            'Laki-Laki' ||
+                                                        student.gender ===
+                                                            'L' ||
+                                                        student.gender ===
+                                                            'male'
+                                                            ? 'Laki-laki'
+                                                            : // B. Jika bukan, cek jika datanya adalah Perempuan (termasuk huruf P atau female)
+                                                              student.gender ===
+                                                                    'Perempuan' ||
+                                                                student.gender ===
+                                                                    'P' ||
+                                                                student.gender ===
+                                                                    'female'
+                                                              ? 'Perempuan'
+                                                              : // C. Jika bukan keduanya, tampilkan nilai aslinya atau tanda strip (-)
+                                                                student.gender ||
+                                                                '-'
+                                                    }
+                                                </td>
+                                                <td className="px-4 py-3">
                                                     <input
-                                                        type="checkbox"
-                                                        className="h-5 w-5 rounded text-blue-600"
-                                                        onChange={
-                                                            toggleSelectAll
+                                                        type="number"
+                                                        min="0"
+                                                        className="w-full rounded border-gray-300 px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        value={
+                                                            formData[student.id]
+                                                                ?.present ?? 0
                                                         }
-                                                        checked={
-                                                            attendances.data
-                                                                .length > 0 &&
-                                                            selected.length ===
-                                                                attendances.data
-                                                                    .length
+                                                        onChange={(e) =>
+                                                            handleInputChange(
+                                                                student.id,
+                                                                'present',
+                                                                e.target.value,
+                                                            )
                                                         }
                                                     />
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    NO
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    NAMA SISWA
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    TANGGAL
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    STATUS
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    CATATAN
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    AKSI
-                                                </th>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        className="w-full rounded border-gray-300 px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        value={
+                                                            formData[student.id]
+                                                                ?.sick ?? 0
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleInputChange(
+                                                                student.id,
+                                                                'sick',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        className="w-full rounded border-gray-300 px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        value={
+                                                            formData[student.id]
+                                                                ?.permitted ?? 0
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleInputChange(
+                                                                student.id,
+                                                                'permitted',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        className="w-full rounded border-gray-300 px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        value={
+                                                            formData[student.id]
+                                                                ?.absent ?? 0
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleInputChange(
+                                                                student.id,
+                                                                'absent',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                    />
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
-                                            {attendances.data.map(
-                                                (item, index) => (
-                                                    <tr
-                                                        key={item.id}
-                                                        className="border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
-                                                    >
-                                                        <td className="px-6 py-2 text-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="h-5 w-5 rounded text-blue-600"
-                                                                value={item.id}
-                                                                onChange={() =>
-                                                                    toggleSelection(
-                                                                        item.id.toString(),
-                                                                    )
-                                                                }
-                                                                checked={selected.includes(
-                                                                    item.id.toString(),
-                                                                )}
-                                                            />
-                                                        </td>
-                                                        <td className="px-6 py-4 text-center font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                                                            {attendances.from +
-                                                                index}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            {item.student
-                                                                ?.full_name ??
-                                                                '-'}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            {formatDate(
-                                                                item.date,
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            <span
-                                                                className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[item.status]}`}
-                                                            >
-                                                                {
-                                                                    statusLabel[
-                                                                        item
-                                                                            .status
-                                                                    ]
-                                                                }
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            {item.notes ?? '-'}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            <div className="flex justify-center gap-1.5">
-                                                                <EditAttendanceModal
-                                                                    attendance={
-                                                                        item
-                                                                    }
-                                                                    students={
-                                                                        students
-                                                                    }
-                                                                />
-                                                                <DeleteDialog
-                                                                    trigger={
-                                                                        <button className="inline-flex items-center rounded bg-red-500 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-red-600">
-                                                                            Hapus
-                                                                        </button>
-                                                                    }
-                                                                    title="Hapus Absensi"
-                                                                    description={`Yakin ingin menghapus absensi "${item.student?.full_name}" pada tanggal "${formatDate(item.date)}"?`}
-                                                                    onConfirm={() => {
-                                                                        router.delete(
-                                                                            route(
-                                                                                'admin.attendances.destroy',
-                                                                                item.id,
-                                                                            ),
-                                                                        );
-                                                                    }}
-                                                                    cancelText="Batal"
-                                                                    confirmText="Hapus"
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )}
-                                        </tbody>
-                                    </table>
-                                    <div className="mb-2 px-6 py-3">
-                                        <InertiaPagination
-                                            pagination={attendances}
-                                        />
-                                    </div>
-                                </>
+                                        ))}
+                                    </tbody>
+                                </table>
                             ) : (
-                                <div className="mb-3 rounded bg-gray-500 p-3 text-white shadow-sm">
-                                    Tidak ada data absensi.
+                                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                    Tidak ada data siswa untuk tahun pelajaran
+                                    ini.
                                 </div>
                             )}
                         </div>

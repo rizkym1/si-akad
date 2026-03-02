@@ -11,8 +11,8 @@ import { EditStudentClassModal } from './edit-modal';
 interface StudentClass {
     id: number;
     name: string;
-    academic_year_id: number | null;
-    academic_year: {
+    school_year_id: number | null;
+    school_year: {
         id: number;
         name: string;
         is_active: boolean;
@@ -32,7 +32,7 @@ export default function StudentClassIndex({
     studentClasses,
     entries,
     search,
-    academicYears,
+    schoolYears,
 }: {
     studentClasses: {
         data: StudentClass[];
@@ -50,7 +50,7 @@ export default function StudentClassIndex({
     };
     entries: any;
     search: string;
-    academicYears: any[];
+    schoolYears: any[];
 }) {
     const [selected, setSelected] = useState<string[]>([]);
 
@@ -136,7 +136,7 @@ export default function StudentClassIndex({
                             </div>
                             <div className="sm:mt-0 sm:ml-5 sm:flex-none">
                                 <AddStudentClassModal
-                                    academicYears={academicYears}
+                                    schoolYears={schoolYears}
                                 />
                             </div>
                         </div>
@@ -222,7 +222,7 @@ export default function StudentClassIndex({
                                                             {item.name}
                                                         </td>
                                                         <td className="px-6 py-2 text-center">
-                                                            {item.academic_year
+                                                            {item.school_year
                                                                 ?.name ?? '-'}
                                                         </td>
                                                         <td className="px-6 py-2 text-center">
@@ -231,8 +231,8 @@ export default function StudentClassIndex({
                                                                     studentClass={
                                                                         item
                                                                     }
-                                                                    academicYears={
-                                                                        academicYears
+                                                                    schoolYears={
+                                                                        schoolYears
                                                                     }
                                                                 />
 

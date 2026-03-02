@@ -296,7 +296,7 @@
                                  alt="Logo">
                         </td>
                         <td class="header-school">
-                            <div class="school-name">Raudhatul Atfhal Al-Islam</div>
+                            <div class="school-name">Raudhatul Athfal Al-Islam</div>
                             <div class="school-address">Jl. Contoh No. 1, Kota Anda &bull; Telp. (021) 000-0000</div>
                         </td>
                         <td style="width: 55pt; text-align: right;">

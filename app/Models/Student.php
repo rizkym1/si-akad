@@ -15,6 +15,7 @@ class Student extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'nis',
         'full_name',
         'nickname',
         'nisn',
@@ -22,16 +23,27 @@ class Student extends Model
         'date_of_birth',
         'gender',
         'religion',
+        'family_status',
         'child_order',
         'father_name',
         'mother_name',
         'phone',
+        'student_phone',
         'father_job',
         'mother_job',
+        'address_street',   
+        'address_village',  
+        'address_district', 
+        'address_city',     
+        'address_province',
         'address',
+        'student_address',
         'guardian_name',
         'guardian_job',
         'guardian_address',
+        'previous_school',
+        'accepted_date',
+        'accepted_grade',
         'photo',
         'class_id',
     ];
@@ -67,8 +79,13 @@ class Student extends Model
         return $this->hasMany(Attendance::class);
     }
 
-    public function academicYear()
+    /**
+     * Relasi: Satu siswa memiliki banyak penilaian perkembangan anak.
+     */
+    
+
+    public function schoolYear()
 {
-    return $this->belongsTo(AcademicYear::class);
+    return $this->belongsTo(SchoolYear::class);
 }
 }

@@ -20,7 +20,7 @@ class StudentClass extends Model
      */
     protected $fillable = [
         'name',
-        'academic_year_id',
+        'school_year_id',
     ];
 
     /**
@@ -37,8 +37,8 @@ class StudentClass extends Model
         return $this->hasMany(Student::class, 'class_id');
     }
 
-    public function academicYear()
+    public function schoolYear()
     {
-        return $this->belongsTo(AcademicYear::class);
+        return $this->belongsTo(SchoolYear::class);
     }
 }

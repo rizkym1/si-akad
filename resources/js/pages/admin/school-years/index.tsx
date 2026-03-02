@@ -5,14 +5,12 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { AddAcademicYearModal } from './add-modal';
-import { EditAcademicYearModal } from './edit-modal';
+import { AddSchoolYearModal } from './add-modal';
+import { EditSchoolYearModal } from './edit-modal';
 
-interface AcademicYear {
+interface SchoolYear {
     id: number;
     name: string;
-    start_date: string;
-    end_date: string;
     is_active: boolean;
     created_at: string;
     updated_at: string;
@@ -21,17 +19,17 @@ interface AcademicYear {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Manajemen Tahun Pelajaran',
-        href: '/admin/academic-years',
+        href: '/admin/school-years',
     },
 ];
 
-export default function AcademicYearIndex({
-    academicYears,
+export default function SchoolYearIndex({
+    schoolYears,
     entries,
     search,
 }: {
-    academicYears: {
-        data: AcademicYear[];
+    schoolYears: {
+        data: SchoolYear[];
         from: number;
         to: number;
         total: number;
@@ -51,7 +49,7 @@ export default function AcademicYearIndex({
 
     const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setSelected(academicYears.data.map((item) => item.id.toString()));
+            setSelected(schoolYears.data.map((item) => item.id.toString()));
         } else {
             setSelected([]);
         }
@@ -75,7 +73,7 @@ export default function AcademicYearIndex({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Manajemen Tahun Pelajaran" />
+            <Head title="Manajemen Tahun Ajaran" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
@@ -83,7 +81,7 @@ export default function AcademicYearIndex({
                         <div className="mb-4 flex flex-col items-center justify-between sm:flex-row">
                             <div className="w-full sm:flex sm:space-x-4 md:mt-0">
                                 <Entries
-                                    route={route('admin.academic-years.index')}
+                                    route={route('admin.school-years.index')}
                                     search={search}
                                     entries={entries}
                                 />
@@ -91,12 +89,12 @@ export default function AcademicYearIndex({
                             <div className="sm:mt-0 sm:ml-16 sm:flex sm:flex-none sm:space-x-4">
                                 <input
                                     type="text"
-                                    placeholder="Cari tahun pelajaran..."
+                                    placeholder="Cari tahun ajaran..."
                                     className="w-full rounded-lg border px-3 py-2 text-sm sm:w-auto dark:bg-gray-800"
                                     defaultValue={search || ''}
                                     onChange={(e) => {
                                         router.get(
-                                            route('admin.academic-years.index'),
+                                            route('admin.school-years.index'),
                                             {
                                                 search: e.target.value,
                                                 entries: entries,
@@ -115,12 +113,12 @@ export default function AcademicYearIndex({
                                                 Hapus ({selected.length})
                                             </button>
                                         }
-                                        title="Hapus Tahun Pelajaran Terpilih"
-                                        description={`Anda akan menghapus ${selected.length} tahun pelajaran. Lanjutkan?`}
+                                        title="Hapus Tahun Ajaran Terpilih"
+                                        description={`Anda akan menghapus ${selected.length} tahun ajaran. Lanjutkan?`}
                                         onConfirm={() => {
                                             router.post(
                                                 route(
-                                                    'admin.academic-years.bulk-delete',
+                                                    'admin.school-years.bulk-delete',
                                                 ),
                                                 { ids: selected },
                                                 {
@@ -136,12 +134,12 @@ export default function AcademicYearIndex({
                                 )}
                             </div>
                             <div className="sm:mt-0 sm:ml-5 sm:flex-none">
-                                <AddAcademicYearModal />
+                                <AddSchoolYearModal />
                             </div>
                         </div>
 
                         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                            {academicYears.data.length > 0 ? (
+                            {schoolYears.data.length > 0 ? (
                                 <>
                                     <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
                                         <thead className="bg-white text-sm text-gray-700 uppercase dark:bg-gray-800">
@@ -157,11 +155,11 @@ export default function AcademicYearIndex({
                                                             toggleSelectAll
                                                         }
                                                         checked={
-                                                            academicYears.data
+                                                            schoolYears.data
                                                                 .length > 0 &&
                                                             selected.length ===
-                                                                academicYears
-                                                                    .data.length
+                                                                schoolYears.data
+                                                                    .length
                                                         }
                                                     />
                                                 </th>
@@ -175,19 +173,7 @@ export default function AcademicYearIndex({
                                                     scope="col"
                                                     className="px-6 py-3 text-center"
                                                 >
-                                                    TAHUN PELAJARAN
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    TANGGAL MULAI
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    TANGGAL SELESAI
+                                                    TAHUN AJARAN
                                                 </th>
                                                 <th
                                                     scope="col"
@@ -204,7 +190,7 @@ export default function AcademicYearIndex({
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {academicYears.data.map(
+                                            {schoolYears.data.map(
                                                 (item, index) => (
                                                     <tr
                                                         key={item.id}
@@ -226,21 +212,11 @@ export default function AcademicYearIndex({
                                                             />
                                                         </td>
                                                         <td className="px-6 py-4 text-center font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                                                            {academicYears.from +
+                                                            {schoolYears.from +
                                                                 index}
                                                         </td>
                                                         <td className="px-6 py-2 text-center font-medium text-gray-900 dark:text-white">
                                                             {item.name}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            {formatDate(
-                                                                item.start_date,
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            {formatDate(
-                                                                item.end_date,
-                                                            )}
                                                         </td>
                                                         <td className="px-6 py-2 text-center">
                                                             {item.is_active ? (
@@ -255,8 +231,8 @@ export default function AcademicYearIndex({
                                                         </td>
                                                         <td className="px-6 py-2 text-center">
                                                             <div className="flex justify-center space-x-2">
-                                                                <EditAcademicYearModal
-                                                                    academicYear={
+                                                                <EditSchoolYearModal
+                                                                    schoolYear={
                                                                         item
                                                                     }
                                                                 />
@@ -267,12 +243,12 @@ export default function AcademicYearIndex({
                                                                             Hapus
                                                                         </button>
                                                                     }
-                                                                    title="Hapus Tahun Pelajaran"
-                                                                    description={`Yakin ingin menghapus tahun pelajaran "${item.name}"?`}
+                                                                    title="Hapus Tahun Ajaran"
+                                                                    description={`Yakin ingin menghapus tahun ajaran "${item.name}"?`}
                                                                     onConfirm={() => {
                                                                         router.delete(
                                                                             route(
-                                                                                'admin.academic-years.destroy',
+                                                                                'admin.school-years.destroy',
                                                                                 item.id,
                                                                             ),
                                                                         );
@@ -289,13 +265,13 @@ export default function AcademicYearIndex({
                                     </table>
                                     <div className="mb-2 px-6 py-3">
                                         <InertiaPagination
-                                            pagination={academicYears}
+                                            pagination={schoolYears}
                                         />
                                     </div>
                                 </>
                             ) : (
                                 <div className="mb-3 rounded bg-gray-500 p-3 text-white shadow-sm">
-                                    Tidak ada data tahun pelajaran.
+                                    Tidak ada data tahun ajaran.
                                 </div>
                             )}
                         </div>

@@ -14,14 +14,16 @@ return new class extends Migration
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->onDelete('restrict'); // FK ke students.id
-            $table->date('date'); // Tanggal absensi
-            $table->enum('status', ['Present', 'Permitted', 'Sick', 'Absent'])->default('Absent'); // Status kehadiran
+            $table->foreignId('school_year_id')->constrained()->onDelete('restrict');
+            $table->integer('present')->default(0);
+            $table->integer('sick')->default(0);
+            $table->integer('permitted')->default(0);
+            $table->integer('absent')->default(0);
             $table->text('notes')->nullable(); // Catatan (opsional)
             $table->timestamps(); // created_at, updated_at
 
             // Index & constraint
-            $table->index('date'); // Mempercepat pencarian per tanggal
-            $table->unique(['student_id', 'date']); // Cegah duplikasi absensi per siswa per hari
+            $table->unique(['student_id', 'school_year_id']); // 1 siswa punya 1 rekap per tahun pelajaran
         });
     }
 

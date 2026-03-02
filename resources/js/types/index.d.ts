@@ -20,13 +20,17 @@ export interface NavItem {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    items?: {
+        title: string;
+        href: string;
+    }[];
 }
 
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
-    ziggy: Config & { location: string }
+    ziggy: Config & { location: string };
     sidebarOpen: boolean;
     [key: string]: unknown;
 }

@@ -37,10 +37,10 @@ export function InertiaPagination({ pagination }: InertiaPaginationProps) {
         {/* Previous */}
         <PaginationItem>
           <PaginationPrevious
-            href={prev_page_url || '#'}
+            href={prev_page_url ? (new URLSearchParams(window.location.search).get('role') ? `${prev_page_url}&role=${new URLSearchParams(window.location.search).get('role')}` : prev_page_url) : '#'}
             onClick={(e) => {
               e.preventDefault();
-              if (prev_page_url) router.visit(prev_page_url);
+              if (prev_page_url) router.visit(new URLSearchParams(window.location.search).get('role') ? `${prev_page_url}&role=${new URLSearchParams(window.location.search).get('role')}` : prev_page_url);
             }}
             className={!prev_page_url ? 'pointer-events-none opacity-50' : ''}
           />
@@ -64,11 +64,11 @@ export function InertiaPagination({ pagination }: InertiaPaginationProps) {
           return (
             <PaginationItem key={index}>
               <PaginationLink
-                href={link.url || '#'}
+                href={link.url ? (new URLSearchParams(window.location.search).get('role') ? `${link.url}&role=${new URLSearchParams(window.location.search).get('role')}` : link.url) : '#'}
                 isActive={link.active}
                 onClick={(e) => {
                   e.preventDefault();
-                  if (link.url) router.visit(link.url);
+                  if (link.url) router.visit(new URLSearchParams(window.location.search).get('role') ? `${link.url}&role=${new URLSearchParams(window.location.search).get('role')}` : link.url);
                 }}
                 className={link.active ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
               >
@@ -81,10 +81,10 @@ export function InertiaPagination({ pagination }: InertiaPaginationProps) {
         {/* Next */}
         <PaginationItem>
           <PaginationNext
-            href={next_page_url || '#'}
+            href={next_page_url ? (new URLSearchParams(window.location.search).get('role') ? `${next_page_url}&role=${new URLSearchParams(window.location.search).get('role')}` : next_page_url) : '#'}
             onClick={(e) => {
               e.preventDefault();
-              if (next_page_url) router.visit(next_page_url);
+              if (next_page_url) router.visit(new URLSearchParams(window.location.search).get('role') ? `${next_page_url}&role=${new URLSearchParams(window.location.search).get('role')}` : next_page_url);
             }}
             className={!next_page_url ? 'pointer-events-none opacity-50' : ''}
           />

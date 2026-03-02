@@ -12,15 +12,21 @@ class Attendance extends Model
 
     protected $fillable = [
         'student_id',
-        'date',
-        'status',
+        'school_year_id',
+        'present',
+        'sick',
+        'permitted',
+        'absent',
         'notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'date' => 'date:Y-m-d',
+            'present' => 'integer',
+            'sick' => 'integer',
+            'permitted' => 'integer',
+            'absent' => 'integer',
         ];
     }
 
@@ -29,18 +35,10 @@ class Attendance extends Model
         return $this->belongsTo(Student::class);
     }
 
-    public function scopeStatus($query, string $status)
+    public function schoolYear(): BelongsTo
     {
-        return $query->where('status', $status);
+        return $this->belongsTo(SchoolYear::class);
     }
 
-    public function scopeByDate($query, string $date)
-    {
-        return $query->whereDate('date', $date);
-    }
-
-    public function scopeBetweenDates($query, string $startDate, string $endDate)
-    {
-        return $query->whereBetween('date', [$startDate, $endDate]);
-    }
+    
 }

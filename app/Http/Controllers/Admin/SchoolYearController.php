@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AcademicYear;
+use App\Models\SchoolYear;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
-class AcademicYearController extends Controller
+class SchoolYearController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,16 +17,16 @@ class AcademicYearController extends Controller
     {
         $search = $request->input('search');
 
-        $academicYears = AcademicYear::query()
+        $schoolYears = SchoolYear::query()
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })
-            ->orderBy('start_date', 'desc')
+            ->orderBy('name', 'asc')
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('admin/academic-years/index', [
-            'academicYears' => $academicYears,
+        return Inertia::render('admin/school-years/index', [
+            'schoolYears' => $schoolYears,
             'search'        => $search,
             'entries'       => $request->input('entries', 10),
         ]);
@@ -39,19 +39,17 @@ class AcademicYearController extends Controller
     {
         $validated = $request->validate([
             'name'       => ['required', 'string', 'max:255'],
-            'start_date' => ['required', 'date'],
-            'end_date'   => ['required', 'date', 'after:start_date'],
             'is_active'  => ['boolean'],
         ]);
 
         // Jika is_active true, nonaktifkan semua tahun pelajaran lain
         if (!empty($validated['is_active']) && $validated['is_active']) {
-            AcademicYear::where('is_active', true)->update(['is_active' => false]);
+            SchoolYear::where('is_active', true)->update(['is_active' => false]);
         }
 
-        AcademicYear::create($validated);
+        SchoolYear::create($validated);
 
-        return Redirect::route('admin.academic-years.index')->with('success', 'Tahun pelajaran berhasil ditambahkan.');
+        return Redirect::route('admin.school-years.index')->with('success', 'Tahun pelajaran berhasil ditambahkan.');
     }
 
     /**
@@ -59,25 +57,23 @@ class AcademicYearController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $academicYear = AcademicYear::findOrFail($id);
+        $schoolYear = SchoolYear::findOrFail($id);
 
         $validated = $request->validate([
             'name'       => ['required', 'string', 'max:255'],
-            'start_date' => ['required', 'date'],
-            'end_date'   => ['required', 'date', 'after:start_date'],
             'is_active'  => ['boolean'],
         ]);
 
         // Jika is_active true, nonaktifkan semua tahun pelajaran lain
         if (!empty($validated['is_active']) && $validated['is_active']) {
-            AcademicYear::where('is_active', true)
+            SchoolYear::where('is_active', true)
                 ->where('id', '!=', $id)
                 ->update(['is_active' => false]);
         }
 
-        $academicYear->update($validated);
+        $schoolYear->update($validated);
 
-        return Redirect::route('admin.academic-years.index')->with('success', 'Tahun pelajaran berhasil diperbarui.');
+        return Redirect::route('admin.school-years.index')->with('success', 'Tahun pelajaran berhasil diperbarui.');
     }
 
     /**
@@ -85,10 +81,10 @@ class AcademicYearController extends Controller
      */
     public function destroy(string $id)
     {
-        $academicYear = AcademicYear::findOrFail($id);
-        $academicYear->delete();
+        $schoolYear = SchoolYear::findOrFail($id);
+        $schoolYear->delete();
 
-        return Redirect::route('admin.academic-years.index')->with('success', 'Tahun pelajaran berhasil dihapus.');
+        return Redirect::route('admin.school-years.index')->with('success', 'Tahun pelajaran berhasil dihapus.');
     }
 
     /**
@@ -97,8 +93,8 @@ class AcademicYearController extends Controller
     public function bulkDelete(Request $request)
     {
         $ids = $request->ids;
-        AcademicYear::whereIn('id', $ids)->delete();
+        SchoolYear::whereIn('id', $ids)->delete();
 
-        return Redirect::route('admin.academic-years.index')->with('success', 'Tahun pelajaran terpilih berhasil dihapus.');
+        return Redirect::route('admin.school-years.index')->with('success', 'Tahun pelajaran terpilih berhasil dihapus.');
     }
 }

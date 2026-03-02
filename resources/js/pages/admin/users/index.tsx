@@ -11,6 +11,11 @@ interface User {
     name: string;
     email: string;
     role: string;
+    photo?: string;
+    nik?: string;
+    homeroom_teacher?: string;
+    gender?: string;
+    education?: string;
     created_at: string;
     updated_at: string;
 }
@@ -27,6 +32,7 @@ export default function UserIndex({
     i,
     entries,
     search,
+    role,
 }: {
     users: {
         data: User[];
@@ -45,9 +51,35 @@ export default function UserIndex({
     i: number;
     entries: any;
     search: string;
+    role?: string;
 }) {
     const { props } = usePage();
     const [selected, setSelected] = useState<string[]>([]);
+
+    // Set title based on role
+    const pageTitle =
+        role === 'admin'
+            ? 'Data Admin'
+            : role === 'guru'
+              ? 'Data Guru'
+              : role === 'kepala_sekolah'
+                ? 'Kepala Sekolah'
+                : 'Manajemen Pengguna';
+
+    // Dynamic breadcrumbs based on role
+    const dynamicBreadcrumbs: BreadcrumbItem[] = [
+        {
+            title: pageTitle,
+            href:
+                role === 'admin'
+                    ? route('admin.admins.index')
+                    : role === 'guru'
+                      ? route('admin.teachers.index')
+                      : role === 'kepala_sekolah'
+                        ? route('admin.principals.index')
+                        : route('admin.users.index'),
+        },
+    ];
 
     const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
@@ -65,9 +97,22 @@ export default function UserIndex({
         );
     };
 
+    // Helper function for sending search and entries updates while preserving role
+    const getRouteOptions = () => {
+        const routeName =
+            role === 'admin'
+                ? 'admin.admins.index'
+                : role === 'guru'
+                  ? 'admin.teachers.index'
+                  : role === 'kepala_sekolah'
+                    ? 'admin.principals.index'
+                    : 'admin.users.index';
+        return route(routeName);
+    };
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Manajemen Pengguna" />
+        <AppLayout breadcrumbs={dynamicBreadcrumbs}>
+            <Head title={pageTitle} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
@@ -75,7 +120,7 @@ export default function UserIndex({
                         <div className="mb-4 flex flex-col items-center justify-between sm:flex-row">
                             <div className="w-full sm:flex sm:space-x-4 md:mt-0">
                                 <Entries
-                                    route={route('admin.users.index')}
+                                    route={getRouteOptions()}
                                     search={search}
                                     entries={entries}
                                 />
@@ -87,12 +132,17 @@ export default function UserIndex({
                                     className="w-full rounded-lg border px-3 py-2 text-sm sm:w-auto"
                                     defaultValue={search || ''}
                                     onChange={(e) => {
+                                        const queryParams: any = {
+                                            search: e.target.value,
+                                            entries: entries,
+                                        };
+                                        if (role) {
+                                            queryParams.role = role;
+                                        }
+
                                         router.get(
-                                            route('admin.users.index'),
-                                            {
-                                                search: e.target.value,
-                                                entries: entries,
-                                            },
+                                            getRouteOptions(),
+                                            queryParams,
                                             {
                                                 preserveState: true,
                                                 replace: true,
@@ -114,7 +164,7 @@ export default function UserIndex({
                                                 route(
                                                     'admin.users.bulk-delete',
                                                 ),
-                                                { ids: selected },
+                                                { ids: selected, role: role },
                                                 {
                                                     preserveScroll: true,
                                                     onSuccess: () =>
@@ -129,7 +179,10 @@ export default function UserIndex({
                             </div>
                             <div className="sm:mt-0 sm:ml-5 sm:flex-none">
                                 <Link
-                                    href={route('admin.users.create')}
+                                    href={route(
+                                        'admin.users.create',
+                                        role ? { role: role } : {},
+                                    )}
                                     style={{
                                         backgroundColor: '#4b986c',
                                         color: 'white',
@@ -176,13 +229,31 @@ export default function UserIndex({
                                                     scope="col"
                                                     className="px-6 py-3 text-center"
                                                 >
-                                                    <span>Name</span>
+                                                    <span>Nama Lengkap</span>
                                                 </th>
                                                 <th
                                                     scope="col"
                                                     className="px-6 py-3 text-center"
                                                 >
-                                                    <span>Email</span>
+                                                    <span>NIK</span>
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-6 py-3 text-center"
+                                                >
+                                                    <span>Jenis Kelamin</span>
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-6 py-3 text-center"
+                                                >
+                                                    <span>Wali Kelas</span>
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-6 py-3 text-center"
+                                                >
+                                                    <span>Pendidikan</span>
                                                 </th>
                                                 <th
                                                     scope="col"
@@ -229,17 +300,64 @@ export default function UserIndex({
                                                         {user.name}
                                                     </td>
                                                     <td className="px-6 py-2 text-center">
-                                                        {user.email}
+                                                        {user.nik || '-'}
+                                                    </td>
+                                                    <td className="px-6 py-2 text-center">
+                                                        {user.gender === 'L'
+                                                            ? 'Laki-laki'
+                                                            : user.gender ===
+                                                                'P'
+                                                              ? 'Perempuan'
+                                                              : '-'}
+                                                    </td>
+                                                    <td className="px-6 py-2 text-center">
+                                                        {user.homeroom_teacher ||
+                                                            '-'}
+                                                    </td>
+                                                    <td className="px-6 py-2 text-center">
+                                                        {user.education || '-'}
                                                     </td>
                                                     <td className="px-6 py-2 text-center capitalize">
-                                                        {user.role}
+                                                        {user.role.replace(
+                                                            /_/g,
+                                                            ' ',
+                                                        )}
                                                     </td>
                                                     <td className="px-6 py-2 text-center">
                                                         <div className="flex justify-center space-x-2">
                                                             <Link
                                                                 href={route(
+                                                                    'admin.users.show',
+                                                                    role
+                                                                        ? {
+                                                                              user: user.id,
+                                                                              role: role,
+                                                                          }
+                                                                        : {
+                                                                              user: user.id,
+                                                                          },
+                                                                )}
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        '#3b82f6',
+                                                                    color: 'white',
+                                                                }} // Warna biru
+                                                                className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                                            >
+                                                                Detail
+                                                            </Link>
+
+                                                            <Link
+                                                                href={route(
                                                                     'admin.users.edit',
-                                                                    user.id,
+                                                                    role
+                                                                        ? {
+                                                                              user: user.id,
+                                                                              role: role,
+                                                                          }
+                                                                        : {
+                                                                              user: user.id,
+                                                                          },
                                                                 )}
                                                                 style={{
                                                                     backgroundColor:
@@ -263,7 +381,14 @@ export default function UserIndex({
                                                                     router.delete(
                                                                         route(
                                                                             'admin.users.destroy',
-                                                                            user.id,
+                                                                            role
+                                                                                ? {
+                                                                                      user: user.id,
+                                                                                      role: role,
+                                                                                  }
+                                                                                : {
+                                                                                      user: user.id,
+                                                                                  },
                                                                         ),
                                                                     );
                                                                 }}

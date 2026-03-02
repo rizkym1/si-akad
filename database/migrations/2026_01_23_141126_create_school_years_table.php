@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'guru', 'kepala sekolah'])->default('admin');
+        Schema::create('school_years', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');           // contoh: "2024/2025"
+            $table->boolean('is_active')->default(false); // tahun pelajaran aktif
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('school_years');
     }
 };

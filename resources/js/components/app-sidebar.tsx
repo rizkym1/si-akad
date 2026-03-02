@@ -34,12 +34,31 @@ const adminNavItems: NavItem[] = [
     },
     {
         title: 'Manajemen Pengguna',
-        href: '/admin/users',
+        href: '#',
         icon: User2,
+        isActive:
+            window.location.pathname.startsWith('/admin/users') ||
+            window.location.pathname.startsWith('/admin/teachers') ||
+            window.location.pathname.startsWith('/admin/principals') ||
+            window.location.pathname.startsWith('/admin/admins'),
+        items: [
+            {
+                title: 'Data Admin',
+                href: '/admin/admins',
+            },
+            {
+                title: 'Data Guru',
+                href: '/admin/teachers',
+            },
+            {
+                title: 'Kepala Sekolah',
+                href: '/admin/principals',
+            },
+        ],
     },
     {
         title: 'Manajemen Tahun Pelajaran',
-        href: '/admin/academic-years',
+        href: '/admin/school-years',
         icon: CalendarCheck,
     },
     {
@@ -57,9 +76,14 @@ const adminNavItems: NavItem[] = [
         href: '/admin/attendances',
         icon: CalendarCheck,
     },
+    // {
+    //     title: 'Penilaian Perkembangan Anak',
+    //     href: '/admin/child-development-assessments',
+    //     icon: Award,
+    // },
     {
-        title: 'Manajemen Penilaian Perkembangan Anak',
-        href: '/admin/child-development-assessments',
+        title: 'Penilaian Perkembangan Anak',
+        href: '/admin/nilai-kokurikuler',
         icon: Award,
     },
 ];

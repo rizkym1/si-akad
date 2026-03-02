@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AcademicYear;
+use App\Models\SchoolYear;
 use App\Models\Student;
 use App\Models\StudentClass;
 use Illuminate\Http\Request;
@@ -31,7 +31,7 @@ class StudentController extends Controller
 
         return Inertia::render('admin/students/index', [
             'students'      => $students,
-            'academicYears' => AcademicYear::orderBy('start_date', 'desc')->get(['id', 'name', 'is_active']),
+            'schoolYears' => SchoolYear::orderBy('name', 'desc')->get(['id', 'name', 'is_active']),
             'search'        => $search,
             'entries'       => $request->input('entries', 10),
         ]);
@@ -68,16 +68,16 @@ class StudentController extends Controller
      */
     public function reportPdf(Request $request)
 {
-    $academicYearId = $request->query('academic_year_id');
+    $schoolYearId = $request->query('school_year_id');
 
-    $academicYear = $academicYearId
-        ? AcademicYear::find($academicYearId)
-        : AcademicYear::where('is_active', true)->first();
+    $schoolYear = $schoolYearId
+        ? SchoolYear::find($schoolYearId)
+        : SchoolYear::where('is_active', true)->first();
 
-    $students = Student::with(['studentClass.academicYear'])
-        ->when($academicYear, function ($q) use ($academicYear) {
-            $q->whereHas('studentClass', function ($q) use ($academicYear) {
-                $q->where('academic_year_id', $academicYear->id);
+    $students = Student::with(['studentClass.schoolYear'])
+        ->when($schoolYear, function ($q) use ($schoolYear) {
+            $q->whereHas('studentClass', function ($q) use ($schoolYear) {
+                $q->where('school_year_id', $schoolYear->id);
             });
         })
         ->orderBy('full_name')
@@ -91,7 +91,7 @@ class StudentController extends Controller
 
     $logoBase64 = base64_encode(file_get_contents(public_path('images/logo_alislam.png')));
 
-    $periode = $academicYear?->name ?? 'Semua Periode';
+    $periode = $schoolYear?->name ?? 'Semua Periode';
 
     $pdf = Pdf::loadView('report-pdf', [
         'students'    => $students,
@@ -112,8 +112,8 @@ class StudentController extends Controller
     public function create()
     {
         return Inertia::render('admin/students/create', [
-            'student_classes' => StudentClass::with('academicYear')
-                                    ->get(['id', 'name', 'academic_year_id']),
+            'student_classes' => StudentClass::with('schoolYear')
+                                    ->get(['id', 'name', 'school_year_id']),
         ]);
     }
 
@@ -123,26 +123,36 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'full_name'        => ['required', 'string', 'max:255'],
-            'nickname'         => ['nullable', 'string', 'max:255'],
-            'place_of_birth'   => ['nullable', 'string', 'max:255'],
-            'nisn'             => ['required', 'string', 'max:255', 'unique:students,nisn'],
-            'date_of_birth'    => ['required', 'date'],
-            'gender'           => ['nullable', 'in:male,female'],
-            'religion'         => ['nullable', 'string', 'max:255'],
-            'child_order'      => ['nullable', 'integer', 'min:1'],
-            'father_name'      => ['nullable', 'string', 'max:255'],
-            'mother_name'      => ['nullable', 'string', 'max:255'],
-            'phone'            => ['nullable', 'string', 'max:255'],
-            'father_job'       => ['nullable', 'string', 'max:255'],
-            'mother_job'       => ['nullable', 'string', 'max:255'],
-            'address'          => ['nullable', 'string'],
-            'guardian_name'    => ['nullable', 'string', 'max:255'],
-            'guardian_job'     => ['nullable', 'string', 'max:255'],
-            'guardian_address' => ['nullable', 'string'],
-            'class_id'         => ['nullable', 'exists:student_classes,id'],
-            'photo'            => ['nullable', 'image', 'max:2048'],
-        ]);
+    'nis'              => ['nullable', 'string', 'max:255', 'unique:students,nis'],
+    'full_name'        => ['required', 'string', 'max:255'],
+    'nickname'         => ['nullable', 'string', 'max:255'],
+    'place_of_birth'   => ['nullable', 'string', 'max:255'],
+    'nisn'             => ['required', 'string', 'max:255', 'unique:students,nisn'],
+    'date_of_birth'    => ['required', 'date'],
+    'gender'           => ['nullable', 'in:male,female'],
+    'religion'         => ['nullable', 'string', 'max:255'],
+    'family_status'    => ['nullable', 'string', 'max:255'],
+    'child_order'      => ['nullable', 'integer', 'min:1'],
+    'father_name'      => ['nullable', 'string', 'max:255'],
+    'mother_name'      => ['nullable', 'string', 'max:255'],
+    'phone'            => ['nullable', 'string', 'max:255'],
+    'student_phone'    => ['nullable', 'string', 'max:255'],
+    'father_job'       => ['nullable', 'string', 'max:255'],
+    'mother_job'       => ['nullable', 'string', 'max:255'],
+    'address_street'   => ['nullable', 'string', 'max:255'],
+    'address_village'  => ['nullable', 'string', 'max:255'],
+    'address_district' => ['nullable', 'string', 'max:255'],
+    'address_city'     => ['nullable', 'string', 'max:255'],
+    'address_province' => ['nullable', 'string', 'max:255'],
+    'guardian_name'    => ['nullable', 'string', 'max:255'],
+    'guardian_job'     => ['nullable', 'string', 'max:255'],
+    'guardian_address' => ['nullable', 'string'],
+    'student_address'  => ['nullable', 'string'],
+    'previous_school'  => ['nullable', 'string', 'max:255'],
+    'accepted_date'    => ['nullable', 'date'],
+    'class_id'         => ['nullable', 'exists:student_classes,id'],
+    'photo'            => ['nullable', 'image', 'max:2048'],
+]);
 
         $photoPath = null;
         if ($request->hasFile('photo')) {
@@ -161,7 +171,7 @@ class StudentController extends Controller
      */
     public function show($id)
     {
-        $student = Student::with('studentClass.academicYear')->findOrFail($id);
+        $student = Student::with('studentClass.schoolYear')->findOrFail($id);
         return Inertia::render('admin/students/detail', [
             'student' => $student,
         ]);
@@ -175,9 +185,9 @@ class StudentController extends Controller
         
         return Inertia::render('admin/students/edit', [
             'student'         => $student,
-            // ✅ Pakai relasi academicYear, hapus kolom academic_year
-            'student_classes' => StudentClass::with('academicYear')
-                                    ->get(['id', 'name', 'academic_year_id']),
+            // ✅ Pakai relasi schoolYear, hapus kolom school_year_id
+            'student_classes' => StudentClass::with('schoolYear')
+                                    ->get(['id', 'name', 'school_year_id']),
         ]);
     }
 
@@ -189,26 +199,36 @@ class StudentController extends Controller
         $student = Student::findOrFail($id);
 
         $validated = $request->validate([
-            'full_name'        => ['required', 'string', 'max:255'],
-            'nickname'         => ['nullable', 'string', 'max:255'],
-            'place_of_birth'   => ['nullable', 'string', 'max:255'],
-            'nisn'             => ['required', 'string', 'max:255', 'unique:students,nisn,' . $student->id],
-            'date_of_birth'    => ['required', 'date'],
-            'gender'           => ['nullable', 'in:male,female'],
-            'religion'         => ['nullable', 'string', 'max:255'],
-            'child_order'      => ['nullable', 'integer', 'min:1'],
-            'father_name'      => ['nullable', 'string', 'max:255'],
-            'mother_name'      => ['nullable', 'string', 'max:255'],
-            'phone'            => ['nullable', 'string', 'max:255'],
-            'father_job'       => ['nullable', 'string', 'max:255'],
-            'mother_job'       => ['nullable', 'string', 'max:255'],
-            'address'          => ['nullable', 'string'],
-            'guardian_name'    => ['nullable', 'string', 'max:255'],
-            'guardian_job'     => ['nullable', 'string', 'max:255'],
-            'guardian_address' => ['nullable', 'string'],
-            'class_id'         => ['nullable', 'exists:student_classes,id'],
-            'photo'            => ['nullable', 'image', 'max:2048'],
-        ]);
+    'nis'              => ['nullable', 'string', 'max:255', 'unique:students,nis,' . $id],
+    'full_name'        => ['required', 'string', 'max:255'],
+    'nickname'         => ['nullable', 'string', 'max:255'],
+    'place_of_birth'   => ['nullable', 'string', 'max:255'],
+    'nisn'             => ['required', 'string', 'max:255', 'unique:students,nisn,' . $id],
+    'date_of_birth'    => ['required', 'date'],
+    'gender'           => ['nullable', 'in:male,female'],
+    'religion'         => ['nullable', 'string', 'max:255'],
+    'family_status'    => ['nullable', 'string', 'max:255'],
+    'child_order'      => ['nullable', 'integer', 'min:1'],
+    'father_name'      => ['nullable', 'string', 'max:255'],
+    'mother_name'      => ['nullable', 'string', 'max:255'],
+    'phone'            => ['nullable', 'string', 'max:255'],
+    'student_phone'    => ['nullable', 'string', 'max:255'],
+    'father_job'       => ['nullable', 'string', 'max:255'],
+    'mother_job'       => ['nullable', 'string', 'max:255'],
+    'address_street'   => ['nullable', 'string', 'max:255'],
+    'address_village'  => ['nullable', 'string', 'max:255'],
+    'address_district' => ['nullable', 'string', 'max:255'],
+    'address_city'     => ['nullable', 'string', 'max:255'],
+    'address_province' => ['nullable', 'string', 'max:255'],
+    'guardian_name'    => ['nullable', 'string', 'max:255'],
+    'guardian_job'     => ['nullable', 'string', 'max:255'],
+    'guardian_address' => ['nullable', 'string'],
+    'student_address'  => ['nullable', 'string'],
+    'previous_school'  => ['nullable', 'string', 'max:255'],
+    'accepted_date'    => ['nullable', 'date'],
+    'class_id'         => ['nullable', 'exists:student_classes,id'],
+    'photo'            => ['nullable', 'image', 'max:2048'],
+]);
 
         if ($request->hasFile('photo')) {
             if ($student->photo) {

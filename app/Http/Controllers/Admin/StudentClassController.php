@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AcademicYear;
+use App\Models\SchoolYear;
 use App\Models\StudentClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -18,7 +18,7 @@ class StudentClassController extends Controller
     {
         $search = $request->input('search');
 
-        $studentClasses = StudentClass::with('academicYear')
+        $studentClasses = StudentClass::with('schoolYear')
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })
@@ -27,7 +27,7 @@ class StudentClassController extends Controller
 
         return Inertia::render('admin/student-classes/index', [
             'studentClasses' => $studentClasses,
-            'academicYears'  => AcademicYear::orderBy('start_date', 'desc')->get(['id', 'name', 'is_active']),
+            'schoolYears'  => SchoolYear::orderBy('name', 'desc')->get(['id', 'name', 'is_active']),
             'search'         => $search,
             'entries'        => $request->input('entries', 10),
         ]);
@@ -40,7 +40,7 @@ class StudentClassController extends Controller
     {
         $validated = $request->validate([
             'name'             => ['required', 'string', 'max:255'],
-            'academic_year_id' => ['required', 'exists:academic_years,id'],
+            'school_year_id' => ['required', 'exists:school_years,id'],
         ]);
 
         StudentClass::create($validated);
@@ -57,7 +57,7 @@ class StudentClassController extends Controller
 
         $validated = $request->validate([
             'name'             => ['required', 'string', 'max:255'],
-            'academic_year_id' => ['required', 'exists:academic_years,id'],
+            'school_year_id' => ['required', 'exists:school_years,id'],
         ]);
 
         $studentClass->update($validated);

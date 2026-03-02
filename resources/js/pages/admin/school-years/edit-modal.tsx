@@ -14,45 +14,45 @@ import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useEffect, useState } from 'react';
 
-interface AcademicYear {
+interface SchoolYear {
     id: number;
     name: string;
-    start_date: string;
-    end_date: string;
     is_active: boolean;
 }
 
-interface EditAcademicYearModalProps {
-    academicYear: AcademicYear;
+interface EditSchoolYearModalProps {
+    schoolYear: SchoolYear;
 }
 
-export function EditAcademicYearModal({
-    academicYear,
-}: EditAcademicYearModalProps) {
+// ✅ Fungsi normalize tanggal (sama seperti edit-modal absensi)
+function normalizeDateString(s: string | null | undefined): string {
+    if (!s) return '';
+    // '2026-07-01 00:00:00' -> '2026-07-01'
+    // '2026-07-01T00:00:00.000Z' -> '2026-07-01'
+    return s.slice(0, 10);
+}
+
+export function EditSchoolYearModal({ schoolYear }: EditSchoolYearModalProps) {
     const [open, setOpen] = useState(false);
 
     const { data, setData, put, processing, errors, reset } = useForm({
-        name: academicYear.name,
-        start_date: academicYear.start_date,
-        end_date: academicYear.end_date,
-        is_active: academicYear.is_active,
+        name: schoolYear.name,
+        is_active: schoolYear.is_active,
     });
 
-    // Reset form data ketika modal dibuka dengan data baru
+    // ✅ Normalize tanggal juga saat modal dibuka ulang
     useEffect(() => {
         if (open) {
             setData({
-                name: academicYear.name,
-                start_date: academicYear.start_date,
-                end_date: academicYear.end_date,
-                is_active: academicYear.is_active,
+                name: schoolYear.name,
+                is_active: schoolYear.is_active,
             });
         }
-    }, [open, academicYear]);
+    }, [open, schoolYear]);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        put(route('admin.academic-years.update', academicYear.id), {
+        put(route('admin.school-years.update', schoolYear.id), {
             onSuccess: () => {
                 setOpen(false);
             },
@@ -64,7 +64,7 @@ export function EditAcademicYearModal({
             <DialogTrigger asChild>
                 <button
                     style={{ backgroundColor: '#f59e0b', color: 'white' }}
-                    className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-orange-400 focus:outline-none"
+                    className="inline-flex items-center rounded px-2.5 py-1 text-xs font-medium transition hover:opacity-90"
                 >
                     Edit
                 </button>
@@ -73,7 +73,7 @@ export function EditAcademicYearModal({
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-foreground">
-                            Edit Tahun Pelajaran
+                            Edit Tahun Ajaran
                         </DialogTitle>
                         <DialogDescription className="text-muted-foreground">
                             Perbarui informasi tahun pelajaran di bawah ini
@@ -103,56 +103,6 @@ export function EditAcademicYearModal({
                             />
                             <InputError
                                 message={errors.name}
-                                className="mt-1"
-                            />
-                        </div>
-
-                        {/* Tanggal Mulai */}
-                        <div className="grid gap-2">
-                            <Label
-                                htmlFor="edit-start_date"
-                                className="text-foreground"
-                            >
-                                Tanggal Mulai{' '}
-                                <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="edit-start_date"
-                                type="date"
-                                value={data.start_date}
-                                onChange={(e) =>
-                                    setData('start_date', e.target.value)
-                                }
-                                className="border-border bg-card focus:ring-primary"
-                                required
-                            />
-                            <InputError
-                                message={errors.start_date}
-                                className="mt-1"
-                            />
-                        </div>
-
-                        {/* Tanggal Selesai */}
-                        <div className="grid gap-2">
-                            <Label
-                                htmlFor="edit-end_date"
-                                className="text-foreground"
-                            >
-                                Tanggal Selesai{' '}
-                                <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="edit-end_date"
-                                type="date"
-                                value={data.end_date}
-                                onChange={(e) =>
-                                    setData('end_date', e.target.value)
-                                }
-                                className="border-border bg-card focus:ring-primary"
-                                required
-                            />
-                            <InputError
-                                message={errors.end_date}
                                 className="mt-1"
                             />
                         </div>

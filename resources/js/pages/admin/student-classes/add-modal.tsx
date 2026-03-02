@@ -14,25 +14,23 @@ import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
 
-interface AcademicYear {
+interface SchoolYear {
     id: number;
     name: string;
     is_active: boolean;
 }
 
 export function AddStudentClassModal({
-    academicYears,
+    schoolYears,
 }: {
-    academicYears: AcademicYear[];
+    schoolYears: SchoolYear[];
 }) {
     const [open, setOpen] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
-        academic_year_id:
-            academicYears.find((y) => y.is_active)?.id ??
-            academicYears[0]?.id ??
-            0,
+        school_year_id:
+            schoolYears.find((y) => y.is_active)?.id ?? schoolYears[0]?.id ?? 0,
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -93,32 +91,32 @@ export function AddStudentClassModal({
                         {/* Tahun Pelajaran */}
                         <div className="grid gap-2">
                             <Label
-                                htmlFor="academic_year_id"
+                                htmlFor="school_year_id"
                                 className="text-foreground"
                             >
                                 Tahun Pelajaran{' '}
                                 <span className="text-red-500">*</span>
                             </Label>
                             <select
-                                id="academic_year_id"
-                                value={data.academic_year_id}
+                                id="school_year_id"
+                                value={data.school_year_id}
                                 onChange={(e) =>
                                     setData(
-                                        'academic_year_id',
+                                        'school_year_id',
                                         Number(e.target.value),
                                     )
                                 }
                                 className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 required
                             >
-                                {academicYears.map((y) => (
+                                {schoolYears.map((y) => (
                                     <option key={y.id} value={y.id}>
                                         {y.name} {y.is_active ? '(Aktif)' : ''}
                                     </option>
                                 ))}
                             </select>
                             <InputError
-                                message={errors.academic_year_id}
+                                message={errors.school_year_id}
                                 className="mt-1"
                             />
                         </div>

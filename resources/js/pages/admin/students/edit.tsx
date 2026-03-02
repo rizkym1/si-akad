@@ -25,15 +25,32 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// ✅ Update interface: academic_year sekarang object dari relasi
+// ✅ Update interface: school_year sekarang object dari relasi
 interface StudentClass {
     id: number;
     name: string;
-    academic_year_id: number | null;
-    academic_year: {
+    school_year_id: number | null;
+    school_year: {
         id: number;
         name: string;
     } | null;
+}
+
+function FormSection({
+    title,
+    children,
+}: {
+    title: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="mb-8 pt-6 first:pt-0">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {title}
+            </h2>
+            {children}
+        </div>
+    );
 }
 
 export default function EditStudent({
@@ -46,6 +63,7 @@ export default function EditStudent({
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
     const { data, setData, post, processing, errors } = useForm<{
+        nis: string;
         full_name: string;
         nickname: string;
         nisn: string;
@@ -53,20 +71,30 @@ export default function EditStudent({
         date_of_birth: string;
         gender: string;
         religion: string;
+        family_status: string;
         child_order: string;
         photo: File | null;
         class_id: number | null;
+        student_phone: string;
+        student_address: string;
+        previous_school: string;
+        accepted_date: string;
         father_name: string;
         mother_name: string;
         phone: string;
         father_job: string;
         mother_job: string;
-        address: string;
+        address_street: string;
+        address_village: string;
+        address_district: string;
+        address_city: string;
+        address_province: string;
         guardian_name: string;
         guardian_job: string;
         guardian_address: string;
         _method: string;
     }>({
+        nis: student.nis || '',
         full_name: student.full_name || '',
         nickname: student.nickname || '',
         nisn: student.nisn || '',
@@ -74,15 +102,24 @@ export default function EditStudent({
         date_of_birth: student.date_of_birth || '',
         gender: student.gender || '',
         religion: student.religion || '',
+        family_status: student.family_status || '',
         child_order: student.child_order || '',
         photo: null,
         class_id: student.class_id || null,
+        student_phone: student.student_phone || '',
+        student_address: student.student_address || '',
+        previous_school: student.previous_school || '',
+        accepted_date: student.accepted_date || '',
         father_name: student.father_name || '',
         mother_name: student.mother_name || '',
         phone: student.phone || '',
         father_job: student.father_job || '',
         mother_job: student.mother_job || '',
-        address: student.address || '',
+        address_street: student.address_street || '',
+        address_village: student.address_village || '',
+        address_district: student.address_district || '',
+        address_city: student.address_city || '',
+        address_province: student.address_province || '',
         guardian_name: student.guardian_name || '',
         guardian_job: student.guardian_job || '',
         guardian_address: student.guardian_address || '',
@@ -91,8 +128,10 @@ export default function EditStudent({
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+
         post(route('admin.students.update', student.id), {
-            onSuccess: () => router.get(route('admin.students.index')),
+            forceFormData: true,
+            onSuccess: () => router.visit(route('admin.students.index')),
         });
     };
 
@@ -104,11 +143,46 @@ export default function EditStudent({
                     <div className="mx-auto px-4 py-4 text-gray-900 sm:px-6 lg:px-8 dark:text-gray-100">
                         <form onSubmit={handleSubmit}>
                             {/* Data Siswa */}
-                            <div className="mb-8">
-                                <h2 className="mb-4 text-lg font-semibold">
-                                    Data Siswa
-                                </h2>
+                            {/* Data Siswa */}
+                            <FormSection title="Data Siswa">
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                    <div>
+                                        <Label htmlFor="nis">
+                                            NIS (Nomor Induk Siswa)
+                                        </Label>
+                                        <Input
+                                            id="nis"
+                                            type="text"
+                                            value={data.nis}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) =>
+                                                setData('nis', e.target.value)
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.nis}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="nisn">NISN</Label>
+                                        <Input
+                                            id="nisn"
+                                            type="text"
+                                            value={data.nisn}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) =>
+                                                setData('nisn', e.target.value)
+                                            }
+                                            required
+                                        />
+                                        <InputError
+                                            message={errors.nisn}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
                                     <div>
                                         <Label htmlFor="full_name">
                                             Nama Lengkap
@@ -155,19 +229,29 @@ export default function EditStudent({
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="nisn">NISN</Label>
-                                        <Input
-                                            id="nisn"
-                                            type="text"
-                                            value={data.nisn}
-                                            className="mt-1 block w-full"
-                                            onChange={(e) =>
-                                                setData('nisn', e.target.value)
+                                        <Label htmlFor="gender">
+                                            Jenis Kelamin
+                                        </Label>
+                                        <Select
+                                            value={data.gender}
+                                            onValueChange={(value) =>
+                                                setData('gender', value)
                                             }
-                                            required
-                                        />
+                                        >
+                                            <SelectTrigger className="mt-1 w-full">
+                                                <SelectValue placeholder="Pilih Jenis Kelamin" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="male">
+                                                    Laki-laki
+                                                </SelectItem>
+                                                <SelectItem value="female">
+                                                    Perempuan
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <InputError
-                                            message={errors.nisn}
+                                            message={errors.gender}
                                             className="mt-2"
                                         />
                                     </div>
@@ -218,34 +302,6 @@ export default function EditStudent({
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="gender">
-                                            Jenis Kelamin
-                                        </Label>
-                                        <Select
-                                            value={data.gender}
-                                            onValueChange={(value) =>
-                                                setData('gender', value)
-                                            }
-                                        >
-                                            <SelectTrigger className="mt-1 w-full">
-                                                <SelectValue placeholder="Pilih Jenis Kelamin" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="male">
-                                                    Laki-laki
-                                                </SelectItem>
-                                                <SelectItem value="female">
-                                                    Perempuan
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <InputError
-                                            message={errors.gender}
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div>
                                         <Label htmlFor="religion">Agama</Label>
                                         <Select
                                             value={data.religion}
@@ -284,6 +340,37 @@ export default function EditStudent({
                                     </div>
 
                                     <div>
+                                        <Label htmlFor="family_status">
+                                            Status Keluarga
+                                        </Label>
+                                        <Select
+                                            value={data.family_status}
+                                            onValueChange={(value) =>
+                                                setData('family_status', value)
+                                            }
+                                        >
+                                            <SelectTrigger className="mt-1 w-full">
+                                                <SelectValue placeholder="Pilih Status Keluarga" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Anak Kandung">
+                                                    Anak Kandung
+                                                </SelectItem>
+                                                <SelectItem value="Anak Tiri">
+                                                    Anak Tiri
+                                                </SelectItem>
+                                                <SelectItem value="Anak Angkat">
+                                                    Anak Angkat
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError
+                                            message={errors.family_status}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    <div>
                                         <Label htmlFor="child_order">
                                             Anak Ke
                                         </Label>
@@ -305,9 +392,100 @@ export default function EditStudent({
                                         />
                                     </div>
 
-                                    {/* ✅ Dropdown Kelas dengan relasi academic_year */}
                                     <div>
-                                        <Label htmlFor="class_id">Kelas</Label>
+                                        <Label htmlFor="student_phone">
+                                            No. Telp / HP Siswa
+                                        </Label>
+                                        <Input
+                                            id="student_phone"
+                                            type="text"
+                                            value={data.student_phone}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) =>
+                                                setData(
+                                                    'student_phone',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.student_phone}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2 lg:col-span-3">
+                                        <Label htmlFor="student_address">
+                                            Alamat Lengkap Siswa
+                                        </Label>
+                                        <textarea
+                                            id="student_address"
+                                            name="student_address"
+                                            value={data.student_address}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
+                                            rows={3}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'student_address',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        ></textarea>
+                                        <InputError
+                                            message={errors.student_address}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="previous_school">
+                                            Asal Sekolah
+                                        </Label>
+                                        <Input
+                                            id="previous_school"
+                                            type="text"
+                                            value={data.previous_school}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) =>
+                                                setData(
+                                                    'previous_school',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.previous_school}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="accepted_date">
+                                            Tanggal Diterima
+                                        </Label>
+                                        <Input
+                                            id="accepted_date"
+                                            type="date"
+                                            value={data.accepted_date}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) =>
+                                                setData(
+                                                    'accepted_date',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.accepted_date}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    {/* ✅ Dropdown Kelas dengan relasi school_year */}
+                                    <div>
+                                        <Label htmlFor="class_id">
+                                            Kelas Saat Ini
+                                        </Label>
                                         <Select
                                             value={
                                                 data.class_id?.toString() || '0'
@@ -337,10 +515,10 @@ export default function EditStudent({
                                                                 key={item.id}
                                                                 value={item.id.toString()}
                                                             >
-                                                                {/* ✅ Akses .name dari relasi academicYear */}
+                                                                {/* ✅ Akses .name dari relasi school_year */}
                                                                 {item.name} -{' '}
                                                                 {item
-                                                                    .academic_year
+                                                                    .school_year
                                                                     ?.name ??
                                                                     '-'}
                                                             </SelectItem>
@@ -362,7 +540,7 @@ export default function EditStudent({
                                         />
                                     </div>
 
-                                    <div className="md:col-span-2 lg:col-span-3">
+                                    <div className="mt-2 border-t border-gray-100 pt-4 md:col-span-2 lg:col-span-3 dark:border-gray-800">
                                         <Label htmlFor="photo">
                                             Foto Siswa (Kosongkan jika tidak
                                             diubah)
@@ -430,13 +608,10 @@ export default function EditStudent({
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </FormSection>
 
                             {/* Data Orang Tua */}
-                            <div className="mb-8">
-                                <h2 className="mb-4 text-lg font-semibold">
-                                    Data Orang Tua
-                                </h2>
+                            <FormSection title="Data Orang Tua">
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div>
                                         <Label htmlFor="father_name">
@@ -545,35 +720,152 @@ export default function EditStudent({
                                         />
                                     </div>
 
+                                    {/* ── Alamat Orang Tua ── */}
                                     <div className="md:col-span-2">
-                                        <Label htmlFor="address">
-                                            Alamat Lengkap
-                                        </Label>
-                                        <Input
-                                            id="address"
-                                            type="text"
-                                            value={data.address}
-                                            className="mt-1 block w-full"
-                                            onChange={(e) =>
-                                                setData(
-                                                    'address',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                        <InputError
-                                            message={errors.address}
-                                            className="mt-2"
-                                        />
+                                        <h3 className="mb-3 text-sm font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+                                            Alamat Orang Tua
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                            {/* a. Dusun/Jalan */}
+                                            <div className="md:col-span-2 lg:col-span-3">
+                                                <Label htmlFor="address_street">
+                                                    Dusun / Jalan
+                                                </Label>
+                                                <Input
+                                                    id="address_street"
+                                                    type="text"
+                                                    placeholder="Contoh: Dusun Sirnagalih RT 38 RW 18"
+                                                    value={data.address_street}
+                                                    className="mt-1 block w-full"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'address_street',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errors.address_street
+                                                    }
+                                                    className="mt-2"
+                                                />
+                                            </div>
+
+                                            {/* b. Kelurahan/Desa */}
+                                            <div>
+                                                <Label htmlFor="address_village">
+                                                    Kelurahan / Desa
+                                                </Label>
+                                                <Input
+                                                    id="address_village"
+                                                    type="text"
+                                                    placeholder="Contoh: Gunungcupu"
+                                                    value={data.address_village}
+                                                    className="mt-1 block w-full"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'address_village',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errors.address_village
+                                                    }
+                                                    className="mt-2"
+                                                />
+                                            </div>
+
+                                            {/* c. Kecamatan */}
+                                            <div>
+                                                <Label htmlFor="address_district">
+                                                    Kecamatan
+                                                </Label>
+                                                <Input
+                                                    id="address_district"
+                                                    type="text"
+                                                    placeholder="Contoh: Sindangkasih"
+                                                    value={
+                                                        data.address_district
+                                                    }
+                                                    className="mt-1 block w-full"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'address_district',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errors.address_district
+                                                    }
+                                                    className="mt-2"
+                                                />
+                                            </div>
+
+                                            {/* d. Kabupaten/Kota */}
+                                            <div>
+                                                <Label htmlFor="address_city">
+                                                    Kabupaten / Kota
+                                                </Label>
+                                                <Input
+                                                    id="address_city"
+                                                    type="text"
+                                                    placeholder="Contoh: Ciamis"
+                                                    value={data.address_city}
+                                                    className="mt-1 block w-full"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'address_city',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errors.address_city
+                                                    }
+                                                    className="mt-2"
+                                                />
+                                            </div>
+
+                                            {/* e. Provinsi */}
+                                            <div>
+                                                <Label htmlFor="address_province">
+                                                    Provinsi
+                                                </Label>
+                                                <Input
+                                                    id="address_province"
+                                                    type="text"
+                                                    placeholder="Contoh: Jawa Barat"
+                                                    value={
+                                                        data.address_province
+                                                    }
+                                                    className="mt-1 block w-full"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'address_province',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errors.address_province
+                                                    }
+                                                    className="mt-2"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </FormSection>
 
                             {/* Data Wali */}
-                            <div className="mb-8">
-                                <h2 className="mb-4 text-lg font-semibold">
-                                    Data Wali
-                                </h2>
+                            <FormSection title="Data Wali">
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                                     <div>
                                         <Label htmlFor="guardian_name">
@@ -641,7 +933,7 @@ export default function EditStudent({
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </FormSection>
 
                             {/* Tombol */}
                             <div className="mt-6 flex items-center justify-end gap-4">

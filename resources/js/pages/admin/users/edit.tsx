@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -26,25 +26,49 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EditUser({ user }: { user: any }) {
-    const { translations, locale }: any = usePage().props;
-    const { data, setData, put, processing, errors } = useForm<{
+    const queryParams = new URLSearchParams(window.location.search);
+    const initialRole = queryParams.get('role') || user.role;
+
+    const { data, setData, post, processing, errors } = useForm<{
         name: string;
         email: string;
         password: string;
         password_confirmation: string;
         role: string;
+        nik: string;
+        homeroom_teacher: string;
+        gender: string;
+        education: string;
+        photo: File | null;
+        _method: string;
     }>({
         name: user.name,
         email: user.email,
         password: '',
         password_confirmation: '',
-        role: user.role,
+        role: initialRole,
+        nik: user.nik || '',
+        homeroom_teacher: user.homeroom_teacher || '',
+        gender: user.gender || '',
+        education: user.education || '',
+        photo: null,
+        _method: 'PUT',
     });
+
+    // Helper to get back route based on role
+    const getReturnRoute = (userRole: string) => {
+        if (userRole === 'admin') return route('admin.admins.index');
+        if (userRole === 'kepala_sekolah')
+            return route('admin.principals.index');
+        if (userRole === 'guru') return route('admin.teachers.index');
+        return route('admin.users.index');
+    };
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        put(route('admin.users.update', user.id), {
-            onSuccess: () => router.get(route('admin.users.index')),
+        post(route('admin.users.update', user.id), {
+            onSuccess: () => router.get(getReturnRoute(data.role)),
+            forceFormData: true,
         });
     };
 
@@ -54,7 +78,42 @@ export default function EditUser({ user }: { user: any }) {
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
                     <div className="mx-auto px-4 py-4 text-gray-900 sm:px-6 lg:px-8 dark:text-gray-100">
-                        <form onSubmit={handleSubmit}>
+                        <form
+                            onSubmit={handleSubmit}
+                            encType="multipart/form-data"
+                        >
+                            <div className="mb-4">
+                                <Label htmlFor="photo">Foto</Label>
+                                {user.photo && (
+                                    <div className="mb-2">
+                                        <img
+                                            src={`/storage/${user.photo}`}
+                                            alt="User Photo"
+                                            className="h-24 w-24 rounded object-cover"
+                                        />
+                                    </div>
+                                )}
+                                <Input
+                                    id="photo"
+                                    type="file"
+                                    name="photo"
+                                    className="mt-1 block w-full"
+                                    onChange={(e) =>
+                                        setData(
+                                            'photo',
+                                            e.target.files
+                                                ? e.target.files[0]
+                                                : null,
+                                        )
+                                    }
+                                    accept="image/*"
+                                />
+                                <InputError
+                                    message={errors.photo}
+                                    className="mt-2"
+                                />
+                            </div>
+
                             <div className="mb-4">
                                 <Label htmlFor="name">Nama</Label>
                                 <Input
@@ -154,7 +213,7 @@ export default function EditUser({ user }: { user: any }) {
                                         <SelectItem value="guru">
                                             Guru
                                         </SelectItem>
-                                        <SelectItem value="kepala sekolah">
+                                        <SelectItem value="kepala_sekolah">
                                             Kepala Sekolah
                                         </SelectItem>
                                     </SelectContent>
@@ -164,6 +223,107 @@ export default function EditUser({ user }: { user: any }) {
                                     className="mt-2"
                                 />
                             </div>
+
+                            {(data.role === 'guru' ||
+                                data.role === 'kepala_sekolah') && (
+                                <>
+                                    <div className="mb-4">
+                                        <Label htmlFor="nik">NIK</Label>
+                                        <Input
+                                            id="nik"
+                                            type="text"
+                                            name="nik"
+                                            value={data.nik}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) =>
+                                                setData('nik', e.target.value)
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.nik as string}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <Label htmlFor="gender">
+                                            Jenis Kelamin
+                                        </Label>
+                                        <Select
+                                            value={data.gender}
+                                            onValueChange={(value) =>
+                                                setData('gender', value)
+                                            }
+                                        >
+                                            <SelectTrigger className="mt-1 w-full">
+                                                <SelectValue placeholder="Pilih Jenis Kelamin" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="L">
+                                                    Laki-laki
+                                                </SelectItem>
+                                                <SelectItem value="P">
+                                                    Perempuan
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError
+                                            message={errors.gender as string}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <Label htmlFor="education">
+                                            Pendidikan
+                                        </Label>
+                                        <Input
+                                            id="education"
+                                            type="text"
+                                            name="education"
+                                            value={data.education}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) =>
+                                                setData(
+                                                    'education',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.education as string}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    {data.role === 'guru' && (
+                                        <div className="mb-4">
+                                            <Label htmlFor="homeroom_teacher">
+                                                Wali Kelas
+                                            </Label>
+                                            <Input
+                                                id="homeroom_teacher"
+                                                type="text"
+                                                name="homeroom_teacher"
+                                                value={data.homeroom_teacher}
+                                                className="mt-1 block w-full"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'homeroom_teacher',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                            <InputError
+                                                message={
+                                                    errors.homeroom_teacher as string
+                                                }
+                                                className="mt-2"
+                                            />
+                                        </div>
+                                    )}
+                                </>
+                            )}
 
                             <div className="mt-4 flex items-center justify-end gap-4">
                                 <Link href={route('admin.users.index')}>

@@ -14,19 +14,17 @@ import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
 
-export function AddAcademicYearModal() {
+export function AddSchoolYearModal() {
     const [open, setOpen] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
-        start_date: '',
-        end_date: '',
         is_active: false as boolean,
     });
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('admin.academic-years.store'), {
+        post(route('admin.school-years.store'), {
             onSuccess: () => {
                 reset();
                 setOpen(false);
@@ -41,18 +39,17 @@ export function AddAcademicYearModal() {
                     style={{ backgroundColor: '#4b986c', color: 'white' }}
                     className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
                 >
-                    + Tambah Tahun Pelajaran
+                    + Tambah Tahun Ajaran
                 </button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold text-foreground">
-                            Tambah Tahun Pelajaran Baru
+                            Tambah Tahun Ajaran Baru
                         </DialogTitle>
                         <DialogDescription className="text-muted-foreground">
-                            Isi form berikut untuk menambahkan tahun pelajaran
-                            baru
+                            Isi form berikut untuk menambahkan tahun Ajaran baru
                         </DialogDescription>
                     </DialogHeader>
 
@@ -60,7 +57,7 @@ export function AddAcademicYearModal() {
                         {/* Nama Tahun Pelajaran */}
                         <div className="grid gap-2">
                             <Label htmlFor="name" className="text-foreground">
-                                Tahun Pelajaran{' '}
+                                Tahun Ajaran{' '}
                                 <span className="text-red-500">*</span>
                             </Label>
                             <Input
@@ -80,56 +77,6 @@ export function AddAcademicYearModal() {
                             />
                         </div>
 
-                        {/* Tanggal Mulai */}
-                        <div className="grid gap-2">
-                            <Label
-                                htmlFor="start_date"
-                                className="text-foreground"
-                            >
-                                Tanggal Mulai{' '}
-                                <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="start_date"
-                                type="date"
-                                value={data.start_date}
-                                onChange={(e) =>
-                                    setData('start_date', e.target.value)
-                                }
-                                className="border-border bg-card focus:ring-primary"
-                                required
-                            />
-                            <InputError
-                                message={errors.start_date}
-                                className="mt-1"
-                            />
-                        </div>
-
-                        {/* Tanggal Selesai */}
-                        <div className="grid gap-2">
-                            <Label
-                                htmlFor="end_date"
-                                className="text-foreground"
-                            >
-                                Tanggal Selesai{' '}
-                                <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="end_date"
-                                type="date"
-                                value={data.end_date}
-                                onChange={(e) =>
-                                    setData('end_date', e.target.value)
-                                }
-                                className="border-border bg-card focus:ring-primary"
-                                required
-                            />
-                            <InputError
-                                message={errors.end_date}
-                                className="mt-1"
-                            />
-                        </div>
-
                         {/* Status Aktif */}
                         <div className="flex items-center gap-2">
                             <input
@@ -145,7 +92,7 @@ export function AddAcademicYearModal() {
                                 htmlFor="is_active"
                                 className="cursor-pointer text-foreground"
                             >
-                                Jadikan Tahun Pelajaran Aktif
+                                Jadikan Tahun Ajaran Aktif
                             </Label>
                         </div>
                         <InputError

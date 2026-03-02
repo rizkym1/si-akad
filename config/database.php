@@ -112,6 +112,20 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'rdm' => [
+    'driver'    => 'mysql',
+    'host'      => env('DB_RDM_HOST', '159.223.44.203'),
+    'port'      => env('DB_RDM_PORT', '3306'),
+    'database'  => env('DB_RDM_DATABASE', 'alislam_rdm'),
+    'username'  => env('DB_RDM_USERNAME', 'alislam_rdm'),
+    'password'  => env('DB_RDM_PASSWORD', 'Alislam123'),
+    'charset'   => 'utf8mb4',
+    'collation' => 'utf8mb4_0900_ai_ci',
+    'prefix'    => '',
+    'strict'    => true,
+    'engine'    => null,
+],
+
     ],
 
     /*

@@ -192,7 +192,7 @@
                 <img src="data:image/png;base64,{{ $logoBase64 }}" alt="Logo">
             </td>
             <td class="header-info">
-                <div class="school-name">Raudhatul Atfhal Al-Islam</div>
+                <div class="school-name">Raudhatul Athfal Al-Islam</div>
                 <div class="report-title">LAPORAN DATA SISWA</div>
                 {{-- ✅ Tampilkan nama tahun pelajaran yang dipilih --}}
                 <div class="report-subtitle">Tahun Pelajaran: {{ $periode }}</div>
@@ -276,9 +276,9 @@
                 <td style="text-align:center">
                     {{ $student->studentClass?->name ?? '-' }}
                 </td>
-                {{-- ✅ Nama tahun pelajaran dari relasi studentClass.academicYear --}}
+                {{-- ✅ Nama tahun pelajaran dari relasi studentClass.schoolYear --}}
                 <td style="text-align:center">
-                    {{ $student->studentClass?->academicYear?->name ?? '-' }}
+                    {{ $student->studentClass?->schoolYear?->name ?? '-' }}
                 </td>
                 <td style="text-align:center">
                     @if($student->gender === 'male')

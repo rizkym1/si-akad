@@ -26,12 +26,12 @@ interface Student {
     guardian_address: string | null;
     photo: string | null;
     class_id: number | null;
-    academic_year_id: number | null;
+    school_year_id: number | null;
     created_at: string;
     updated_at: string;
 }
 
-interface AcademicYear {
+interface SchoolYear {
     id: number;
     name: string;
     is_active: boolean;
@@ -46,7 +46,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function StudentIndex({
     students,
-    academicYears,
+    schoolYears,
     i,
     entries,
     search,
@@ -65,7 +65,7 @@ export default function StudentIndex({
         prev_page_url: string | null;
         next_page_url: string | null;
     };
-    academicYears: AcademicYear[];
+    schoolYears: SchoolYear[];
     i: number;
     entries: any;
     search: string;
@@ -75,8 +75,8 @@ export default function StudentIndex({
 
     // ── MODAL FILTER STATE ──
     const [showModal, setShowModal] = useState(false);
-    const [filterAcademicYearId, setFilterAcademicYearId] = useState<number>(
-        academicYears.find((y) => y.is_active)?.id ?? academicYears[0]?.id,
+    const [filterSchoolYearId, setFilterSchoolYearId] = useState<number>(
+        schoolYears.find((y) => y.is_active)?.id ?? schoolYears[0]?.id,
     );
 
     const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +98,7 @@ export default function StudentIndex({
     const handleCetak = () => {
         const url =
             route('admin.students.report.pdf') +
-            `?academic_year_id=${filterAcademicYearId}`;
+            `?school_year_id=${filterSchoolYearId}`;
         window.open(url, '_blank');
         setShowModal(false);
     };
@@ -130,15 +130,15 @@ export default function StudentIndex({
                                 Tahun Pelajaran
                             </label>
                             <select
-                                value={filterAcademicYearId}
+                                value={filterSchoolYearId}
                                 onChange={(e) =>
-                                    setFilterAcademicYearId(
+                                    setFilterSchoolYearId(
                                         Number(e.target.value),
                                     )
                                 }
                                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                             >
-                                {academicYears.map((y) => (
+                                {schoolYears.map((y) => (
                                     <option key={y.id} value={y.id}>
                                         {y.name} {y.is_active ? '(Aktif)' : ''}
                                     </option>
@@ -151,8 +151,8 @@ export default function StudentIndex({
                             Tahun Pelajaran:{' '}
                             <strong>
                                 {
-                                    academicYears.find(
-                                        (y) => y.id === filterAcademicYearId,
+                                    schoolYears.find(
+                                        (y) => y.id === filterSchoolYearId,
                                     )?.name
                                 }
                             </strong>
@@ -258,11 +258,7 @@ export default function StudentIndex({
 
                                 {/* Tombol Tambah Siswa */}
                                 <Link
-                                    onClick={() =>
-                                        router.visit(
-                                            route('admin.students.create'),
-                                        )
-                                    }
+                                    href={route('admin.students.create')}
                                     style={{
                                         backgroundColor: '#4b986c',
                                         color: 'white',

@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useEffect, useState } from 'react';
 
-interface AcademicYear {
+interface SchoolYear {
     id: number;
     name: string;
     is_active: boolean;
@@ -22,8 +22,8 @@ interface AcademicYear {
 interface StudentClass {
     id: number;
     name: string;
-    academic_year_id: number | null;
-    academic_year: {
+    school_year_id: number | null;
+    school_year: {
         id: number;
         name: string;
         is_active: boolean;
@@ -32,27 +32,26 @@ interface StudentClass {
 
 interface EditStudentClassModalProps {
     studentClass: StudentClass;
-    academicYears: AcademicYear[];
+    schoolYears: SchoolYear[];
 }
 
 export function EditStudentClassModal({
     studentClass,
-    academicYears,
+    schoolYears,
 }: EditStudentClassModalProps) {
     const [open, setOpen] = useState(false);
 
     const { data, setData, put, processing, errors, reset } = useForm({
         name: studentClass.name,
-        academic_year_id:
-            studentClass.academic_year_id ?? academicYears[0]?.id ?? 0,
+        school_year_id: studentClass.school_year_id ?? schoolYears[0]?.id ?? 0,
     });
 
     useEffect(() => {
         if (open) {
             setData({
                 name: studentClass.name,
-                academic_year_id:
-                    studentClass.academic_year_id ?? academicYears[0]?.id ?? 0,
+                school_year_id:
+                    studentClass.school_year_id ?? schoolYears[0]?.id ?? 0,
             });
         }
     }, [open, studentClass]);
@@ -117,32 +116,32 @@ export function EditStudentClassModal({
                         {/* Tahun Pelajaran */}
                         <div className="grid gap-2">
                             <Label
-                                htmlFor="edit-academic_year_id"
+                                htmlFor="edit-school_year_id"
                                 className="text-foreground"
                             >
                                 Tahun Pelajaran{' '}
                                 <span className="text-red-500">*</span>
                             </Label>
                             <select
-                                id="edit-academic_year_id"
-                                value={data.academic_year_id}
+                                id="edit-school_year_id"
+                                value={data.school_year_id}
                                 onChange={(e) =>
                                     setData(
-                                        'academic_year_id',
+                                        'school_year_id',
                                         Number(e.target.value),
                                     )
                                 }
                                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 required
                             >
-                                {academicYears.map((y) => (
+                                {schoolYears.map((y) => (
                                     <option key={y.id} value={y.id}>
                                         {y.name} {y.is_active ? '(Aktif)' : ''}
                                     </option>
                                 ))}
                             </select>
                             <InputError
-                                message={errors.academic_year_id}
+                                message={errors.school_year_id}
                                 className="mt-1"
                             />
                         </div>
