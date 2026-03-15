@@ -39,7 +39,7 @@ const adminNavItems: NavItem[] = [
         isActive:
             window.location.pathname.startsWith('/admin/users') ||
             window.location.pathname.startsWith('/admin/teachers') ||
-            window.location.pathname.startsWith('/admin/principals') ||
+            window.location.pathname.startsWith('/admin/parents') ||
             window.location.pathname.startsWith('/admin/admins'),
         items: [
             {
@@ -51,8 +51,8 @@ const adminNavItems: NavItem[] = [
                 href: '/admin/teachers',
             },
             {
-                title: 'Kepala Sekolah',
-                href: '/admin/principals',
+                title: 'Orang Tua',
+                href: '/admin/parents',
             },
         ],
     },
@@ -88,7 +88,7 @@ const adminNavItems: NavItem[] = [
     },
 ];
 
-const guruNavItems: NavItem[] = [
+const teacherNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -111,7 +111,7 @@ const guruNavItems: NavItem[] = [
     // },
 ];
 
-const kepsekNavItems: NavItem[] = [
+const parentNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -154,10 +154,10 @@ export function AppSidebar() {
     useEffect(() => {
         if (auth.user.role == 'admin') {
             setRoleNavItems(adminNavItems);
-        } else if (auth.user.role == 'guru') {
-            setRoleNavItems(guruNavItems);
-        } else if (auth.user.role == 'kepsek') {
-            setRoleNavItems(kepsekNavItems);
+        } else if (auth.user.role == 'teacher') {
+            setRoleNavItems(teacherNavItems);
+        } else if (auth.user.role == 'parent') {
+            setRoleNavItems(parentNavItems);
         } else {
             setRoleNavItems([]);
         }

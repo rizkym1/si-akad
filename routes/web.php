@@ -34,8 +34,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('admins', [UserController::class, 'index'])->defaults('role', 'admin')->name('admins.index');
-        Route::get('teachers', [UserController::class, 'index'])->defaults('role', 'guru')->name('teachers.index');
-        Route::get('principals', [UserController::class, 'index'])->defaults('role', 'kepala_sekolah')->name('principals.index');
+        Route::get('teachers', [UserController::class, 'index'])->defaults('role', 'teacher')->name('teachers.index');
+        Route::get('parents', [UserController::class, 'index'])->defaults('role', 'parent')->name('parents.index');
         Route::resource('users', UserController::class);
         Route::post('/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
         Route::resource('students', StudentController::class);

@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
@@ -56,7 +57,7 @@ class User extends Authenticatable
      // Scope untuk filter guru
     public function scopeTeachers($query)
     {
-        return $query->where('role', 'guru');
+        return $query->where('role', 'teacher');
     }
 
     // Scope untuk filter admin
@@ -65,14 +66,33 @@ class User extends Authenticatable
         return $query->where('role', 'admin');
     }
 
+    // Scope untuk filter parents
+    public function scopeParents($query)
+    {
+        return $query->where('role', 'parent');
+    }
+
     // Helper method untuk cek role
     public function isTeacher()
     {
-        return $this->role === 'guru';
+        return $this->role === 'teacher';
     }
 
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    public function isParent()
+    {
+        return $this->role === 'parent';
+    }
+
+    /**
+     * Get the children (students) associated with the parent user.
+     */
+    public function children(): HasMany
+    {
+        return $this->hasMany(Student::class, 'user_id');
     }
 }

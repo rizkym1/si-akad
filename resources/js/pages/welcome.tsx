@@ -7,7 +7,7 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title="Buku Induk RA Al-Islam Gunungcupu">
+            <Head title="Sistem Informasi Akademik RA Al-Islam Gunungcupu">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
                     href="https://fonts.bunny.net/css?family=inter:400,500,600,700"
@@ -29,7 +29,7 @@ export default function Welcome() {
                                 href={dashboard()}
                                 className="inline-block text-sm font-medium text-neutral-600 transition-colors hover:text-black dark:text-neutral-400 dark:hover:text-white"
                             >
-                                Dashboard Buku Induk
+                                Dashboard Sistem Informasi Akademik
                             </Link>
                         ) : (
                             <>
@@ -60,19 +60,19 @@ export default function Welcome() {
                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
                                     <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
                                 </span>
-                                Sistem Administrasi
+                                Sistem Informasi Akademik
                             </div>
 
                             <h1 className="mb-4 text-3xl font-bold tracking-tight text-neutral-900 lg:text-4xl dark:text-white">
                                 Selamat Datang di{' '}
                                 <span className="bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent dark:from-green-400 dark:to-emerald-300">
-                                    Buku Induk
+                                    Sistem Informasi Akademik
                                 </span>
                             </h1>
                             <p className="mb-2 text-sm leading-relaxed text-neutral-600 lg:text-base dark:text-neutral-400">
-                                Buku Induk adalah sistem administrasi pendidikan
-                                yang membantu mengelola data peserta didik RA
-                                Al-Islam Gunungcupu.
+                                Sistem Informasi Akademik adalah sistem
+                                pendidikan yang membantu mengelola data peserta
+                                didik RA Al-Islam Gunungcupu.
                             </p>
                             <p className="mb-8 text-sm text-neutral-500 lg:text-base">
                                 Akses fitur-fitur utama aplikasi di bawah ini.
@@ -243,7 +243,7 @@ export default function Welcome() {
                                             <div className="h-px w-8 bg-gradient-to-l from-transparent to-black/10 dark:to-white/20"></div>
                                         </div>
                                         <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                                            Buku Induk Peserta Didik
+                                            Sistem Informasi Akademik
                                         </p>
                                     </div>
                                 </div>

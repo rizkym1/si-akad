@@ -1,9 +1,17 @@
 import { DeleteDialog } from '@/components/ui/delete-dialog';
 import { Entries } from '@/components/ui/entries';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { InertiaPagination } from '@/components/ui/inertia-pagination';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Edit, Eye, MoreVertical, Printer, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface Student {
@@ -380,72 +388,79 @@ export default function StudentIndex({
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-2 text-center">
-                                                            <div className="flex justify-center space-x-2">
-                                                                {/* Tombol Detail */}
-                                                                <Link
-                                                                    href={route(
-                                                                        'admin.students.show',
-                                                                        student.id,
-                                                                    )}
-                                                                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                                                                >
-                                                                    Detail
-                                                                </Link>
-
-                                                                {/* Tombol Edit */}
-                                                                <Link
-                                                                    href={route(
-                                                                        'admin.students.edit',
-                                                                        student.id,
-                                                                    )}
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            '#f59e0b',
-                                                                        color: 'white',
-                                                                    }}
-                                                                    className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-orange-400 focus:outline-none"
-                                                                >
-                                                                    Edit
-                                                                </Link>
-
-                                                                {/* Tombol Hapus */}
-                                                                <DeleteDialog
-                                                                    trigger={
-                                                                        <button className="inline-flex items-center rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-600 focus:ring-2 focus:ring-red-400 focus:outline-none">
-                                                                            Hapus
+                                                            <div className="flex justify-center">
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <button className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 transition-colors focus:outline-none dark:hover:bg-gray-700">
+                                                                            <MoreVertical className="h-5 w-5 text-gray-500" />
                                                                         </button>
-                                                                    }
-                                                                    title="Hapus Siswa"
-                                                                    description={`Anda yakin ingin menghapus "${student.full_name}"? Tindakan ini tidak dapat dibatalkan.`}
-                                                                    onConfirm={() => {
-                                                                        router.delete(
-                                                                            route(
-                                                                                'admin.students.destroy',
-                                                                                student.id,
-                                                                            ),
-                                                                        );
-                                                                    }}
-                                                                    cancelText="Batal"
-                                                                    confirmText="Hapus"
-                                                                />
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end" className="w-48 p-1">
+                                                                        <DropdownMenuItem asChild>
+                                                                            <Link
+                                                                                href={route(
+                                                                                    'admin.students.show',
+                                                                                    student.id,
+                                                                                )}
+                                                                                className="flex w-full cursor-pointer items-center p-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
+                                                                            >
+                                                                                <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                                                                                Detail Siswa
+                                                                            </Link>
+                                                                        </DropdownMenuItem>
 
-                                                                {/* Tombol Cetak Kartu */}
-                                                                <a
-                                                                    href={route(
-                                                                        'admin.students.card.pdf',
-                                                                        student.id,
-                                                                    )}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            '#0F766E',
-                                                                        color: 'white',
-                                                                    }}
-                                                                    className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-teal-400 focus:outline-none"
-                                                                >
-                                                                    Cetak Kartu
-                                                                </a>
+                                                                        <DropdownMenuItem asChild>
+                                                                            <Link
+                                                                                href={route(
+                                                                                    'admin.students.edit',
+                                                                                    student.id,
+                                                                                )}
+                                                                                className="flex w-full cursor-pointer items-center p-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
+                                                                            >
+                                                                                <Edit className="mr-2 h-4 w-4 text-amber-500" />
+                                                                                Edit Data
+                                                                            </Link>
+                                                                        </DropdownMenuItem>
+                                                                        
+                                                                        <DropdownMenuItem asChild>
+                                                                            <a
+                                                                                href={route(
+                                                                                    'admin.students.card.pdf',
+                                                                                    student.id,
+                                                                                )}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="flex w-full cursor-pointer items-center p-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
+                                                                            >
+                                                                                <Printer className="mr-2 h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                                                                Cetak Kartu
+                                                                            </a>
+                                                                        </DropdownMenuItem>
+
+                                                                        <DropdownMenuSeparator />
+
+                                                                        <DeleteDialog
+                                                                            trigger={
+                                                                                <button className="flex w-full cursor-pointer items-center rounded-sm px-2 py-2 text-sm text-red-600 outline-none hover:bg-red-50 focus:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/40 dark:focus:bg-red-950/40 transition-colors">
+                                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                                    Hapus Siswa
+                                                                                </button>
+                                                                            }
+                                                                            title="Hapus Siswa"
+                                                                            description={`Anda yakin ingin menghapus "${student.full_name}"? Tindakan ini tidak dapat dibatalkan.`}
+                                                                            onConfirm={() => {
+                                                                                router.delete(
+                                                                                    route(
+                                                                                        'admin.students.destroy',
+                                                                                        student.id,
+                                                                                    ),
+                                                                                );
+                                                                            }}
+                                                                            cancelText="Batal"
+                                                                            confirmText="Hapus"
+                                                                        />
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
                                                             </div>
                                                         </td>
                                                     </tr>

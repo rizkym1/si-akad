@@ -62,7 +62,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'in:admin,guru,kepala_sekolah'],
+            'role' => ['required', 'in:admin,teacher,parent'],
             'nik' => ['nullable', 'string', 'max:255'],
             'homeroom_teacher' => ['nullable', 'string', 'max:255'],
             'gender' => ['nullable', 'in:L,P'],
@@ -93,10 +93,17 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
+        $role = $request->query('role') ?? $request->route('role');
+        
+        if ($user->role === 'parent') {
+            $user->load('children.studentClass');
+        }
+
         return Inertia::render('admin/users/show', [
-            'user' => $user
+            'user' => $user,
+            'role' => $role
         ]);
     }
 
@@ -123,7 +130,7 @@ class UserController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['admin', 'guru', 'kepala_sekolah'])],
+            'role' => ['required', Rule::in(['admin', 'teacher', 'parent'])],
             'nik' => ['nullable', 'string', 'max:255'],
             'homeroom_teacher' => ['nullable', 'string', 'max:255'],
             'gender' => ['nullable', 'in:L,P'],
@@ -157,8 +164,8 @@ class UserController extends Controller
     private function redirectBasedOnRole($role, $message) {
         $routeName = match ($role) {
             'admin' => 'admin.admins.index',
-            'kepala_sekolah' => 'admin.principals.index',
-            'guru' => 'admin.teachers.index',
+            'parent' => 'admin.parents.index',
+            'teacher' => 'admin.teachers.index',
             default => 'admin.users.index',
         };
         return to_route($routeName)->with('success', $message);

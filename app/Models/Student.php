@@ -46,6 +46,7 @@ class Student extends Model
         'accepted_grade',
         'photo',
         'class_id',
+        'user_id',
     ];
 
     /**
@@ -85,7 +86,15 @@ class Student extends Model
     
 
     public function schoolYear()
-{
-    return $this->belongsTo(SchoolYear::class);
-}
+    {
+        return $this->belongsTo(SchoolYear::class);
+    }
+
+    /**
+     * Get the parent user associated with the student.
+     */
+    public function parentUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

@@ -56,9 +56,11 @@ function FormSection({
 export default function EditStudent({
     student,
     student_classes,
+    parents,
 }: {
     student: any;
     student_classes: StudentClass[];
+    parents: { id: number; name: string; email: string }[];
 }) {
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -92,6 +94,7 @@ export default function EditStudent({
         guardian_name: string;
         guardian_job: string;
         guardian_address: string;
+        user_id: string;
         _method: string;
     }>({
         nis: student.nis || '',
@@ -123,6 +126,7 @@ export default function EditStudent({
         guardian_name: student.guardian_name || '',
         guardian_job: student.guardian_job || '',
         guardian_address: student.guardian_address || '',
+        user_id: student.user_id ? student.user_id.toString() : '',
         _method: 'PUT',
     });
 
@@ -634,6 +638,39 @@ export default function EditStudent({
                                             className="mt-2"
                                         />
                                     </div>
+
+                                    {/* ── Pilih Akun Orang Tua ── */}
+                                    <div className="md:col-span-2 rounded-lg border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-900/30 dark:bg-blue-900/10">
+                                        <Label htmlFor="user_id" className="text-blue-700 dark:text-blue-400 font-semibold mb-2 block">
+                                            Hubungkan dengan Akun Orang Tua (Opsional)
+                                        </Label>
+                                        <p className="text-xs text-gray-500 mb-3">
+                                            Pilih akun pengguna agar orang tua dapat melihat data dan nilai siswa ini melalui dashboard mereka.
+                                        </p>
+                                        <Select
+                                            value={data.user_id || 'none'}
+                                            onValueChange={(value) =>
+                                                setData('user_id', value === 'none' ? '' : value)
+                                            }
+                                        >
+                                            <SelectTrigger className="w-full bg-white dark:bg-gray-900">
+                                                <SelectValue placeholder="Pilih Akun Orang Tua (Pencarian nama/email)" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">-- Tidak dihubungkan --</SelectItem>
+                                                {parents.map((parent) => (
+                                                    <SelectItem key={parent.id} value={parent.id.toString()}>
+                                                        {parent.name} ({parent.email})
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError
+                                            message={errors.user_id}
+                                            className="mt-2"
+                                        />
+                                    </div>
+                                    {/* ── Akhir Pilih Akun Orang Tua ── */}
 
                                     <div>
                                         <Label htmlFor="mother_name">

@@ -1,9 +1,17 @@
 import { DeleteDialog } from '@/components/ui/delete-dialog';
 import { Entries } from '@/components/ui/entries';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { InertiaPagination } from '@/components/ui/inertia-pagination';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Edit, Eye, MoreVertical, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface User {
@@ -60,10 +68,10 @@ export default function UserIndex({
     const pageTitle =
         role === 'admin'
             ? 'Data Admin'
-            : role === 'guru'
+            : role === 'teacher'
               ? 'Data Guru'
-              : role === 'kepala_sekolah'
-                ? 'Kepala Sekolah'
+              : role === 'parent'
+                ? 'Orang Tua'
                 : 'Manajemen Pengguna';
 
     // Dynamic breadcrumbs based on role
@@ -73,10 +81,10 @@ export default function UserIndex({
             href:
                 role === 'admin'
                     ? route('admin.admins.index')
-                    : role === 'guru'
+                    : role === 'teacher'
                       ? route('admin.teachers.index')
-                      : role === 'kepala_sekolah'
-                        ? route('admin.principals.index')
+                      : role === 'parent'
+                        ? route('admin.parents.index')
                         : route('admin.users.index'),
         },
     ];
@@ -102,10 +110,10 @@ export default function UserIndex({
         const routeName =
             role === 'admin'
                 ? 'admin.admins.index'
-                : role === 'guru'
+                : role === 'teacher'
                   ? 'admin.teachers.index'
-                  : role === 'kepala_sekolah'
-                    ? 'admin.principals.index'
+                  : role === 'parent'
+                    ? 'admin.parents.index'
                     : 'admin.users.index';
         return route(routeName);
     };
@@ -235,25 +243,7 @@ export default function UserIndex({
                                                     scope="col"
                                                     className="px-6 py-3 text-center"
                                                 >
-                                                    <span>NIK</span>
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    <span>Jenis Kelamin</span>
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    <span>Wali Kelas</span>
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    <span>Pendidikan</span>
+                                                    <span>Email</span>
                                                 </th>
                                                 <th
                                                     scope="col"
@@ -300,101 +290,99 @@ export default function UserIndex({
                                                         {user.name}
                                                     </td>
                                                     <td className="px-6 py-2 text-center">
-                                                        {user.nik || '-'}
-                                                    </td>
-                                                    <td className="px-6 py-2 text-center">
-                                                        {user.gender === 'L'
-                                                            ? 'Laki-laki'
-                                                            : user.gender ===
-                                                                'P'
-                                                              ? 'Perempuan'
-                                                              : '-'}
-                                                    </td>
-                                                    <td className="px-6 py-2 text-center">
-                                                        {user.homeroom_teacher ||
-                                                            '-'}
-                                                    </td>
-                                                    <td className="px-6 py-2 text-center">
-                                                        {user.education || '-'}
+                                                        {user.email}
                                                     </td>
                                                     <td className="px-6 py-2 text-center capitalize">
-                                                        {user.role.replace(
-                                                            /_/g,
-                                                            ' ',
-                                                        )}
+                                                        {user.role === 'teacher'
+                                                            ? 'Guru'
+                                                            : user.role ===
+                                                                'parent'
+                                                              ? 'Orang Tua'
+                                                              : user.role.replace(
+                                                                    /_/g,
+                                                                    ' ',
+                                                                )}
                                                     </td>
                                                     <td className="px-6 py-2 text-center">
-                                                        <div className="flex justify-center space-x-2">
-                                                            <Link
-                                                                href={route(
-                                                                    'admin.users.show',
-                                                                    role
-                                                                        ? {
-                                                                              user: user.id,
-                                                                              role: role,
-                                                                          }
-                                                                        : {
-                                                                              user: user.id,
-                                                                          },
-                                                                )}
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        '#3b82f6',
-                                                                    color: 'white',
-                                                                }} // Warna biru
-                                                                className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                                                            >
-                                                                Detail
-                                                            </Link>
-
-                                                            <Link
-                                                                href={route(
-                                                                    'admin.users.edit',
-                                                                    role
-                                                                        ? {
-                                                                              user: user.id,
-                                                                              role: role,
-                                                                          }
-                                                                        : {
-                                                                              user: user.id,
-                                                                          },
-                                                                )}
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        '#f59e0b',
-                                                                    color: 'white',
-                                                                }} // Warna orange/amber manual
-                                                                className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-orange-400 focus:outline-none"
-                                                            >
-                                                                Edit
-                                                            </Link>
-
-                                                            <DeleteDialog
-                                                                trigger={
-                                                                    <button className="inline-flex items-center rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-600 focus:ring-2 focus:ring-red-400 focus:outline-none">
-                                                                        Hapus
+                                                        <div className="flex justify-center">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <button className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 transition-colors focus:outline-none dark:hover:bg-gray-700">
+                                                                        <MoreVertical className="h-5 w-5 text-gray-500" />
                                                                     </button>
-                                                                }
-                                                                title="Hapus Pengguna"
-                                                                description={`Anda yakin ingin menghapus "${user.name}"? Tindakan ini tidak dapat dibatalkan.`}
-                                                                onConfirm={() => {
-                                                                    router.delete(
-                                                                        route(
-                                                                            'admin.users.destroy',
-                                                                            role
-                                                                                ? {
-                                                                                      user: user.id,
-                                                                                      role: role,
-                                                                                  }
-                                                                                : {
-                                                                                      user: user.id,
-                                                                                  },
-                                                                        ),
-                                                                    );
-                                                                }}
-                                                                cancelText="Batal"
-                                                                confirmText="Hapus"
-                                                            />
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end" className="w-48 p-1">
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link
+                                                                            href={route(
+                                                                                'admin.users.show',
+                                                                                role
+                                                                                    ? {
+                                                                                          user: user.id,
+                                                                                          role: role,
+                                                                                      }
+                                                                                    : {
+                                                                                          user: user.id,
+                                                                                      },
+                                                                            )}
+                                                                            className="flex w-full cursor-pointer items-center p-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
+                                                                        >
+                                                                            <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                                                                            Detail Pengguna
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link
+                                                                            href={route(
+                                                                                'admin.users.edit',
+                                                                                role
+                                                                                    ? {
+                                                                                          user: user.id,
+                                                                                          role: role,
+                                                                                      }
+                                                                                    : {
+                                                                                          user: user.id,
+                                                                                      },
+                                                                            )}
+                                                                            className="flex w-full cursor-pointer items-center p-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
+                                                                        >
+                                                                            <Edit className="mr-2 h-4 w-4 text-amber-500" />
+                                                                             Edit Data
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+
+                                                                    <DropdownMenuSeparator />
+
+                                                                    <DeleteDialog
+                                                                        trigger={
+                                                                            <button className="flex w-full cursor-pointer items-center rounded-sm px-2 py-2 text-sm text-red-600 outline-none hover:bg-red-50 focus:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/40 dark:focus:bg-red-950/40 transition-colors">
+                                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                                Hapus Pengguna
+                                                                            </button>
+                                                                        }
+                                                                        title="Hapus Pengguna"
+                                                                        description={`Anda yakin ingin menghapus "${user.name}"? Tindakan ini tidak dapat dibatalkan.`}
+                                                                        onConfirm={() => {
+                                                                            router.delete(
+                                                                                route(
+                                                                                    'admin.users.destroy',
+                                                                                    role
+                                                                                        ? {
+                                                                                              user: user.id,
+                                                                                              role: role,
+                                                                                          }
+                                                                                        : {
+                                                                                              user: user.id,
+                                                                                          },
+                                                                                ),
+                                                                            );
+                                                                        }}
+                                                                        cancelText="Batal"
+                                                                        confirmText="Hapus"
+                                                                    />
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
                                                         </div>
                                                     </td>
                                                 </tr>

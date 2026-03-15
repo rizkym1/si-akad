@@ -27,15 +27,15 @@ class UserSeeder extends Seeder
             'name'     => 'Guru',
             'email'    => 'guru@ra-alislam.test',
             'password' => Hash::make('guru123'),
-            'role'     => 'guru',
+            'role'     => 'teacher',
         ]);
 
-        // Kepala Sekolah
+        // Orang Tua
         User::create([
-            'name'     => 'Kepala Sekolah',
-            'email'    => 'kepsek@ra-alislam.test',
-            'password' => Hash::make('kepsek123'),
-            'role'     => 'kepala_sekolah',
+            'name'     => 'Orang Tua',
+            'email'    => 'parent@ra-alislam.test',
+            'password' => Hash::make('parent123'),
+            'role'     => 'parent',
         ]);
     }
 }

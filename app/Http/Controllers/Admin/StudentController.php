@@ -114,6 +114,7 @@ class StudentController extends Controller
         return Inertia::render('admin/students/create', [
             'student_classes' => StudentClass::with('schoolYear')
                                     ->get(['id', 'name', 'school_year_id']),
+            'parents'         => \App\Models\User::where('role', 'parent')->get(['id', 'name', 'email']),
         ]);
     }
 
@@ -151,6 +152,7 @@ class StudentController extends Controller
     'previous_school'  => ['nullable', 'string', 'max:255'],
     'accepted_date'    => ['nullable', 'date'],
     'class_id'         => ['nullable', 'exists:student_classes,id'],
+    'user_id'          => ['nullable', 'exists:users,id'],
     'photo'            => ['nullable', 'image', 'max:2048'],
 ]);
 
@@ -188,6 +190,7 @@ class StudentController extends Controller
             // ✅ Pakai relasi schoolYear, hapus kolom school_year_id
             'student_classes' => StudentClass::with('schoolYear')
                                     ->get(['id', 'name', 'school_year_id']),
+            'parents'         => \App\Models\User::where('role', 'parent')->get(['id', 'name', 'email']),
         ]);
     }
 
@@ -227,6 +230,7 @@ class StudentController extends Controller
     'previous_school'  => ['nullable', 'string', 'max:255'],
     'accepted_date'    => ['nullable', 'date'],
     'class_id'         => ['nullable', 'exists:student_classes,id'],
+    'user_id'          => ['nullable', 'exists:users,id'],
     'photo'            => ['nullable', 'image', 'max:2048'],
 ]);
 

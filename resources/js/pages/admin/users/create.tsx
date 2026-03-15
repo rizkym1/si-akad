@@ -28,7 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CreateUser() {
     const { translations, locale }: any = usePage().props;
     const queryParams = new URLSearchParams(window.location.search);
-    const initialRole = queryParams.get('role') || 'guru';
+    const initialRole = queryParams.get('role') || 'teacher';
 
     const { data, setData, post, processing, errors } = useForm<{
         name: string;
@@ -57,9 +57,9 @@ export default function CreateUser() {
     // Helper to get back route based on role
     const getReturnRoute = (userRole: string) => {
         if (userRole === 'admin') return route('admin.admins.index');
-        if (userRole === 'kepala_sekolah')
-            return route('admin.principals.index');
-        if (userRole === 'guru') return route('admin.teachers.index');
+        if (userRole === 'parent')
+            return route('admin.parents.index');
+        if (userRole === 'teacher') return route('admin.teachers.index');
         return route('admin.users.index');
     };
 
@@ -199,11 +199,11 @@ export default function CreateUser() {
                                         <SelectItem value="admin">
                                             Admin
                                         </SelectItem>
-                                        <SelectItem value="guru">
+                                        <SelectItem value="teacher">
                                             Guru
                                         </SelectItem>
-                                        <SelectItem value="kepala_sekolah">
-                                            Kepala Sekolah
+                                        <SelectItem value="parent">
+                                            Orang Tua
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -213,8 +213,8 @@ export default function CreateUser() {
                                 />
                             </div>
 
-                            {(data.role === 'guru' ||
-                                data.role === 'kepala_sekolah') && (
+                            {(data.role === 'teacher' ||
+                                data.role === 'parent') && (
                                 <>
                                     <div className="mb-4">
                                         <Label htmlFor="nik">NIK</Label>
@@ -285,7 +285,7 @@ export default function CreateUser() {
                                         />
                                     </div>
 
-                                    {data.role === 'guru' && (
+                                    {data.role === 'teacher' && (
                                         <div className="mb-4">
                                             <Label htmlFor="homeroom_teacher">
                                                 Wali Kelas

@@ -57,9 +57,8 @@ export default function ShowUser({ user }: { user: any }) {
     // Helper to get back route based on role
     const getReturnRoute = (userRole: string) => {
         if (userRole === 'admin') return route('admin.admins.index');
-        if (userRole === 'kepala_sekolah')
-            return route('admin.principals.index');
-        if (userRole === 'guru') return route('admin.teachers.index');
+        if (userRole === 'parent') return route('admin.parents.index');
+        if (userRole === 'teacher') return route('admin.teachers.index');
         return route('admin.users.index');
     };
 
@@ -97,10 +96,14 @@ export default function ShowUser({ user }: { user: any }) {
                                 </h1>
                                 <div className="mt-2 flex flex-wrap gap-2">
                                     <span className="rounded-full bg-blue-100 px-3 py-0.5 text-xs font-semibold text-blue-700 capitalize dark:bg-blue-900/30 dark:text-blue-300">
-                                        {user.role.replace(/_/g, ' ')}
+                                        {user.role === 'teacher'
+                                            ? 'guru'
+                                            : user.role === 'parent'
+                                              ? 'orang tua'
+                                              : user.role.replace(/_/g, ' ')}
                                     </span>
-                                    {(user.role === 'guru' ||
-                                        user.role === 'kepala_sekolah') && (
+                                    {(user.role === 'teacher' ||
+                                        user.role === 'parent') && (
                                         <span
                                             className={`rounded-full px-3 py-0.5 text-xs font-semibold ${
                                                 user.gender === 'L'
@@ -123,8 +126,8 @@ export default function ShowUser({ user }: { user: any }) {
                                     value={user.name}
                                 />
                                 <InfoRow label="Email" value={user.email} />
-                                {(user.role === 'guru' ||
-                                    user.role === 'kepala_sekolah') && (
+                                {(user.role === 'teacher' ||
+                                    user.role === 'parent') && (
                                     <>
                                         <InfoRow label="NIK" value={user.nik} />
                                         <InfoRow
@@ -135,7 +138,7 @@ export default function ShowUser({ user }: { user: any }) {
                                             label="Pendidikan"
                                             value={user.education}
                                         />
-                                        {user.role === 'guru' && (
+                                        {user.role === 'teacher' && (
                                             <InfoRow
                                                 label="Wali Kelas"
                                                 value={user.homeroom_teacher}
@@ -145,6 +148,54 @@ export default function ShowUser({ user }: { user: any }) {
                                 )}
                             </div>
                         </SectionCard>
+
+                        {/* ── Data Anak (Khusus Orang Tua) ── */}
+                        {user.role === 'parent' && (
+                            <SectionCard title="Data Anak Asuh">
+                                {user.children && user.children.length > 0 ? (
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        {user.children.map((child: any) => (
+                                            <div
+                                                key={child.id}
+                                                className="flex flex-col gap-2 rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800/50"
+                                            >
+                                                <div className="flex items-start justify-between">
+                                                    <div>
+                                                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                                                            {child.full_name}
+                                                        </h3>
+                                                        <p className="text-xs text-gray-500">
+                                                            NIS: {child.nis}
+                                                        </p>
+                                                    </div>
+                                                    <span className="rounded bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                                                        {child.student_class
+                                                            ?.name ||
+                                                            'Belum ada kelas'}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-2 flex gap-2">
+                                                    <Link
+                                                        href={route(
+                                                            'admin.students.show',
+                                                            child.id,
+                                                        )}
+                                                        className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+                                                    >
+                                                        Lihat Detail Siswa
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-500 italic dark:text-gray-400">
+                                        Belum ada data anak yang dihubungkan
+                                        dengan akun orang tua ini.
+                                    </p>
+                                )}
+                            </SectionCard>
+                        )}
 
                         {/* ── Tombol Aksi ── */}
                         <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-5 dark:border-gray-700">

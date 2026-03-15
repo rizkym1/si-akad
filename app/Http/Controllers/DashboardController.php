@@ -16,7 +16,7 @@ class DashboardController extends Controller
         // Total counts
         $total_students = Student::count();
         $total_classes = StudentClass::count();
-        $total_teachers = User::where('role', 'guru')->count(); // ← Ambil dari users
+        $total_teachers = User::where('role', 'teacher')->count(); // ← Ambil dari users
         $total_subjects = 0; // Nanti ganti setelah ada tabel subjects
 
         // Siswa berdasarkan gender
