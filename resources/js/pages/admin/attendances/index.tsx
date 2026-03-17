@@ -40,6 +40,7 @@ export default function AttendanceIndex({
     schoolYears,
     classes,
     activeSchoolYear,
+    activeMonth,
     activeClass,
     search,
 }: {
@@ -47,9 +48,24 @@ export default function AttendanceIndex({
     schoolYears: SchoolYear[];
     classes: { id: number; name: string }[];
     activeSchoolYear: number | null;
+    activeMonth: number;
     activeClass: number | null;
     search: string;
 }) {
+    const months = [
+        { id: 1, name: 'Januari' },
+        { id: 2, name: 'Februari' },
+        { id: 3, name: 'Maret' },
+        { id: 4, name: 'April' },
+        { id: 5, name: 'Mei' },
+        { id: 6, name: 'Juni' },
+        { id: 7, name: 'Juli' },
+        { id: 8, name: 'Agustus' },
+        { id: 9, name: 'September' },
+        { id: 10, name: 'Oktober' },
+        { id: 11, name: 'November' },
+        { id: 12, name: 'Desember' },
+    ];
     const [showModal, setShowModal] = useState(false);
     const [filterSchoolYearId, setFilterSchoolYearId] = useState<number | null>(
         activeSchoolYear,
@@ -57,6 +73,7 @@ export default function AttendanceIndex({
     const [filterClassId, setFilterClassId] = useState<number | null>(
         activeClass,
     );
+    const [filterMonth, setFilterMonth] = useState<number>(activeMonth);
 
     // State untuk menyimpan nilai inputan
     // Bentuk: { student_id: { present, sick, permitted, absent } }
@@ -111,6 +128,7 @@ export default function AttendanceIndex({
             route('admin.attendances.store'),
             {
                 school_year_id: filterSchoolYearId,
+                month: filterMonth,
                 attendances: attendancesToSave,
             },
             {
@@ -118,6 +136,8 @@ export default function AttendanceIndex({
             },
         );
     };
+    const [filterMonthPrint, setFilterMonthPrint] = useState<number>(0);
+
     const handleCetak = () => {
         let url = '';
 
@@ -126,7 +146,7 @@ export default function AttendanceIndex({
 
         url =
             route('admin.attendances.report.pdf') +
-            `?school_year_id=${schoolYear.id}`;
+            `?school_year_id=${schoolYear.id}&month=${filterMonthPrint}`;
 
         window.open(url, '_blank');
         setShowModal(false);
@@ -138,8 +158,8 @@ export default function AttendanceIndex({
 
             {/* ── MODAL FILTER ── */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/50 overflow-y-auto">
+                    <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800 my-8">
                         <div className="mb-4 flex items-center justify-between">
                             <h2 className="text-base font-bold text-gray-800 dark:text-white">
                                 🖨️ Filter Laporan Absensi
@@ -175,6 +195,27 @@ export default function AttendanceIndex({
                                     ))}
                                 </select>
                             </div>
+                            <div className="mb-4">
+                                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Bulan (Opsional)
+                                </label>
+                                <select
+                                    value={filterMonthPrint}
+                                    onChange={(e) =>
+                                        setFilterMonthPrint(
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                >
+                                    <option value={0}>Semua Bulan (Rekapan 1 Tahun)</option>
+                                    {months.map((m) => (
+                                        <option key={m.id} value={m.id}>
+                                            {m.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
                             {/* ✅ Preview periode dari start_date & end_date DB */}
                             {filterSchoolYearId &&
@@ -182,10 +223,15 @@ export default function AttendanceIndex({
                                     const selected = schoolYears.find(
                                         (y) => y.id === filterSchoolYearId,
                                     );
+                                    let monthLabel = "Semua Bulan";
+                                    if (filterMonthPrint > 0) {
+                                         const m = months.find(x => x.id === filterMonthPrint);
+                                         if (m) monthLabel = m.name;
+                                    }
                                     return selected ? (
                                         <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                                             Periode:{' '}
-                                            <strong>{selected.name}</strong>
+                                            <strong>{selected.name}</strong> ({monthLabel})
                                             <br />
                                         </div>
                                     ) : null;
@@ -218,11 +264,12 @@ export default function AttendanceIndex({
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
                     <div className="mx-auto px-4 py-4 text-gray-900 sm:px-6 lg:px-8 dark:text-gray-100">
-                        <div className="mb-4 flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
-                            {/* Kiri: Filter Tahun & Kelas */}
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                    <label className="text-sm font-medium whitespace-nowrap text-gray-700 dark:text-gray-300">
+                        {/* ── Baris 1: Filter & Pencarian ── */}
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                            {/* Filter kiri */}
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                    <label className="text-sm font-medium whitespace-nowrap text-gray-600 dark:text-gray-400">
                                         Tahun Pelajaran:
                                     </label>
                                     <select
@@ -240,6 +287,7 @@ export default function AttendanceIndex({
                                                     school_year_id:
                                                         e.target.value,
                                                     class_id: filterClassId,
+                                                    month: filterMonth,
                                                 },
                                                 {
                                                     preserveState: true,
@@ -257,8 +305,37 @@ export default function AttendanceIndex({
                                         ))}
                                     </select>
                                 </div>
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                    <label className="text-sm font-medium whitespace-nowrap text-gray-700 dark:text-gray-300">
+                                <div className="flex items-center gap-2">
+                                    <label className="text-sm font-medium whitespace-nowrap text-gray-600 dark:text-gray-400">
+                                        Bulan:
+                                    </label>
+                                    <select
+                                        value={filterMonth}
+                                        onChange={(e) => {
+                                            const monthVal = Number(e.target.value);
+                                            setFilterMonth(monthVal);
+                                            router.get(
+                                                route('admin.attendances.index'),
+                                                {
+                                                    search,
+                                                    school_year_id: filterSchoolYearId,
+                                                    class_id: filterClassId,
+                                                    month: monthVal,
+                                                },
+                                                { preserveState: true, replace: true }
+                                            );
+                                        }}
+                                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    >
+                                        {months.map((m) => (
+                                            <option key={m.id} value={m.id}>
+                                                {m.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <label className="text-sm font-medium whitespace-nowrap text-gray-600 dark:text-gray-400">
                                         Kelas:
                                     </label>
                                     <select
@@ -277,6 +354,7 @@ export default function AttendanceIndex({
                                                     school_year_id:
                                                         filterSchoolYearId,
                                                     class_id: classVal,
+                                                    month: filterMonth,
                                                 },
                                                 {
                                                     preserveState: true,
@@ -296,54 +374,53 @@ export default function AttendanceIndex({
                                 </div>
                             </div>
 
-                            {/* Kanan: Pencarian & Tombol */}
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                <input
-                                    type="text"
-                                    placeholder="Cari siswa..."
-                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none sm:w-64 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    defaultValue={search || ''}
-                                    onChange={(e) => {
-                                        router.get(
-                                            route('admin.attendances.index'),
-                                            {
-                                                search: e.target.value,
-                                                school_year_id:
-                                                    filterSchoolYearId,
-                                                class_id: filterClassId,
-                                            },
-                                            {
-                                                preserveState: true,
-                                                replace: true,
-                                            },
-                                        );
-                                    }}
-                                />
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setShowModal(true)}
-                                        style={{
-                                            backgroundColor: '#0369a1',
-                                            color: 'white',
-                                        }}
-                                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition-all hover:opacity-90 active:scale-95 sm:w-auto"
-                                    >
-                                        🖨️ Cetak
-                                    </button>
-                                    <button
-                                        onClick={handleSave}
-                                        style={{
-                                            backgroundColor: '#0369a1',
-                                            color: 'white',
-                                        }}
-                                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-md transition-all hover:opacity-90 active:scale-95 sm:w-auto"
-                                    >
-                                        Simpan
-                                    </button>
-                                </div>
-                            </div>
+                            {/* Pencarian kanan */}
+                            <input
+                                type="text"
+                                placeholder="Cari siswa..."
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none sm:w-56 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                defaultValue={search || ''}
+                                onChange={(e) => {
+                                    router.get(
+                                        route('admin.attendances.index'),
+                                        {
+                                            search: e.target.value,
+                                            school_year_id: filterSchoolYearId,
+                                            class_id: filterClassId,
+                                            month: filterMonth,
+                                        },
+                                        {
+                                            preserveState: true,
+                                            replace: true,
+                                        },
+                                    );
+                                }}
+                            />
                         </div>
 
+                        {/* ── Baris 2: Tombol Aksi ── */}
+                        <div className="mb-4 flex justify-end gap-2">
+                            <button
+                                onClick={() => setShowModal(true)}
+                                style={{
+                                    backgroundColor: '#0369a1',
+                                    color: 'white',
+                                }}
+                                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-semibold shadow-sm transition-all hover:opacity-90 active:scale-95"
+                            >
+                                🖨️ Cetak
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                style={{
+                                    backgroundColor: '#0369a1',
+                                    color: 'white',
+                                }}
+                                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-semibold shadow-sm transition-all hover:opacity-90 active:scale-95"
+                            >
+                                Simpan
+                            </button>
+                        </div>
                         <div className="relative overflow-x-auto border border-gray-200 shadow-md sm:rounded-lg dark:border-gray-700">
                             {students.length > 0 ? (
                                 <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">

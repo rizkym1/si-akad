@@ -13,6 +13,38 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+
+        // ── LOGIC KHUSUS ORANG TUA ──
+        if ($user->role === 'parent') {
+            $children = Student::with('studentClass.schoolYear')
+                ->where('user_id', $user->id)
+                ->get()
+                ->map(function ($child) {
+                    return [
+                        'id' => $child->id,
+                        'full_name' => $child->full_name,
+                        'nis' => $child->nis,
+                        'nisn' => $child->nisn,
+                        'photo' => $child->photo,
+                        'class_name' => $child->studentClass ? $child->studentClass->name : null,
+                        'school_year' => ($child->studentClass && $child->studentClass->schoolYear) ? $child->studentClass->schoolYear->name : null,
+                    ];
+                });
+
+            // Ambil 5 kegiatan kalender akademik terdekat
+            $upcoming_events = \App\Models\AcademicCalendar::whereDate('end_date', '>=', now()->toDateString())
+                ->orderBy('start_date', 'asc')
+                ->take(5)
+                ->get();
+
+            return Inertia::render('parent/dashboard', [
+                'children' => $children,
+                'upcoming_events' => $upcoming_events,
+            ]);
+        }
+
+        // ── LOGIC ADMIN & GURU (Default Dashboard) ──
         // Total counts
         $total_students = Student::count();
         $total_classes = StudentClass::count();

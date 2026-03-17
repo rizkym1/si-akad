@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\SchoolYearController;
 use App\Http\Controllers\Admin\StudentClassController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AcademicCalendarController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DashboardController;
@@ -54,13 +55,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('school-years', SchoolYearController::class);
         Route::post('/school-years/bulk-delete', [SchoolYearController::class, 'bulkDelete'])->name('school-years.bulk-delete');
 
+        // Academic Calendar
+        Route::resource('academic-calendars', AcademicCalendarController::class)->except(['create', 'edit', 'show']);
+
         // Nilai Kokurikuler (RDM)
         // Nilai Kokurikuler (RDM)
-Route::get('nilai-kokurikuler', [NilaiKokurikulerController::class, 'index'])
-    ->name('nilai-kokurikuler.index');
-Route::get('nilai-kokurikuler/{penilaianId}/penilaian', [NilaiKokurikulerController::class, 'penilaian'])
-    ->name('nilai-kokurikuler.penilaian');
-   
+        Route::get('nilai-kokurikuler', [NilaiKokurikulerController::class, 'index'])
+            ->name('nilai-kokurikuler.index');
+        Route::get('nilai-kokurikuler/{penilaianId}/penilaian', [NilaiKokurikulerController::class, 'penilaian'])
+            ->name('nilai-kokurikuler.penilaian');
+    });
+
+    // Portal khusus Orang Tua (Parent)
+    Route::middleware(['auth'])->prefix('parent')->name('parent.')->group(function () {
+        Route::get('students/{student}', [\App\Http\Controllers\Parent\StudentController::class, 'show'])->name('students.show');
+        Route::get('students/{student}/card/pdf', [\App\Http\Controllers\Parent\StudentController::class, 'cardPdf'])->name('students.card.pdf');
+
+        // Presensi / Kehadiran Anak
+        Route::get('attendances', [\App\Http\Controllers\Parent\AttendanceController::class, 'index'])->name('attendances.index');
+
+        // Kalender Pendidikan
+        Route::get('academic-calendars', [\App\Http\Controllers\Admin\AcademicCalendarController::class, 'index'])->name('academic-calendars.index');
+
+        // Riwayat Akademik Anak (Nilai/RDM)
+        Route::get('students/{student}/academic-records', [\App\Http\Controllers\Parent\AcademicRecordController::class, 'index'])->name('students.academic-records.index');
     });
 });
 

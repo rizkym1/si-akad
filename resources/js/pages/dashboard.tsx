@@ -62,11 +62,10 @@ export default function Dashboard({
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                Buku Induk Siswa
+                                Sistem Informasi Akademik
                             </h1>
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Sistem Informasi Buku Induk — Ringkasan Data
-                                Siswa
+                                Sistem Informasi Akademik — Ringkasan Data Siswa
                             </p>
                         </div>
                     </div>
@@ -85,7 +84,7 @@ export default function Dashboard({
                                     {total_students}
                                 </h3>
                                 <p className="mt-1 text-xs text-gray-400">
-                                    Tercatat dalam buku induk
+                                    Tercatat dalam sistem akademik
                                 </p>
                             </div>
                             <div className="rounded-full bg-blue-100 p-4 dark:bg-blue-900/30">
@@ -143,7 +142,7 @@ export default function Dashboard({
                             Komposisi Jenis Kelamin
                         </h3>
                         <p className="mb-5 text-xs text-gray-400">
-                            Berdasarkan data buku induk
+                            Berdasarkan data akademik siswa
                         </p>
 
                         {/* Donut visual sederhana */}
@@ -225,7 +224,7 @@ export default function Dashboard({
                             <strong className="text-gray-800 dark:text-gray-100">
                                 {total_students}
                             </strong>{' '}
-                            siswa tercatat dalam buku induk
+                            siswa terdaftar dalam sistem
                         </div>
                     </div>
 
@@ -290,10 +289,10 @@ export default function Dashboard({
                     <div className="mb-4 flex items-center justify-between">
                         <div>
                             <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">
-                                Entri Terbaru Buku Induk
+                                Siswa Terbaru Terdaftar
                             </h3>
                             <p className="text-xs text-gray-400">
-                                Siswa yang baru saja didaftarkan
+                                Siswa yang baru saja didaftarkan ke sistem
                             </p>
                         </div>
                         <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">

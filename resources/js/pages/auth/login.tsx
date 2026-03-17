@@ -19,7 +19,7 @@ interface LoginProps {
 export default function Login({ status, canResetPassword }: LoginProps) {
     return (
         <AuthLayout
-            title="Sistem Informasi Buku Induk"
+            title="Sistem Informasi Akademik"
             description="Masukkan email dan password Anda untuk login"
         >
             <Form

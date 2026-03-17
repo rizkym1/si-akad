@@ -72,7 +72,7 @@ class StudentController extends Controller
 
     $schoolYear = $schoolYearId
         ? SchoolYear::find($schoolYearId)
-        : SchoolYear::where('is_active', true)->first();
+        : SchoolYear::where('is_active', '=', true)->first();
 
     $students = Student::with(['studentClass.schoolYear'])
         ->when($schoolYear, function ($q) use ($schoolYear) {
@@ -114,7 +114,7 @@ class StudentController extends Controller
         return Inertia::render('admin/students/create', [
             'student_classes' => StudentClass::with('schoolYear')
                                     ->get(['id', 'name', 'school_year_id']),
-            'parents'         => \App\Models\User::where('role', 'parent')->get(['id', 'name', 'email']),
+            'parents'         => \App\Models\User::where('role', '=', 'parent')->get(['id', 'name', 'email']),
         ]);
     }
 

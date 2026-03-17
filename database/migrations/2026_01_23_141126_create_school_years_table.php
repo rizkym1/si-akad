@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('school_years', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');           // contoh: "2024/2025"
-            $table->boolean('is_active')->default(false); // tahun pelajaran aktif
-            $table->timestamps();
+            $table->id(); // ID Unik
+            $table->string('name'); // Nama Tahun Pelajaran (contoh: "2024/2025")
+            $table->boolean('is_active')->default(false); // Status Aktif (true = aktif, false = tidak)
+            $table->timestamps(); // Waktu Dibuat & Diperbarui
         });
     }
 

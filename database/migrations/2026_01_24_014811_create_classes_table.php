@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('classes', function (Blueprint $table) {
-            $table->id();  // ← primary key default 'id'
-            $table->string('name'); // nama_kelas → name
-            $table->foreignId('school_year_id')
+            $table->id(); // ID Unik
+            $table->string('name'); // Nama Kelas
+            $table->foreignId('school_year_id') // ID Tahun Pelajaran
                   ->nullable()
                   ->constrained('school_years')
                   ->nullOnDelete(); 
-            $table->timestamps();
+            $table->timestamps(); // Waktu Dibuat & Diperbarui
         });
     }
 

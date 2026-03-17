@@ -17,6 +17,7 @@ import {
     Award,
     BookOpen,
     CalendarCheck,
+    CalendarClock,
     Folder,
     LayoutGrid,
     School,
@@ -60,6 +61,11 @@ const adminNavItems: NavItem[] = [
         title: 'Manajemen Tahun Pelajaran',
         href: '/admin/school-years',
         icon: CalendarCheck,
+    },
+    {
+        title: 'Kalender Pendidikan',
+        href: '/admin/academic-calendars',
+        icon: CalendarClock,
     },
     {
         title: 'Manajemen Kelas',
@@ -116,6 +122,16 @@ const parentNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Laporan Kehadiran',
+        href: '/parent/attendances',
+        icon: CalendarCheck,
+    },
+    {
+        title: 'Kalender Pendidikan',
+        href: '/parent/academic-calendars',
+        icon: CalendarClock,
     },
     // {
     //     title: 'User Management',

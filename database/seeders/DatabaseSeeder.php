@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
+            AcademicCalendarSeeder::class,
         ]);
         // User::factory(10)->create();
 

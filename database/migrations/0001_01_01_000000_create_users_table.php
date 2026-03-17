@@ -12,34 +12,34 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->enum('role', ['admin', 'teacher', 'parent'])->default('admin');
-            $table->string('photo')->nullable();
-            $table->string('nik')->nullable();
-            $table->string('homeroom_teacher')->nullable(); // Bisa juga berupa foreign key jika mengacu ke tabel kelas
-            $table->enum('gender', ['L', 'P'])->nullable();
-            $table->string('education')->nullable();
-            $table->rememberToken();
-            $table->timestamps();
+            $table->id(); // ID Unik
+            $table->string('name'); // Nama Lengkap
+            $table->string('email')->unique(); // Alamat Email (Unik)
+            $table->timestamp('email_verified_at')->nullable(); // Waktu Verifikasi Email
+            $table->string('password'); // Kata Sandi (Hashed)
+            $table->enum('role', ['admin', 'teacher', 'parent'])->default('admin'); // Peran Pengguna (Admin, Guru, Orang Tua)
+            $table->string('photo')->nullable(); // Foto Profil
+            $table->string('nik')->nullable(); // Nomor Induk Kependudukan
+            $table->string('homeroom_teacher')->nullable(); // Guru Wali Kelas
+            $table->enum('gender', ['L', 'P'])->nullable(); // Jenis Kelamin (Laki-laki / Perempuan)
+            $table->string('education')->nullable(); // Pendidikan Terakhir
+            $table->rememberToken(); // Token "Ingat Saya"
+            $table->timestamps(); // Waktu Dibuat & Diperbarui
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+            $table->string('email')->primary(); // Alamat Email
+            $table->string('token'); // Token Reset Kata Sandi
+            $table->timestamp('created_at')->nullable(); // Waktu Dibuat
         });
 
         Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->longText('payload');
-            $table->integer('last_activity')->index();
+            $table->string('id')->primary(); // ID Sesi
+            $table->foreignId('user_id')->nullable()->index(); // ID Pengguna (Opsional)
+            $table->string('ip_address', 45)->nullable(); // Alamat IP
+            $table->text('user_agent')->nullable(); // Informasi Peramban (User Agent)
+            $table->longText('payload'); // Data Sesi
+            $table->integer('last_activity')->index(); // Waktu Aktivitas Terakhir
         });
     }
 
