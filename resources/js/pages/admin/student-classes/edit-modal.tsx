@@ -9,9 +9,18 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useEffect, useState } from 'react';
+import { Edit2, Loader2 } from 'lucide-react';
 
 interface SchoolYear {
     id: number;
@@ -23,41 +32,44 @@ interface StudentClass {
     id: number;
     name: string;
     school_year_id: number | null;
-    school_year: {
-        id: number;
-        name: string;
-        is_active: boolean;
-    } | null;
-}
-
-interface EditStudentClassModalProps {
-    studentClass: StudentClass;
-    schoolYears: SchoolYear[];
+    teacher_id: number | null;
 }
 
 export function EditStudentClassModal({
     studentClass,
     schoolYears,
-}: EditStudentClassModalProps) {
+    teachers,
+}: {
+    studentClass: StudentClass;
+    schoolYears: SchoolYear[];
+    teachers: any[];
+}) {
     const [open, setOpen] = useState(false);
 
     const { data, setData, put, processing, errors, reset } = useForm({
         name: studentClass.name,
-        school_year_id: studentClass.school_year_id ?? schoolYears[0]?.id ?? 0,
+        school_year_id: studentClass.school_year_id || '',
+        teacher_id: studentClass.teacher_id || '',
     });
 
     useEffect(() => {
         if (open) {
             setData({
                 name: studentClass.name,
-                school_year_id:
-                    studentClass.school_year_id ?? schoolYears[0]?.id ?? 0,
+                school_year_id: studentClass.school_year_id || '',
+                teacher_id: studentClass.teacher_id || '',
             });
         }
     }, [open, studentClass]);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+
+        const submitData = { ...data };
+        if (submitData.teacher_id === 'none') {
+            submitData.teacher_id = '';
+        }
+
         put(route('admin.student-classes.update', studentClass.id), {
             onSuccess: () => {
                 setOpen(false);
@@ -68,104 +80,112 @@ export function EditStudentClassModal({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button
-                    style={{ backgroundColor: '#f59e0b', color: 'white' }}
-                    className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium transition hover:opacity-90 focus:ring-2 focus:ring-orange-400 focus:outline-none"
-                >
+                <button className="inline-flex items-center justify-center rounded-md border border-input bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted focus:ring-2 focus:ring-primary/50 focus:outline-none">
+                    <Edit2 className="h-3.5 w-3.5 mr-1" />
                     Edit
                 </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[480px]">
                 <form onSubmit={handleSubmit}>
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-foreground">
+                    <DialogHeader className="mb-4">
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
+                                <Edit2 className="h-5 w-5" />
+                            </span>
                             Edit Kelas
                         </DialogTitle>
-                        <DialogDescription className="text-muted-foreground">
-                            Perbarui informasi kelas di bawah ini
+                        <DialogDescription className="text-sm text-muted-foreground mt-1">
+                            Lakukan perubahan data relevan untuk pembaruan sistem terhadap kelas ini.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="grid gap-4 py-4">
+                    <div className="grid gap-5 py-2">
                         {/* Nama Kelas */}
                         <div className="grid gap-2">
-                            <Label
-                                htmlFor="edit-name"
-                                className="text-foreground"
-                            >
-                                Nama Kelas{' '}
-                                <span className="text-red-500">*</span>
+                            <Label htmlFor={`name-${studentClass.id}`} className="text-sm font-semibold text-foreground">
+                                Nama Kelas <span className="text-destructive">*</span>
                             </Label>
-                            <input
-                                id="edit-name"
+                            <Input
+                                id={`name-${studentClass.id}`}
                                 type="text"
-                                placeholder="Contoh: 10-A, Kelas 1A"
+                                placeholder="Cth: 10-A, Kelas 1A"
                                 value={data.name}
-                                onChange={(e) =>
-                                    setData('name', e.target.value)
-                                }
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                onChange={(e) => setData('name', e.target.value)}
+                                className="w-full focus-visible:ring-primary bg-background border-input"
                                 required
                             />
-                            <InputError
-                                message={errors.name}
-                                className="mt-1"
-                            />
+                            <InputError message={errors.name} />
                         </div>
 
                         {/* Tahun Pelajaran */}
                         <div className="grid gap-2">
-                            <Label
-                                htmlFor="edit-school_year_id"
-                                className="text-foreground"
-                            >
-                                Tahun Pelajaran{' '}
-                                <span className="text-red-500">*</span>
+                            <Label htmlFor={`school_year_id-${studentClass.id}`} className="text-sm font-semibold text-foreground">
+                                Tahun Pelajaran <span className="text-destructive">*</span>
                             </Label>
-                            <select
-                                id="edit-school_year_id"
-                                value={data.school_year_id}
-                                onChange={(e) =>
-                                    setData(
-                                        'school_year_id',
-                                        Number(e.target.value),
-                                    )
-                                }
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                required
+                            <Select
+                                value={data.school_year_id ? data.school_year_id.toString() : ''}
+                                onValueChange={(val) => setData('school_year_id', val)}
                             >
-                                {schoolYears.map((y) => (
-                                    <option key={y.id} value={y.id}>
-                                        {y.name} {y.is_active ? '(Aktif)' : ''}
-                                    </option>
-                                ))}
-                            </select>
-                            <InputError
-                                message={errors.school_year_id}
-                                className="mt-1"
-                            />
+                                <SelectTrigger className="w-full bg-background border-input focus:ring-primary">
+                                    <SelectValue placeholder="Pilih Tahun Pelajaran" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-56">
+                                    {schoolYears.map((y) => (
+                                        <SelectItem key={y.id} value={y.id.toString()}>
+                                            {y.name} {y.is_active ? '(Aktif)' : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.school_year_id} />
+                        </div>
+
+                        {/* Wali Kelas */}
+                        <div className="grid gap-2">
+                            <Label htmlFor={`teacher_id-${studentClass.id}`} className="text-sm font-semibold text-foreground">
+                                Wali Kelas (Opsional)
+                            </Label>
+                            <Select
+                                value={data.teacher_id ? data.teacher_id.toString() : 'none'}
+                                onValueChange={(val) => setData('teacher_id', val)}
+                            >
+                                <SelectTrigger className="w-full bg-background border-input focus:ring-primary">
+                                    <SelectValue placeholder="Pilih Wali Kelas" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-56">
+                                    <SelectItem value="none">-- Belum Ditentukan --</SelectItem>
+                                    {teachers.map((t) => (
+                                        <SelectItem key={t.id} value={t.id.toString()}>
+                                            {t.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.teacher_id} />
                         </div>
                     </div>
 
-                    <DialogFooter className="gap-2">
+                    <DialogFooter className="mt-4 gap-2 pt-4 border-t border-border sm:justify-end">
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => setOpen(false)}
-                            className="border-border hover:bg-secondary/20"
+                            onClick={() => {
+                                reset();
+                                setOpen(false);
+                            }}
+                            className="bg-transparent border-input hover:bg-muted"
                         >
                             Batal
                         </Button>
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                            style={{
-                                backgroundColor: '#f59e0b',
-                                color: 'white',
-                            }}
-                            className="hover:opacity-90"
-                        >
-                            {processing ? 'Menyimpan...' : 'Perbarui'}
+                        <Button type="submit" disabled={processing} className="min-w-[100px]">
+                            {processing ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Menyimpan...
+                                </>
+                            ) : (
+                                'Simpan Perubahan'
+                            )}
                         </Button>
                     </DialogFooter>
                 </form>

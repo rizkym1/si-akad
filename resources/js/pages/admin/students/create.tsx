@@ -44,11 +44,13 @@ function FormSection({
     children: React.ReactNode;
 }) {
     return (
-        <div className="mb-8 pt-6 first:pt-0">
-            <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
-                {title}
-            </h2>
-            {children}
+        <div className="mb-6 overflow-hidden rounded-xl border border-border bg-card shadow-sm dark:shadow-none">
+            <div className="border-b border-border bg-muted/40 px-6 py-4">
+                <h2 className="text-lg font-bold text-foreground">
+                    {title}
+                </h2>
+            </div>
+            <div className="p-6">{children}</div>
         </div>
     );
 }
@@ -152,7 +154,7 @@ export default function CreateStudent({
                             {/* Data Siswa */}
                             {/* Data Siswa */}
                             <FormSection title="Data Siswa">
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                                     <div>
                                         <Label htmlFor="nis">NIS</Label>
                                         <Input
@@ -568,7 +570,7 @@ export default function CreateStudent({
 
                             {/* Data Orang Tua */}
                             <FormSection title="Data Orang Tua">
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div>
                                         <Label htmlFor="father_name">
                                             Nama Ayah
@@ -594,8 +596,8 @@ export default function CreateStudent({
                                     </div>
 
                                     {/* ── Pilih Akun Orang Tua ── */}
-                                    <div className="md:col-span-2 rounded-lg border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-900/30 dark:bg-blue-900/10">
-                                        <Label htmlFor="user_id" className="text-blue-700 dark:text-blue-400 font-semibold mb-2 block">
+                                    <div className="md:col-span-2 rounded-lg border border-border bg-secondary/10 p-5 dark:bg-secondary/5">
+                                        <Label htmlFor="user_id" className="text-foreground font-semibold mb-2 block">
                                             Hubungkan dengan Akun Orang Tua (Opsional)
                                         </Label>
                                         <p className="text-xs text-gray-500 mb-3">
@@ -724,7 +726,7 @@ export default function CreateStudent({
                                         <h3 className="mb-3 text-sm font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
                                             Alamat Orang Tua
                                         </h3>
-                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                                             {/* a. Dusun/Jalan */}
                                             <div className="md:col-span-2 lg:col-span-3">
                                                 <Label htmlFor="address_street">
@@ -865,7 +867,7 @@ export default function CreateStudent({
 
                             {/* Data Wali */}
                             <FormSection title="Data Wali">
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                                     <div>
                                         <Label htmlFor="guardian_name">
                                             Nama Wali

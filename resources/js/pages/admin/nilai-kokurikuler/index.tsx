@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Leaf, Search, Filter, ClipboardList, PenTool, ExternalLink } from 'lucide-react';
 
 interface Penilaian {
     penilaian_id: number;
@@ -28,7 +29,7 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Nilai Kokurikuler',
+        title: 'Manajemen Penilaian Kokurikuler',
         href: '/admin/nilai-kokurikuler',
     },
 ];
@@ -56,39 +57,48 @@ export default function NilaiKokurikulerIndex({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Nilai Kokurikuler" />
+            <Head title="Manajemen Penilaian Kokurikuler" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <div className="mx-auto px-4 py-4 text-gray-900 sm:px-6 lg:px-8 dark:text-gray-100">
-                        {/* Header */}
-                        <div className="mb-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
-                            <div className="w-full sm:flex sm:space-x-4 md:mt-0"></div>
-                            <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
-                                {/* Dropdown Filter Kelas */}
+                    <div className="mx-auto px-4 py-4 sm:px-6 lg:px-8">
+                        {/* Page Header */}
+                        <div className="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-xl font-bold text-foreground">
+                                    Manajemen Nilai Kokurikuler (P5)
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-1 cursor-default max-w-xl">
+                                    Pantau dan kelola form penilaian Projek Profil Pelajar Pancasila (P5) yang diintegrasikan secara sinkron dari sistem kurikulum eksternal.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Top Action Bar */}
+                        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+                            <div className="flex w-full items-center gap-2 sm:w-auto">
+                                <Filter className="h-4 w-4 text-muted-foreground mr-1 hidden sm:block" />
+                                <Label className="text-sm font-medium whitespace-nowrap text-foreground">Filter Kelas:</Label>
                                 <select
                                     value={selectedKelas}
-                                    onChange={(e) =>
-                                        handleKelasChange(e.target.value)
-                                    }
-                                    className="rounded-lg border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                    onChange={(e) => handleKelasChange(e.target.value)}
+                                    className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm w-full sm:w-48 focus:ring-2 focus:ring-primary outline-none"
                                 >
+                                    <option value="" disabled>Pilih Rombongan Belajar</option>
                                     {kelasList.map((k) => (
-                                        <option
-                                            key={k.kelas_id}
-                                            value={k.kelas_id}
-                                        >
-                                            {k.kelas_nama ??
-                                                `Kelas ${k.kelas_id}`}
+                                        <option key={k.kelas_id} value={k.kelas_id}>
+                                            {k.kelas_nama ?? `Kelas ID: ${k.kelas_id}`}
                                         </option>
                                     ))}
                                 </select>
+                            </div>
 
-                                {/* Search */}
+                            <div className="relative w-full sm:w-72">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <input
                                     type="text"
-                                    placeholder="Cari penilaian..."
-                                    className="rounded-lg border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                    placeholder="Cari deskripsi atau nama projek..."
+                                    className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
@@ -97,105 +107,66 @@ export default function NilaiKokurikulerIndex({
 
                         {/* Info Kelas Aktif */}
                         {filtered.length > 0 && (
-                            <div className="mb-3 rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                                Kelas:{' '}
-                                <strong>
-                                    {filtered[0]?.kelas_nama ?? '-'}
-                                </strong>
-                                &nbsp;·&nbsp;{filtered.length} penilaian
+                            <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="rounded-full bg-primary/20 p-2 text-primary">
+                                        <Leaf className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-primary/90 text-sm">Menampilkan Format Penilaian Aktif</h3>
+                                        <p className="text-xs text-muted-foreground">
+                                            Ditemukan <strong className="text-foreground">{filtered.length}</strong> format penilaian terkait untuk rombongan belajar ini.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
-                        {/* Tabel */}
-                        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+                        {/* Data Table */}
+                        <div className="relative overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
                             {filtered.length > 0 ? (
-                                <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
-                                    <thead className="bg-white text-sm text-gray-700 uppercase dark:bg-gray-800">
-                                        <tr className="border-t border-b hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-600">
-                                            <th className="w-12 px-6 py-3 text-center">
-                                                No
-                                            </th>
-                                            <th className="px-6 py-3 text-center">
-                                                DPL/Panca Cinta
-                                            </th>
-                                            <th className="px-6 py-3 text-center">
-                                                Deskripsi
-                                            </th>
-                                            <th className="w-20 px-6 py-3 text-center">
-                                                Nilai
-                                            </th>
-                                            <th className="w-48 px-6 py-3 text-center">
-                                                Aksi
-                                            </th>
+                                <table className="w-full text-left text-sm text-foreground">
+                                    <thead className="bg-muted text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <tr className="border-b border-border">
+                                            <th scope="col" className="w-16 px-6 py-4 text-center">NO</th>
+                                            <th scope="col" className="px-6 py-4">TEMA PROJEK (P5)</th>
+                                            <th scope="col" className="px-6 py-4">DESKRIPSI PROJEK</th>
+                                            <th scope="col" className="px-6 py-4 text-center">STATUS</th>
+                                            <th scope="col" className="px-6 py-4 text-right">TINDAKAN</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="divide-y divide-border bg-background">
                                         {filtered.map((item, index) => (
-                                            <tr
-                                                key={item.penilaian_id}
-                                                className="border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
-                                            >
-                                                <td className="px-6 py-4 text-center font-medium text-gray-900 dark:text-white">
+                                            <tr key={item.penilaian_id} className="transition-colors hover:bg-muted/40 group">
+                                                <td className="px-6 py-4 text-center text-muted-foreground font-medium">
                                                     {index + 1}
                                                 </td>
-                                                <td className="px-6 py-4 text-left text-gray-900 dark:text-white">
-                                                    <div className="font-medium">
+                                                <td className="px-6 py-4">
+                                                    <div className="font-bold text-foreground">
                                                         {item.dplpc_nama}
                                                     </div>
-                                                    <div className="text-xs text-gray-400">
-                                                        {item.dplpc_type}
+                                                    <div className="mt-1 text-xs text-muted-foreground uppercase flex items-center gap-1">
+                                                        <span className="inline-flex rounded-sm bg-secondary/10 px-1.5 py-0.5 text-[10px] font-semibold text-secondary ring-1 ring-inset ring-secondary/20">ID: {item.dplpc_id}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-left text-gray-700 dark:text-gray-300">
-                                                    {item.penilaian_deskripsi}
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm max-w-sm font-medium text-muted-foreground line-clamp-2" title={item.penilaian_deskripsi}>
+                                                        {item.penilaian_deskripsi}
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center rounded-md bg-green-500 px-3 py-1 text-white">
-                                                        ✓
+                                                    <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                                                        Sistem RDM
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <div className="flex justify-center gap-2">
-                                                        <Link
-                                                            href={route(
-                                                                'admin.nilai-kokurikuler.penilaian',
-                                                                item.penilaian_id,
-                                                            )}
-                                                            className="inline-flex flex-col items-center rounded-md bg-blue-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-600"
-                                                        >
-                                                            <span>☰</span>
-                                                            <span>
-                                                                Penilaian
-                                                            </span>
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="flex justify-end gap-2 pr-1">
+                                                        <Link href={route('admin.nilai-kokurikuler.penilaian', { penilaian_id: item.penilaian_id })}>
+                                                            <button className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-all hover:bg-muted focus:ring-2 focus:ring-primary/50 shadow-sm opacity-90 group-hover:opacity-100">
+                                                                <PenTool className="h-3.5 w-3.5 mr-1.5" />
+                                                                Kelola Penilaian P5
+                                                            </button>
                                                         </Link>
-                                                        <button className="inline-flex flex-col items-center rounded-md bg-purple-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-purple-600">
-                                                            <span>✎</span>
-                                                            <span>Edit</span>
-                                                        </button>
-                                                        <DeleteDialog
-                                                            trigger={
-                                                                <button className="inline-flex flex-col items-center rounded-md bg-red-400 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-500">
-                                                                    <span>
-                                                                        🗑
-                                                                    </span>
-                                                                    <span>
-                                                                        Hapus
-                                                                    </span>
-                                                                </button>
-                                                            }
-                                                            title="Hapus Penilaian"
-                                                            description={`Anda yakin ingin menghapus penilaian "${item.dplpc_nama}"? Semua nilai siswa terkait juga akan dihapus.`}
-                                                            onConfirm={() => {
-                                                                router.delete(
-                                                                    route(
-                                                                        'admin.nilai-kokurikuler.destroy',
-                                                                        item.penilaian_id,
-                                                                    ),
-                                                                );
-                                                            }}
-                                                            cancelText="Batal"
-                                                            confirmText="Hapus"
-                                                        />
                                                     </div>
                                                 </td>
                                             </tr>
@@ -203,8 +174,12 @@ export default function NilaiKokurikulerIndex({
                                     </tbody>
                                 </table>
                             ) : (
-                                <div className="mb-3 rounded bg-gray-500 p-3 text-white shadow-sm">
-                                    Tidak ada data penilaian.
+                                <div className="flex flex-col items-center justify-center py-20 text-center">
+                                    <ClipboardList className="h-14 w-14 text-muted-foreground/30 mb-4" />
+                                    <h3 className="text-lg font-bold text-foreground">Belum Ada Penilaian</h3>
+                                    <p className="mt-1 text-sm text-muted-foreground max-w-md">
+                                        Sistem belum mengimpor riwayat kokurikuler P5 untuk rombongan belajar ini, atau tidak ada yang sesuai dengan pencarian Anda.
+                                    </p>
                                 </div>
                             )}
                         </div>
@@ -212,5 +187,14 @@ export default function NilaiKokurikulerIndex({
                 </div>
             </div>
         </AppLayout>
+    );
+}
+
+// Tambahan komponen Label lokal jika tidak ada di import
+function Label({ className, children, ...props }: any) {
+    return (
+        <label className={`text-sm font-medium leading-none ${className}`} {...props}>
+            {children}
+        </label>
     );
 }

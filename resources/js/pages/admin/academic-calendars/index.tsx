@@ -24,8 +24,31 @@ import {
     Edit,
     Plus,
     Trash,
+    Info,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { DeleteDialog } from '@/components/ui/delete-dialog';
+import InputError from '@/components/input-error';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 interface Event {
     id: number;
     title: string;
@@ -34,17 +57,32 @@ interface Event {
     type: 'holiday' | 'event';
     description: string | null;
 }
-interface PageProps {
+
+interface PageProps extends Record<string, unknown> {
     events: Event[];
+    auth: {
+        user: {
+            role: string;
+        };
+    };
+    flash: {
+        success: string | null;
+        error: string | null;
+    };
 }
+
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Beranda', href: '/dashboard' },
     { title: 'Kalender Pendidikan', href: '/admin/academic-calendars' },
 ];
+
 export default function AcademicCalendarIndex({ events }: PageProps) {
+    const { auth, flash } = usePage<PageProps>().props;
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+    const [showFlash, setShowFlash] = useState(false);
+
     const {
         data,
         setData,
@@ -62,11 +100,16 @@ export default function AcademicCalendarIndex({ events }: PageProps) {
         type: 'event' as 'holiday' | 'event',
         description: '',
     });
-    const getUserRole = () => {
-        // @ts-ignore
-        return usePage().props.auth?.user?.role;
-    };
-    const isAdmin = getUserRole() === 'admin';
+
+    useEffect(() => {
+        if (flash.success || flash.error) {
+            setShowFlash(true);
+            const timer = setTimeout(() => setShowFlash(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash]);
+
+    const isAdmin = auth.user?.role === 'admin';
     // ── helpers format date ──-
     const formatToYMD = (date: Date) => format(date, 'yyyy-MM-dd');
     const handleOpenModal = (event?: Event, initialDate?: Date) => {
@@ -91,32 +134,37 @@ export default function AcademicCalendarIndex({ events }: PageProps) {
         }
         setIsModalOpen(true);
     };
+
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingEvent(null);
         reset();
     };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (editingEvent) {
             put(`/admin/academic-calendars/${editingEvent.id}`, {
-                onSuccess: handleCloseModal,
+                onSuccess: () => {
+                    handleCloseModal();
+                },
             });
         } else {
-            post('/admin/academic-calendars', { onSuccess: handleCloseModal });
+            post('/admin/academic-calendars', {
+                onSuccess: () => {
+                    handleCloseModal();
+                },
+            });
         }
     };
-    const handleDelete = (id: number) => {
-        if (confirm('Apakah Anda yakin ingin menghapus agenda ini?')) {
-            destroy(`/admin/academic-calendars/${id}`);
-        }
-    };
+
     // ── Calendar Logic Helpers ──
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(monthStart);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }); // Senin
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
     const days = eachDayOfInterval({ start: startDate, end: endDate });
+
     const getDayEvents = (day: Date) => {
         return events.filter((event) => {
             const start = parseISO(event.start_date.substring(0, 10));
@@ -126,351 +174,357 @@ export default function AcademicCalendarIndex({ events }: PageProps) {
             );
         });
     };
+
+    // Improved Filtering: Show events that are active during the current month
+    const currentMonthEvents = events.filter((e) => {
+        const start = parseISO(e.start_date.substring(0, 10));
+        const end = parseISO(e.end_date.substring(0, 10));
+        return (
+            isSameMonth(start, currentMonth) ||
+            isSameMonth(end, currentMonth) ||
+            (start < monthStart && end > monthEnd)
+        );
+    });
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Kalender Pendidikan" />
-            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:flex-row">
-                {/* ── Kiri: Box Kalender Grid ── */}
-                <div className="flex-1 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    {/* Header Kalender */}
-                    <div className="mb-6 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                                <CalendarClock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                            </div>
-                            <h2 className="text-lg font-bold text-gray-900 capitalize dark:text-gray-100">
-                                {format(currentMonth, 'MMMM yyyy', {
-                                    locale: id,
-                                })}
-                            </h2>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <button
-                                onClick={() =>
-                                    setCurrentMonth(subMonths(currentMonth, 1))
-                                }
-                                className="rounded-lg border p-1.5 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </button>
-                            <button
-                                onClick={() => setCurrentMonth(new Date())}
-                                className="rounded-lg border px-3 py-1 text-xs font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
-                            >
-                                {' '}
-                                Hari Ini{' '}
-                            </button>
-                            <button
-                                onClick={() =>
-                                    setCurrentMonth(addMonths(currentMonth, 1))
-                                }
-                                className="rounded-lg border p-1.5 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                    {/* Grid Hari / Header */}
-                    <div className="mb-1 grid grid-cols-7 gap-1 border-b pb-2 dark:border-gray-700">
-                        {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map(
-                            (day, index) => (
-                                <div
-                                    key={day}
-                                    className={`py-1 text-center text-xs font-semibold ${index === 6 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
-                                >
-                                    {day}
-                                </div>
-                            ),
-                        )}
-                    </div>
-                    {/* Grid Days */}
-                    <div className="grid grid-cols-7 gap-1">
-                        {days.map((day, idx) => {
-                            const dayEvents = getDayEvents(day);
-                            const isCurrentMonth = isSameMonth(
-                                day,
-                                currentMonth,
-                            );
-                            const isToday = isSameDay(day, new Date());
-                            const hasHoliday = dayEvents.some(
-                                (e) => e.type === 'holiday',
-                            );
-                            const hasEvent = dayEvents.some(
-                                (e) => e.type === 'event',
-                            );
-                            let cellClass =
-                                'min-h-[70px] p-1.5 border rounded-lg flex flex-col items-start transition-all cursor-pointer relative dark:border-gray-700 ';
-                            if (!isCurrentMonth)
-                                cellClass +=
-                                    'bg-gray-50 text-gray-400 dark:bg-gray-900/40 dark:text-gray-600 ';
-                            else
-                                cellClass +=
-                                    'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 ';
-                            if (isToday)
-                                cellClass +=
-                                    'ring-2 ring-blue-500 dark:ring-blue-400 ';
-                            else if (hasHoliday)
-                                cellClass +=
-                                    'bg-red-50/70 hover:bg-red-100 dark:bg-red-900/10 dark:hover:bg-red-900/20 ';
-                            else if (hasEvent)
-                                cellClass +=
-                                    'bg-blue-50/70 hover:bg-blue-100 dark:bg-blue-900/10 dark:hover:bg-blue-900/20 ';
-                            else if (isCurrentMonth)
-                                cellClass +=
-                                    'hover:bg-gray-50 dark:hover:bg-gray-700/50 ';
-                            return (
-                                <div
-                                    key={idx}
-                                    className={cellClass}
-                                    onClick={() =>
-                                        isAdmin &&
-                                        handleOpenModal(undefined, day)
-                                    }
-                                >
-                                    <span
-                                        className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold ${isToday ? 'bg-blue-500 text-white' : idx % 7 === 6 || hasHoliday ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}
-                                    >
-                                        {format(day, 'd')}
-                                    </span>
+            
+            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6">
 
-                                    {/* Events Dots/Lines */}
-                                    <div className="mt-1 w-full space-y-0.5 overflow-hidden">
-                                        {dayEvents
-                                            .slice(0, 2)
-                                            .map((e, index) => (
+                <div className="flex flex-col gap-6 lg:flex-row">
+                    {/* ── Kiri: Box Kalender Grid ── */}
+                    <div className="flex-1 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        {/* Header Kalender */}
+                        <div className="mb-6 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="rounded-xl bg-primary/10 p-2.5 dark:bg-primary/20">
+                                    <CalendarClock className="h-5 w-5 text-primary" />
+                                </div>
+                                <h2 className="text-lg font-bold text-gray-900 capitalize dark:text-gray-100">
+                                    {format(currentMonth, 'MMMM yyyy', {
+                                        locale: id,
+                                    })}
+                                </h2>
+                            </div>
+                            <div className="flex items-center gap-1.5 rounded-xl border bg-gray-50/50 p-1 dark:border-gray-700 dark:bg-gray-900/50">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                                    className="h-8 w-8 rounded-lg hover:bg-white dark:hover:bg-gray-800"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setCurrentMonth(new Date())}
+                                    className="h-8 px-3 text-xs font-semibold hover:bg-white dark:hover:bg-gray-800"
+                                >
+                                    Hari Ini
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                                    className="h-8 w-8 rounded-lg hover:bg-white dark:hover:bg-gray-800"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Grid Hari / Header */}
+                        <div className="mb-2 grid grid-cols-7 gap-1">
+                            {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map(
+                                (day, index) => (
+                                    <div
+                                        key={day}
+                                        className={`py-2 text-center text-xs font-bold uppercase tracking-wider ${index === 6 ? 'text-destructive' : 'text-gray-400 dark:text-gray-500'}`}
+                                    >
+                                        {day}
+                                    </div>
+                                ),
+                            )}
+                        </div>
+
+                        {/* Grid Days */}
+                        <div className="grid grid-cols-7 gap-2">
+                            {days.map((day, idx) => {
+                                const dayEvents = getDayEvents(day);
+                                const isCurrentMonth = isSameMonth(day, currentMonth);
+                                const isToday = isSameDay(day, new Date());
+                                const hasHoliday = dayEvents.some((e) => e.type === 'holiday');
+                                const hasEvent = dayEvents.some((e) => e.type === 'event');
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={`group relative flex min-h-[85px] flex-col items-start rounded-xl border p-2 transition-all hover:shadow-md dark:border-gray-700/50 ${
+                                            !isCurrentMonth
+                                                ? 'bg-gray-50/50 opacity-40 dark:bg-gray-900/20'
+                                                : isToday
+                                                ? 'border-primary/30 bg-primary/5 ring-1 ring-primary dark:bg-primary/10'
+                                                : hasHoliday
+                                                ? 'border-destructive/20 bg-destructive/5 hover:bg-destructive/10 dark:bg-destructive/5'
+                                                : hasEvent
+                                                ? 'border-primary/20 bg-primary/5 hover:bg-primary/10 dark:bg-primary/5'
+                                                : 'bg-white hover:border-gray-200 dark:bg-gray-800/40 dark:hover:border-gray-600'
+                                        } ${isAdmin ? 'cursor-pointer' : ''}`}
+                                        onClick={() => isAdmin && handleOpenModal(undefined, day)}
+                                    >
+                                        <span
+                                            className={`mb-1 flex h-6 w-6 items-center justify-center rounded-lg text-xs font-bold ${
+                                                isToday
+                                                    ? 'bg-primary text-white shadow-sm'
+                                                    : idx % 7 === 6 || hasHoliday
+                                                    ? 'text-destructive'
+                                                    : isCurrentMonth
+                                                    ? 'text-gray-700 dark:text-gray-300'
+                                                    : 'text-gray-400'
+                                            }`}
+                                        >
+                                            {format(day, 'd')}
+                                        </span>
+
+                                        <div className="flex w-full flex-col gap-1">
+                                            {dayEvents.slice(0, 2).map((e, index) => (
                                                 <div
                                                     key={index}
-                                                    className={`truncate rounded px-1 py-0.5 text-[9px] ${e.type === 'holiday' ? 'bg-red-200 text-red-800 dark:bg-red-900/40 dark:text-red-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'}`}
+                                                    className={`truncate rounded-md px-1.5 py-0.5 text-[9px] font-medium leading-tight ${
+                                                        e.type === 'holiday'
+                                                            ? 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive-foreground'
+                                                            : 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'
+                                                    }`}
                                                 >
                                                     {e.title}
                                                 </div>
                                             ))}
-                                        {dayEvents.length > 2 && (
-                                            <div className="text-center text-[8px] text-gray-400">
-                                                +{dayEvents.length - 2} lagi
-                                            </div>
-                                        )}
+                                            {dayEvents.length > 2 && (
+                                                <div className="px-1 text-[8px] font-medium text-gray-400 dark:text-gray-500">
+                                                    +{dayEvents.length - 2} lagi
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-                {/* ── Kanan: Log Agenda Panel ── */}
-                <div className="flex w-full flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm lg:w-80 dark:border-gray-700 dark:bg-gray-800">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-md font-bold text-gray-900 dark:text-gray-100">
-                            Daftar Agenda
-                        </h3>
-                        {isAdmin && (
-                            <button
-                                onClick={() => handleOpenModal()}
-                                className="flex items-center gap-1 rounded-md bg-blue-50 p-1 px-2 text-xs font-semibold text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400"
-                            >
-                                <Plus className="h-3 w-3" /> Tambah
-                            </button>
-                        )}
+                                );
+                            })}
+                        </div>
                     </div>
 
-                    {events.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-6 text-center text-gray-400">
-                            <CalendarDays className="mb-2 h-8 w-8 stroke-1" />
-                            <p className="text-xs">
-                                Belum ada agenda terdaftar
-                            </p>
+                    {/* ── Kanan: Log Agenda Panel ── */}
+                    <div className="flex w-full flex-col gap-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm lg:w-80 dark:border-gray-700 dark:bg-gray-800">
+                        <div className="flex items-center justify-between border-b pb-4 dark:border-gray-700">
+                            <div>
+                                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                                    Daftar Agenda
+                                </h3>
+                                <p className="text-[10px] text-gray-500">Periode saat ini</p>
+                            </div>
+                            {isAdmin && (
+                                <Button
+                                    size="sm"
+                                    onClick={() => handleOpenModal()}
+                                    className="h-8 gap-1 rounded-lg bg-primary px-3 text-[11px] font-bold hover:bg-primary/90"
+                                >
+                                    <Plus className="h-3 w-3" /> Tambah
+                                </Button>
+                            )}
                         </div>
-                    ) : (
-                        <div className="max-h-[400px] space-y-3 overflow-y-auto pr-1">
-                            {events
-                                .filter((e) =>
-                                    isSameMonth(
-                                        parseISO(e.start_date),
-                                        currentMonth,
-                                    ),
-                                )
-                                .map((e) => {
+
+                        <div className="flex max-h-[500px] flex-col gap-3 overflow-y-auto pr-1">
+                            {currentMonthEvents.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-10 text-center">
+                                    <div className="mb-3 rounded-full bg-gray-50 p-3 dark:bg-gray-900/50">
+                                        <CalendarDays className="h-6 w-6 text-gray-300 dark:text-gray-600" />
+                                    </div>
+                                    <p className="text-xs font-medium text-gray-400">
+                                        Belum ada agenda terdaftar
+                                    </p>
+                                </div>
+                            ) : (
+                                currentMonthEvents.map((e) => {
                                     const isHoliday = e.type === 'holiday';
                                     return (
                                         <div
                                             key={e.id}
-                                            className="group relative flex flex-col gap-1 rounded-xl border border-gray-100 bg-gray-50/50 p-3 dark:border-gray-700 dark:bg-gray-800"
+                                            className="group relative overflow-hidden rounded-xl border border-gray-100 bg-gray-50/30 p-3 transition-all hover:border-gray-200 hover:bg-white dark:border-gray-700/50 dark:bg-gray-900/20 dark:hover:border-gray-600 dark:hover:bg-gray-800/40"
                                         >
-                                            <div className="flex items-center justify-between gap-2">
-                                                <span
-                                                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isHoliday ? 'bg-red-100 text-red-800 dark:bg-red-900/30' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30'}`}
-                                                >
-                                                    {isHoliday
-                                                        ? 'Libur'
-                                                        : 'Event'}
-                                                </span>
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex flex-col gap-1">
+                                                    <span
+                                                        className={`w-fit rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                                            isHoliday
+                                                                ? 'bg-destructive/10 text-destructive'
+                                                                : 'bg-primary/10 text-primary'
+                                                        }`}
+                                                    >
+                                                        {isHoliday ? 'Hari Libur' : 'Kegiatan'}
+                                                    </span>
+                                                    <h4 className="text-xs font-bold leading-snug text-gray-900 dark:text-white">
+                                                        {e.title}
+                                                    </h4>
+                                                    <p className="text-[10px] font-medium text-gray-400">
+                                                        {format(parseISO(e.start_date.substring(0,10)), 'dd MMM yyyy')} 
+                                                        {e.start_date !== e.end_date && ` - ${format(parseISO(e.end_date.substring(0,10)), 'dd MMM yyyy')}`}
+                                                    </p>
+                                                </div>
+
                                                 {isAdmin && (
-                                                    <div className="flex items-center gap-1 opacity-0 transition-all group-hover:opacity-100">
-                                                        <button
-                                                            onClick={() =>
-                                                                handleOpenModal(
-                                                                    e,
-                                                                )
-                                                            }
-                                                            className="p-1 text-gray-500 hover:text-blue-600"
+                                                    <div className="flex flex-col gap-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7 rounded-lg text-gray-400 hover:text-primary dark:hover:text-primary"
+                                                            onClick={() => handleOpenModal(e)}
                                                         >
                                                             <Edit className="h-3.5 w-3.5" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    e.id,
-                                                                )
+                                                        </Button>
+                                                        <DeleteDialog
+                                                            title="Hapus Agenda"
+                                                            description={`Apakah Anda yakin ingin menghapus agenda "${e.title}"?`}
+                                                            onConfirm={() => destroy(`/admin/academic-calendars/${e.id}`)}
+                                                            trigger={
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-7 w-7 rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                                                                >
+                                                                    <Trash className="h-3.5 w-3.5" />
+                                                                </Button>
                                                             }
-                                                            className="p-1 text-gray-500 hover:text-red-500"
-                                                        >
-                                                            <Trash className="h-3.5 w-3.5" />
-                                                        </button>
+                                                        />
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className="text-sm leading-tight font-semibold text-gray-900 dark:text-white">
-                                                {e.title}
-                                            </span>
-                                            <span className="text-[10px] text-gray-400">
-                                                {format(
-                                                    parseISO(e.start_date),
-                                                    'dd MMM yyyy',
-                                                )}{' '}
-                                                s/d{' '}
-                                                {format(
-                                                    parseISO(e.end_date),
-                                                    'dd MMM yyyy',
-                                                )}
-                                            </span>
                                             {e.description && (
-                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                <p className="mt-2 line-clamp-2 border-t pt-2 text-[10px] leading-relaxed text-gray-500 dark:border-gray-700 dark:text-gray-400">
                                                     {e.description}
                                                 </p>
                                             )}
                                         </div>
                                     );
-                                })}
-                        </div>
-                    )}
-                </div>
-                {/* ── Modal Form (Dialog) ── */}
-                {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-                        <div className="w-full max-w-md animate-in rounded-2xl border border-gray-100 bg-white p-6 shadow-xl duration-200 zoom-in-95 fade-in dark:bg-gray-800">
-                            <h2 className="mb-4 text-lg font-bold">
-                                {editingEvent ? 'Edit Agenda' : 'Tambah Agenda'}
-                            </h2>
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium">
-                                        Judul Agenda
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.title}
-                                        onChange={(e) =>
-                                            setData('title', e.target.value)
-                                        }
-                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="mb-1 block text-sm font-medium">
-                                            Mulai
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={data.start_date}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'start_date',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="mb-1 block text-sm font-medium">
-                                            Selesai
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={data.end_date}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'end_date',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium">
-                                        Tipe
-                                    </label>
-                                    <select
-                                        value={data.type}
-                                        onChange={(e) =>
-                                            setData(
-                                                'type',
-                                                e.target.value as
-                                                    | 'holiday'
-                                                    | 'event',
-                                            )
-                                        }
-                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:bg-gray-700"
-                                    >
-                                        <option value="event">Kegiatan</option>
-                                        <option value="holiday">
-                                            Hari Libur
-                                        </option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium">
-                                        Deskripsi
-                                    </label>
-                                    <textarea
-                                        value={data.description}
-                                        onChange={(e) =>
-                                            setData(
-                                                'description',
-                                                e.target.value,
-                                            )
-                                        }
-                                        rows={3}
-                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                                    />
-                                </div>
-                                <div className="flex gap-2 pt-2">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseModal}
-                                        className="w-full rounded-lg border py-2 text-sm text-gray-700"
-                                    >
-                                        Batal
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        style={{
-                                            backgroundColor: '#0369a1',
-                                            color: 'white',
-                                        }}
-                                        className="w-full rounded-lg py-2 text-sm font-semibold shadow-md"
-                                    >
-                                        {processing ? 'Menyimpan...' : 'Simpan'}
-                                    </button>
-                                </div>
-                            </form>
+                                })
+                            )}
                         </div>
                     </div>
-                )}
+                </div>
             </div>
+
+            {/* ── Modal Form (Dialog) ── */}
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <form onSubmit={handleSubmit}>
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-bold text-foreground">
+                                {editingEvent ? 'Edit Agenda' : 'Tambah Agenda Baru'}
+                            </DialogTitle>
+                            <DialogDescription className="text-muted-foreground">
+                                Isi informasi agenda kalender pendidikan dengan lengkap.
+                            </DialogDescription>
+                        </DialogHeader>
+                        
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="title" className="text-foreground">
+                                    Judul Agenda <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="title"
+                                    value={data.title}
+                                    placeholder="Contoh: Libur Akhir Semester"
+                                    onChange={(e) => setData('title', e.target.value)}
+                                    className="border-border bg-card focus:ring-primary"
+                                    required
+                                />
+                                <InputError message={errors.title} className="mt-1" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="start_date" className="text-foreground">
+                                        Tanggal Mulai <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="start_date"
+                                        type="date"
+                                        value={data.start_date}
+                                        onChange={(e) => setData('start_date', e.target.value)}
+                                        className="border-border bg-card focus:ring-primary"
+                                        required
+                                    />
+                                    <InputError message={errors.start_date} className="mt-1" />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="end_date" className="text-foreground">
+                                        Tanggal Selesai <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="end_date"
+                                        type="date"
+                                        value={data.end_date}
+                                        onChange={(e) => setData('end_date', e.target.value)}
+                                        className="border-border bg-card focus:ring-primary"
+                                        required
+                                    />
+                                    <InputError message={errors.end_date} className="mt-1" />
+                                </div>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="type" className="text-foreground">
+                                    Tipe Agenda <span className="text-red-500">*</span>
+                                </Label>
+                                <Select
+                                    value={data.type}
+                                    onValueChange={(value) => setData('type', value as 'holiday' | 'event')}
+                                >
+                                    <SelectTrigger className="border-border bg-card focus:ring-primary">
+                                        <SelectValue placeholder="Pilih tipe agenda" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="event">Kegiatan Akademik</SelectItem>
+                                        <SelectItem value="holiday">Hari Libur Resmi</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.type} className="mt-1" />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="description" className="text-foreground">
+                                    Deskripsi (Opsional)
+                                </Label>
+                                <textarea
+                                    id="description"
+                                    value={data.description}
+                                    onChange={(e) => setData('description', e.target.value)}
+                                    rows={3}
+                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    placeholder="Tambahkan keterangan tambahan jika ada..."
+                                />
+                                <InputError message={errors.description} className="mt-1" />
+                            </div>
+                        </div>
+
+                        <DialogFooter className="gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleCloseModal}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={processing}
+                            >
+                                {processing ? 'Menyimpan...' : 'Simpan'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

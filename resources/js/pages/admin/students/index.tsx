@@ -11,7 +11,7 @@ import { InertiaPagination } from '@/components/ui/inertia-pagination';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Edit, Eye, MoreVertical, Printer, Trash2 } from 'lucide-react';
+import { Edit, Eye, MoreVertical, Printer, Trash2, Search, UserPlus, FileSearch, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Student {
@@ -20,7 +20,7 @@ interface Student {
     nickname: string | null;
     nisn: string;
     date_of_birth: string;
-    gender: 'male' | 'female' | null;
+    gender: 'male' | 'female' | null | string;
     religion: string | null;
     child_order: number | null;
     father_name: string | null;
@@ -68,10 +68,6 @@ export default function StudentIndex({
         current_page: number;
         last_page: number;
         links: any[];
-        first_page_url: string | null;
-        last_page_url: string | null;
-        prev_page_url: string | null;
-        next_page_url: string | null;
     };
     schoolYears: SchoolYear[];
     i: number;
@@ -81,10 +77,9 @@ export default function StudentIndex({
     const { props } = usePage();
     const [selected, setSelected] = useState<string[]>([]);
 
-    // ── MODAL FILTER STATE ──
     const [showModal, setShowModal] = useState(false);
     const [filterSchoolYearId, setFilterSchoolYearId] = useState<number>(
-        schoolYears.find((y) => y.is_active)?.id ?? schoolYears[0]?.id,
+        schoolYears.find((y) => y.is_active)?.id ?? (schoolYears[0]?.id || 0),
     );
 
     const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,16 +92,12 @@ export default function StudentIndex({
 
     const toggleSelection = (id: string) => {
         setSelected((prev) =>
-            prev.includes(id)
-                ? prev.filter((item) => item !== id)
-                : [...prev, id],
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
         );
     };
 
     const handleCetak = () => {
-        const url =
-            route('admin.students.report.pdf') +
-            `?school_year_id=${filterSchoolYearId}`;
+        const url = route('admin.students.report.pdf') + `?school_year_id=${filterSchoolYearId}`;
         window.open(url, '_blank');
         setShowModal(false);
     };
@@ -115,78 +106,58 @@ export default function StudentIndex({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen Siswa" />
 
-            {/* ── MODAL FILTER TAHUN PELAJARAN ── */}
+            {/* ── MODAL CETAK LAPORAN ── */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
-                        {/* Header Modal */}
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-base font-bold text-gray-800 dark:text-white">
-                                🖨️ Cetak Laporan Siswa
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
+                    <div className="w-full max-w-md scale-100 rounded-2xl bg-card p-6 shadow-2xl transition-all dark:border border-border overflow-hidden">
+                        <div className="mb-5 flex items-center justify-between border-b border-border pb-3">
+                            <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
+                                <Printer className="h-5 w-5 text-secondary" />
+                                Cetak PDF Buku Induk
                             </h2>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                             >
-                                ✕
+                                <X className="h-5 w-5" />
                             </button>
                         </div>
 
-                        {/* Pilih Tahun Pelajaran */}
-                        <div className="mb-4">
-                            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Tahun Pelajaran
-                            </label>
-                            <select
-                                value={filterSchoolYearId}
-                                onChange={(e) =>
-                                    setFilterSchoolYearId(
-                                        Number(e.target.value),
-                                    )
-                                }
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            >
-                                {schoolYears.map((y) => (
-                                    <option key={y.id} value={y.id}>
-                                        {y.name} {y.is_active ? '(Aktif)' : ''}
-                                    </option>
-                                ))}
-                            </select>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-foreground">
+                                    Pilih Tahun Pelajaran Induk
+                                </label>
+                                <select
+                                    value={filterSchoolYearId}
+                                    onChange={(e) => setFilterSchoolYearId(Number(e.target.value))}
+                                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                                >
+                                    {schoolYears.map((y) => (
+                                        <option key={y.id} value={y.id}>
+                                            {y.name} {y.is_active ? '(Aktif)' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="mt-2 text-xs text-muted-foreground">
+                                    Dokumen ini akan mencetak rekapitulasi data induk seluruh siswa yang tergabung di tahun ajaran yang dipilih secara lengkap.
+                                </p>
+                            </div>
                         </div>
 
-                        {/* Info Periode */}
-                        <div className="mb-6 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                            Tahun Pelajaran:{' '}
-                            <strong>
-                                {
-                                    schoolYears.find(
-                                        (y) => y.id === filterSchoolYearId,
-                                    )?.name
-                                }
-                            </strong>
-                            <br />
-                            <span className="text-blue-500">
-                                1 Juli s/d 30 Juni tahun berikutnya
-                            </span>
-                        </div>
-
-                        {/* Tombol Aksi */}
-                        <div className="flex justify-end gap-2">
+                        <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-border">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={handleCetak}
-                                style={{
-                                    backgroundColor: '#0369a1',
-                                    color: 'white',
-                                }}
-                                className="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition hover:opacity-90"
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-5 py-2 text-sm font-bold text-secondary-foreground shadow-sm hover:opacity-90 active:scale-95 transition-all"
                             >
-                                🖨️ Cetak PDF
+                                <Printer className="h-4 w-4" />
+                                Generate PDF
                             </button>
                         </div>
                     </div>
@@ -195,288 +166,211 @@ export default function StudentIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <div className="mx-auto px-4 py-4 text-gray-900 sm:px-6 lg:px-8 dark:text-gray-100">
-                        <div className="mb-4 flex flex-col items-center justify-between sm:flex-row">
-                            <div className="w-full sm:flex sm:space-x-4 md:mt-0">
+                    <div className="mx-auto px-4 py-4 sm:px-6 lg:px-8">
+                        {/* Page Header */}
+                        <div className="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-xl font-bold text-foreground">
+                                    Manajemen Database Siswa
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-1 cursor-default max-w-xl">
+                                    Basis data terpusat peserta didik. Kelola identitas absensi, latar belakang anak, dan cetak rapor induk secara *real-time*.
+                                </p>
+                            </div>
+                            
+                            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                                <button
+                                    onClick={() => setShowModal(true)}
+                                    className="inline-flex cursor-pointer items-center justify-center gap-2 border border-secondary text-secondary rounded-lg px-6 py-2.5 text-sm font-semibold shadow-sm transition-all hover:bg-secondary hover:text-white active:scale-95 bg-transparent"
+                                >
+                                    <Printer className="h-4 w-4" />
+                                    Cetak Buku Induk
+                                </button>
+
+                                <Link
+                                    href={route('admin.students.create')}
+                                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95 border-0"
+                                >
+                                    <UserPlus className="h-4 w-4" />
+                                    Tambah Siswa
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Top Action Bar */}
+                        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
                                 <Entries
                                     route={route('admin.students.index')}
                                     search={search}
                                     entries={entries}
                                 />
+                                {selected.length > 0 && (
+                                    <DeleteDialog
+                                        trigger={
+                                            <button className="inline-flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground shadow-sm hover:opacity-90 transition-opacity focus:ring-2 focus:ring-destructive/50">
+                                                <Trash2 className="h-4 w-4" />
+                                                Hapus ({selected.length}) Profil
+                                            </button>
+                                        }
+                                        title="Hapus Data Siswa"
+                                        description={`Hati-hati! Penghapusan ${selected.length} data siswa dapat memutuskan relasi riwayat nilai dan presensinya. Yakin hapus permanen?`}
+                                        onConfirm={() => {
+                                            router.post(
+                                                route('admin.students.bulk-delete'),
+                                                { ids: selected },
+                                                { preserveScroll: true, onSuccess: () => setSelected([]) },
+                                            );
+                                        }}
+                                        cancelText="Batal"
+                                        confirmText="Hapus Permanen"
+                                    />
+                                )}
                             </div>
-                            <div className="sm:mt-0 sm:ml-16 sm:flex sm:flex-none sm:space-x-4">
+
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <input
                                     type="text"
-                                    placeholder="Cari siswa..."
-                                    className="w-full rounded-lg border px-3 py-2 text-sm sm:w-auto"
+                                    placeholder="Cari NISN, nama lengkap..."
+                                    className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none text-foreground placeholder:text-muted-foreground"
                                     defaultValue={search || ''}
                                     onChange={(e) => {
                                         router.get(
                                             route('admin.students.index'),
-                                            {
-                                                search: e.target.value,
-                                                entries: entries,
-                                            },
-                                            {
-                                                preserveState: true,
-                                                replace: true,
-                                            },
+                                            { search: e.target.value, entries: entries },
+                                            { preserveState: true, replace: true },
                                         );
                                     }}
                                 />
-                                {selected.length > 0 && (
-                                    <DeleteDialog
-                                        trigger={
-                                            <button className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700">
-                                                Hapus ({selected.length})
-                                            </button>
-                                        }
-                                        title="Hapus Pengguna Terpilih"
-                                        description={`Anda akan menghapus ${selected.length} pengguna. Lanjutkan?`}
-                                        onConfirm={() => {
-                                            router.post(
-                                                route(
-                                                    'admin.students.bulk-delete',
-                                                ),
-                                                { ids: selected },
-                                                {
-                                                    preserveScroll: true,
-                                                    onSuccess: () =>
-                                                        setSelected([]),
-                                                },
-                                            );
-                                        }}
-                                        cancelText="Batal"
-                                        confirmText="Hapus Semua"
-                                    />
-                                )}
-                            </div>
-                            <div className="sm:mt-0 sm:ml-5 sm:flex sm:flex-none sm:gap-3">
-                                {/* Tombol Cetak Laporan → buka modal */}
-                                <button
-                                    onClick={() => setShowModal(true)}
-                                    style={{
-                                        backgroundColor: '#0369a1',
-                                        color: 'white',
-                                    }}
-                                    className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
-                                >
-                                    🖨️ Cetak Laporan
-                                </button>
-
-                                {/* Tombol Tambah Siswa */}
-                                <Link
-                                    href={route('admin.students.create')}
-                                    style={{
-                                        backgroundColor: '#4b986c',
-                                        color: 'white',
-                                    }}
-                                    className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
-                                >
-                                    + Tambah Siswa
-                                </Link>
                             </div>
                         </div>
 
-                        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+                        {/* Data Table */}
+                        <div className="relative overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
                             {students.data.length > 0 ? (
                                 <>
-                                    <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
-                                        <thead className="bg-white text-sm text-gray-700 uppercase dark:bg-gray-800">
-                                            <tr className="border-t border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600">
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
+                                    <table className="w-full text-left text-sm text-foreground">
+                                        <thead className="bg-muted text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                            <tr className="border-b border-border">
+                                                <th scope="col" className="px-5 py-4 text-center w-12">
                                                     <input
                                                         type="checkbox"
-                                                        className="h-5 w-5 rounded text-blue-600"
-                                                        onChange={
-                                                            toggleSelectAll
-                                                        }
-                                                        checked={
-                                                            students.data
-                                                                .length > 0 &&
-                                                            selected.length ===
-                                                                students.data
-                                                                    .length
-                                                        }
+                                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                                                        onChange={toggleSelectAll}
+                                                        checked={students.data.length > 0 && selected.length === students.data.length}
                                                     />
                                                 </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    <span>NO</span>
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    <span>Nama Lengkap</span>
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    <span>NISN</span>
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    <span>Jenis Kelamin</span>
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    <span>Aksi</span>
-                                                </th>
+                                                <th scope="col" className="px-6 py-4 w-16 text-center">NO</th>
+                                                <th scope="col" className="px-6 py-4 min-w-[200px]">NAMA & KELAMIN</th>
+                                                <th scope="col" className="px-6 py-4">NISN</th>
+                                                <th scope="col" className="px-6 py-4">KONTAK / ORTU</th>
+                                                <th scope="col" className="px-6 py-4 text-right">AKSI</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            {students.data.map(
-                                                (student, index) => (
-                                                    <tr
-                                                        key={student.id}
-                                                        className="border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
-                                                    >
-                                                        <td className="px-6 py-2 text-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="h-5 w-5 rounded text-blue-600"
-                                                                value={
-                                                                    student.id
-                                                                }
-                                                                onChange={() =>
-                                                                    toggleSelection(
-                                                                        student.id.toString(),
-                                                                    )
-                                                                }
-                                                                checked={selected.includes(
-                                                                    student.id.toString(),
-                                                                )}
-                                                            />
-                                                        </td>
-                                                        <td
-                                                            scope="row"
-                                                            className="px-6 py-4 text-center font-medium whitespace-nowrap text-gray-900 dark:text-white"
-                                                        >
-                                                            {students.from +
-                                                                index}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            {student.full_name}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            {student.nisn}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-center">
-                                                            <span
-                                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                                    student.gender ===
-                                                                    'male'
-                                                                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                                                                        : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300'
-                                                                }`}
-                                                            >
-                                                                {student.gender ===
-                                                                'male'
-                                                                    ? 'Laki-laki'
-                                                                    : 'Perempuan'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            <div className="flex justify-center">
-                                                                <DropdownMenu>
-                                                                    <DropdownMenuTrigger asChild>
-                                                                        <button className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 transition-colors focus:outline-none dark:hover:bg-gray-700">
-                                                                            <MoreVertical className="h-5 w-5 text-gray-500" />
-                                                                        </button>
-                                                                    </DropdownMenuTrigger>
-                                                                    <DropdownMenuContent align="end" className="w-48 p-1">
-                                                                        <DropdownMenuItem asChild>
-                                                                            <Link
-                                                                                href={route(
-                                                                                    'admin.students.show',
-                                                                                    student.id,
-                                                                                )}
-                                                                                className="flex w-full cursor-pointer items-center p-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
-                                                                            >
-                                                                                <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                                                                                Detail Siswa
-                                                                            </Link>
-                                                                        </DropdownMenuItem>
-
-                                                                        <DropdownMenuItem asChild>
-                                                                            <Link
-                                                                                href={route(
-                                                                                    'admin.students.edit',
-                                                                                    student.id,
-                                                                                )}
-                                                                                className="flex w-full cursor-pointer items-center p-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
-                                                                            >
-                                                                                <Edit className="mr-2 h-4 w-4 text-amber-500" />
-                                                                                Edit Data
-                                                                            </Link>
-                                                                        </DropdownMenuItem>
-                                                                        
-                                                                        <DropdownMenuItem asChild>
-                                                                            <a
-                                                                                href={route(
-                                                                                    'admin.students.card.pdf',
-                                                                                    student.id,
-                                                                                )}
-                                                                                target="_blank"
-                                                                                rel="noopener noreferrer"
-                                                                                className="flex w-full cursor-pointer items-center p-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
-                                                                            >
-                                                                                <Printer className="mr-2 h-4 w-4 text-teal-600 dark:text-teal-400" />
-                                                                                Cetak Kartu
-                                                                            </a>
-                                                                        </DropdownMenuItem>
-
-                                                                        <DropdownMenuSeparator />
-
+                                        <tbody className="divide-y divide-border bg-background">
+                                            {students.data.map((student, index) => (
+                                                <tr key={student.id} className="transition-colors hover:bg-muted/40">
+                                                    <td className="px-5 py-3 text-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                                                            value={student.id}
+                                                            onChange={() => toggleSelection(student.id.toString())}
+                                                            checked={selected.includes(student.id.toString())}
+                                                        />
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center text-muted-foreground">
+                                                        {i + index}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-10 w-10 flex-shrink-0">
+                                                                <img
+                                                                    className="h-10 w-10 rounded-full object-cover border border-border shadow-sm bg-muted text-[10px] break-all leading-3 flex items-center text-center justify-center text-muted-foreground"
+                                                                    src={student.photo ? `/storage/${student.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=random`}
+                                                                    alt={student.full_name}
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-bold text-foreground">
+                                                                    {student.full_name}
+                                                                </div>
+                                                                <div className="text-xs text-muted-foreground uppercase flex items-center gap-1 mt-0.5">
+                                                                    {(student.gender === 'Laki-Laki' || student.gender === 'L' || student.gender === 'male') ? (
+                                                                        <span className="text-blue-500 font-semibold">Laki-laki</span>
+                                                                    ) : (student.gender === 'Perempuan' || student.gender === 'P' || student.gender === 'female') ? (
+                                                                        <span className="text-pink-500 font-semibold">Perempuan</span>
+                                                                    ) : '-'}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="font-mono text-sm">{student.nisn || '-'}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="text-sm font-medium text-foreground">{student.father_name || student.mother_name || student.guardian_name || '-'}</div>
+                                                        <div className="text-xs text-muted-foreground">{student.phone || '-'}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex justify-end pr-1">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <button className="rounded-md border border-input bg-background p-1.5 text-muted-foreground hover:bg-muted focus:ring-2 focus:ring-primary focus:outline-none">
+                                                                        <MoreVertical className="h-4 w-4" />
+                                                                    </button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end" className="w-48 bg-card text-foreground">
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link href={route('admin.students.show', student.id)} className="flex items-center w-full cursor-pointer p-2">
+                                                                            <Eye className="mr-2 h-4 w-4" />
+                                                                            Beranda Siswa
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link href={route('admin.students.edit', student.id)} className="flex items-center w-full cursor-pointer p-2 text-primary focus:text-primary focus:bg-primary/10">
+                                                                            <Edit className="mr-2 h-4 w-4" />
+                                                                            Edit Identitas
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuSeparator />
+                                                                    <div className="px-2 py-1.5">
                                                                         <DeleteDialog
                                                                             trigger={
-                                                                                <button className="flex w-full cursor-pointer items-center rounded-sm px-2 py-2 text-sm text-red-600 outline-none hover:bg-red-50 focus:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/40 dark:focus:bg-red-950/40 transition-colors">
+                                                                                <button className="flex w-full items-center text-sm text-destructive font-medium hover:opacity-80">
                                                                                     <Trash2 className="mr-2 h-4 w-4" />
-                                                                                    Hapus Siswa
+                                                                                    Hapus Total
                                                                                 </button>
                                                                             }
-                                                                            title="Hapus Siswa"
-                                                                            description={`Anda yakin ingin menghapus "${student.full_name}"? Tindakan ini tidak dapat dibatalkan.`}
+                                                                            title="Hapus Data Siswa"
+                                                                            description={`Anda sangat yakin ingin menghapus "${student.full_name}" secara permanen berserta seluruh arsip siswanya?`}
                                                                             onConfirm={() => {
-                                                                                router.delete(
-                                                                                    route(
-                                                                                        'admin.students.destroy',
-                                                                                        student.id,
-                                                                                    ),
-                                                                                );
+                                                                                router.delete(route('admin.students.destroy', student.id));
                                                                             }}
                                                                             cancelText="Batal"
-                                                                            confirmText="Hapus"
+                                                                            confirmText="Hapus Permanen"
                                                                         />
-                                                                    </DropdownMenuContent>
-                                                                </DropdownMenu>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )}
+                                                                    </div>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
-                                    <div className="mb-2 px-6 py-3">
-                                        <InertiaPagination
-                                            pagination={students}
-                                        />
+                                    <div className="border-t border-border bg-card px-6 py-4">
+                                        <InertiaPagination pagination={students} />
                                     </div>
                                 </>
                             ) : (
-                                <div className="mb-3 rounded bg-gray-500 p-3 text-white shadow-sm">
-                                    Tidak ada data siswa.
+                                <div className="flex flex-col items-center justify-center py-16 text-center">
+                                    <FileSearch className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                                    <h3 className="text-lg font-medium text-foreground">Database Kosong</h3>
+                                    <p className="mt-1 text-sm text-muted-foreground max-w-sm">
+                                        Data siswa belum diunggah atau kata kunci pencarian Anda tidak tepat.
+                                    </p>
                                 </div>
                             )}
                         </div>

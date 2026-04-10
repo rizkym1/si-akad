@@ -80,6 +80,11 @@ class Student extends Model
         return $this->hasMany(Attendance::class);
     }
 
+    public function dailyAttendances(): HasMany
+    {
+        return $this->hasMany(DailyAttendance::class);
+    }
+
     /**
      * Relasi: Satu siswa memiliki banyak penilaian perkembangan anak.
      */

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useEffect, useState } from 'react';
+import { Edit2, Loader2 } from 'lucide-react';
 
 interface SchoolYear {
     id: number;
@@ -20,19 +21,7 @@ interface SchoolYear {
     is_active: boolean;
 }
 
-interface EditSchoolYearModalProps {
-    schoolYear: SchoolYear;
-}
-
-// ✅ Fungsi normalize tanggal (sama seperti edit-modal absensi)
-function normalizeDateString(s: string | null | undefined): string {
-    if (!s) return '';
-    // '2026-07-01 00:00:00' -> '2026-07-01'
-    // '2026-07-01T00:00:00.000Z' -> '2026-07-01'
-    return s.slice(0, 10);
-}
-
-export function EditSchoolYearModal({ schoolYear }: EditSchoolYearModalProps) {
+export function EditSchoolYearModal({ schoolYear }: { schoolYear: SchoolYear }) {
     const [open, setOpen] = useState(false);
 
     const { data, setData, put, processing, errors, reset } = useForm({
@@ -40,7 +29,6 @@ export function EditSchoolYearModal({ schoolYear }: EditSchoolYearModalProps) {
         is_active: schoolYear.is_active,
     });
 
-    // ✅ Normalize tanggal juga saat modal dibuka ulang
     useEffect(() => {
         if (open) {
             setData({
@@ -62,94 +50,87 @@ export function EditSchoolYearModal({ schoolYear }: EditSchoolYearModalProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button
-                    style={{ backgroundColor: '#f59e0b', color: 'white' }}
-                    className="inline-flex items-center rounded px-2.5 py-1 text-xs font-medium transition hover:opacity-90"
-                >
+                <button className="inline-flex items-center justify-center rounded-md border border-input bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted focus:ring-2 focus:ring-primary/50 focus:outline-none">
+                    <Edit2 className="h-3.5 w-3.5 mr-1" />
                     Edit
                 </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[480px]">
                 <form onSubmit={handleSubmit}>
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-foreground">
-                            Edit Tahun Ajaran
+                    <DialogHeader className="mb-4">
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
+                                <Edit2 className="h-5 w-5" />
+                            </span>
+                            Edit Tahun Pelajaran
                         </DialogTitle>
-                        <DialogDescription className="text-muted-foreground">
-                            Perbarui informasi tahun pelajaran di bawah ini
+                        <DialogDescription className="text-sm text-muted-foreground mt-1">
+                            Lakukan perubahan data tahun pelajaran di bawah ini.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="grid gap-4 py-4">
+                    <div className="grid gap-5 py-2">
                         {/* Nama Tahun Pelajaran */}
                         <div className="grid gap-2">
-                            <Label
-                                htmlFor="edit-name"
-                                className="text-foreground"
-                            >
-                                Nama Tahun Pelajaran{' '}
-                                <span className="text-red-500">*</span>
+                            <Label htmlFor={`name-${schoolYear.id}`} className="text-sm font-semibold">
+                                Tahun Ajaran <span className="text-destructive">*</span>
                             </Label>
                             <Input
-                                id="edit-name"
+                                id={`name-${schoolYear.id}`}
                                 type="text"
-                                placeholder="contoh: 2024/2025"
+                                placeholder="Cth: 2024/2025"
                                 value={data.name}
-                                onChange={(e) =>
-                                    setData('name', e.target.value)
-                                }
-                                className="border-border bg-card focus:ring-primary"
+                                onChange={(e) => setData('name', e.target.value)}
+                                className="w-full focus-visible:ring-primary"
                                 required
                             />
-                            <InputError
-                                message={errors.name}
-                                className="mt-1"
-                            />
+                            <InputError message={errors.name} />
                         </div>
 
                         {/* Status Aktif */}
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="checkbox"
-                                id="edit-is_active"
-                                checked={data.is_active}
-                                onChange={(e) =>
-                                    setData('is_active', e.target.checked)
-                                }
-                                className="h-4 w-4 rounded text-blue-600"
-                            />
-                            <Label
-                                htmlFor="edit-is_active"
-                                className="cursor-pointer text-foreground"
-                            >
-                                Jadikan Tahun Pelajaran Aktif
-                            </Label>
+                        <div className="flex items-start space-x-3 rounded-lg border border-border bg-muted/40 p-3 shadow-sm transition-colors hover:bg-muted/60">
+                            <div className="flex h-6 items-center">
+                                <input
+                                    type="checkbox"
+                                    id={`is_active-${schoolYear.id}`}
+                                    checked={data.is_active}
+                                    onChange={(e) => setData('is_active', e.target.checked)}
+                                    className="h-4 w-4 rounded border-gray-300 text-primary shadow-sm focus:ring-primary dark:border-gray-600 dark:bg-gray-800"
+                                />
+                            </div>
+                            <div className="text-sm">
+                                <Label htmlFor={`is_active-${schoolYear.id}`} className="cursor-pointer font-medium text-foreground">
+                                    Jadikan Tahun Aktif
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Jika dicentang, ini akan mematikan status aktif di tahun ajaran lainnya.
+                                </p>
+                            </div>
                         </div>
-                        <InputError
-                            message={errors.is_active}
-                            className="mt-1"
-                        />
+                        <InputError message={errors.is_active} />
                     </div>
 
-                    <DialogFooter className="gap-2">
+                    <DialogFooter className="mt-4 gap-2 pt-4 border-t border-border sm:justify-end">
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => setOpen(false)}
-                            className="border-border hover:bg-secondary/20"
+                            onClick={() => {
+                                reset();
+                                setOpen(false);
+                            }}
+                            className="bg-transparent border-input hover:bg-muted"
                         >
                             Batal
                         </Button>
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                            style={{
-                                backgroundColor: '#f59e0b',
-                                color: 'white',
-                            }}
-                            className="hover:opacity-90"
-                        >
-                            {processing ? 'Menyimpan...' : 'Perbarui'}
+                        <Button type="submit" disabled={processing} className="min-w-[100px]">
+                            {processing ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Menyimpan...
+                                </>
+                            ) : (
+                                'Simpan Perubahan'
+                            )}
                         </Button>
                     </DialogFooter>
                 </form>

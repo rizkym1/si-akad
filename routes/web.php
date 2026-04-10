@@ -66,6 +66,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('nilai-kokurikuler.penilaian');
     });
 
+    // Portal khusus Guru (Teacher)
+    Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function () {
+        Route::get('dashboard', [\App\Http\Controllers\Teacher\DashboardController::class, 'index'])->name('dashboard');
+        
+        // Data Siswa (Hanya Lihat)
+        Route::get('students', [\App\Http\Controllers\Teacher\StudentController::class, 'index'])->name('students.index');
+        Route::get('students/{student}', [\App\Http\Controllers\Teacher\StudentController::class, 'show'])->name('students.show');
+
+        // Presensi / Kehadiran
+        Route::resource('attendances', \App\Http\Controllers\Teacher\AttendanceController::class)->only(['index', 'store']);
+
+        // Kalender Pendidikan
+        Route::get('academic-calendars', [\App\Http\Controllers\Admin\AcademicCalendarController::class, 'index'])->name('academic-calendars.index');
+    });
+
     // Portal khusus Orang Tua (Parent)
     Route::middleware(['auth'])->prefix('parent')->name('parent.')->group(function () {
         Route::get('students/{student}', [\App\Http\Controllers\Parent\StudentController::class, 'show'])->name('students.show');
