@@ -60,6 +60,12 @@ class User extends Authenticatable
         return $query->where('role', 'teacher');
     }
 
+    // Class connection
+    public function studentClasses(): HasMany
+    {
+        return $this->hasMany(StudentClass::class, 'teacher_id');
+    }
+
     // Scope untuk filter admin
     public function scopeAdmins($query)
     {

@@ -7,6 +7,7 @@ import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { AddStudentClassModal } from './add-modal';
 import { EditStudentClassModal } from './edit-modal';
+import { Search, Trash2, LibraryBig } from 'lucide-react';
 
 interface StudentClass {
     id: number;
@@ -17,6 +18,11 @@ interface StudentClass {
         name: string;
         is_active: boolean;
     } | null;
+    teacher: {
+        id: number;
+        name: string;
+    } | null;
+    teacher_id: number | null;
     created_at: string;
     updated_at: string;
 }
@@ -33,6 +39,7 @@ export default function StudentClassIndex({
     entries,
     search,
     schoolYears,
+    teachers,
 }: {
     studentClasses: {
         data: StudentClass[];
@@ -43,14 +50,11 @@ export default function StudentClassIndex({
         current_page: number;
         last_page: number;
         links: any[];
-        first_page_url: string | null;
-        last_page_url: string | null;
-        prev_page_url: string | null;
-        next_page_url: string | null;
     };
     entries: any;
     search: string;
     schoolYears: any[];
+    teachers: any[];
 }) {
     const [selected, setSelected] = useState<string[]>([]);
 
@@ -64,9 +68,7 @@ export default function StudentClassIndex({
 
     const toggleSelection = (id: string) => {
         setSelected((prev) =>
-            prev.includes(id)
-                ? prev.filter((item) => item !== id)
-                : [...prev, id],
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
         );
     };
 
@@ -76,201 +78,180 @@ export default function StudentClassIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <div className="mx-auto px-4 py-4 text-gray-900 sm:px-6 lg:px-8 dark:text-gray-100">
-                        <div className="mb-4 flex flex-col items-center justify-between sm:flex-row">
-                            <div className="w-full sm:flex sm:space-x-4 md:mt-0">
+                    <div className="mx-auto px-4 py-4 sm:px-6 lg:px-8">
+                        {/* Page Header */}
+                        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <h2 className="text-xl font-bold text-foreground">
+                                    Manajemen Kelas Siswa
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-1 cursor-default">
+                                    Kelola daftar kelas yang tersedia, lalu tetapkan Wali Kelas dan Tahun Pelajarannya di sini.
+                                </p>
+                            </div>
+                            <div className="flex shrink-0">
+                                <AddStudentClassModal schoolYears={schoolYears} teachers={teachers} />
+                            </div>
+                        </div>
+
+                        {/* Top Action Bar */}
+                        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
                                 <Entries
                                     route={route('admin.student-classes.index')}
                                     search={search}
                                     entries={entries}
                                 />
-                            </div>
-                            <div className="sm:mt-0 sm:ml-16 sm:flex sm:flex-none sm:space-x-4">
-                                <input
-                                    type="text"
-                                    placeholder="Cari kelas..."
-                                    className="w-full rounded-lg border px-3 py-2 text-sm sm:w-auto dark:bg-gray-800"
-                                    defaultValue={search || ''}
-                                    onChange={(e) => {
-                                        router.get(
-                                            route(
-                                                'admin.student-classes.index',
-                                            ),
-                                            {
-                                                search: e.target.value,
-                                                entries: entries,
-                                            },
-                                            {
-                                                preserveState: true,
-                                                replace: true,
-                                            },
-                                        );
-                                    }}
-                                />
                                 {selected.length > 0 && (
                                     <DeleteDialog
                                         trigger={
-                                            <button className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700">
-                                                Hapus ({selected.length})
+                                            <button className="inline-flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground shadow-sm hover:opacity-90 transition-opacity focus:ring-2 focus:ring-destructive/50">
+                                                <Trash2 className="h-4 w-4" />
+                                                Hapus ({selected.length}) Terpilih
                                             </button>
                                         }
                                         title="Hapus Kelas Terpilih"
-                                        description={`Anda akan menghapus ${selected.length} kelas. Lanjutkan?`}
+                                        description={`Anda akan menghapus ${selected.length} kelas yang terpilih. Tindakan ini permanen. Lanjutkan?`}
                                         onConfirm={() => {
                                             router.post(
-                                                route(
-                                                    'admin.student-classes.bulk-delete',
-                                                ),
+                                                route('admin.student-classes.bulk-delete'),
                                                 { ids: selected },
                                                 {
                                                     preserveScroll: true,
-                                                    onSuccess: () =>
-                                                        setSelected([]),
+                                                    onSuccess: () => setSelected([]),
                                                 },
                                             );
                                         }}
                                         cancelText="Batal"
-                                        confirmText="Hapus Semua"
+                                        confirmText="Hapus Permanen"
                                     />
                                 )}
                             </div>
-                            <div className="sm:mt-0 sm:ml-5 sm:flex-none">
-                                <AddStudentClassModal
-                                    schoolYears={schoolYears}
+
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <input
+                                    type="text"
+                                    placeholder="Cari kelas..."
+                                    className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none text-foreground placeholder:text-muted-foreground"
+                                    defaultValue={search || ''}
+                                    onChange={(e) => {
+                                        router.get(
+                                            route('admin.student-classes.index'),
+                                            {
+                                                search: e.target.value,
+                                                entries: entries,
+                                            },
+                                            { preserveState: true, replace: true },
+                                        );
+                                    }}
                                 />
                             </div>
                         </div>
 
-                        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+                        {/* Data Table */}
+                        <div className="relative overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
                             {studentClasses.data.length > 0 ? (
                                 <>
-                                    <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
-                                        <thead className="bg-white text-sm text-gray-700 uppercase dark:bg-gray-800">
-                                            <tr className="border-t border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600">
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
+                                    <table className="w-full text-left text-sm text-foreground">
+                                        <thead className="bg-muted text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                            <tr className="border-b border-border">
+                                                <th scope="col" className="px-5 py-4 text-center w-12">
                                                     <input
                                                         type="checkbox"
-                                                        className="h-5 w-5 rounded text-blue-600"
-                                                        onChange={
-                                                            toggleSelectAll
-                                                        }
-                                                        checked={
-                                                            studentClasses.data
-                                                                .length > 0 &&
-                                                            selected.length ===
-                                                                studentClasses
-                                                                    .data.length
-                                                        }
+                                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                                                        onChange={toggleSelectAll}
+                                                        checked={studentClasses.data.length > 0 && selected.length === studentClasses.data.length}
                                                     />
                                                 </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    NO
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    NAMA KELAS
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    TAHUN AJARAN
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-center"
-                                                >
-                                                    AKSI
-                                                </th>
+                                                <th scope="col" className="px-6 py-4 w-16 text-center">NO</th>
+                                                <th scope="col" className="px-6 py-4">NAMA KELAS</th>
+                                                <th scope="col" className="px-6 py-4">WALI KELAS</th>
+                                                <th scope="col" className="px-6 py-4">TAHUN PELAJARAN</th>
+                                                <th scope="col" className="px-6 py-4 text-right">AKSI</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            {studentClasses.data.map(
-                                                (item, index) => (
-                                                    <tr
-                                                        key={item.id}
-                                                        className="border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
-                                                    >
-                                                        <td className="px-6 py-2 text-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="h-5 w-5 rounded text-blue-600"
-                                                                value={item.id}
-                                                                onChange={() =>
-                                                                    toggleSelection(
-                                                                        item.id.toString(),
-                                                                    )
-                                                                }
-                                                                checked={selected.includes(
-                                                                    item.id.toString(),
+                                        <tbody className="divide-y divide-border bg-background">
+                                            {studentClasses.data.map((item, index) => (
+                                                <tr key={item.id} className="transition-colors hover:bg-muted/40">
+                                                    <td className="px-5 py-3 text-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                                                            value={item.id}
+                                                            onChange={() => toggleSelection(item.id.toString())}
+                                                            checked={selected.includes(item.id.toString())}
+                                                        />
+                                                    </td>
+                                                    <td className="px-6 py-3 text-center text-muted-foreground">
+                                                        {studentClasses.from + index}
+                                                    </td>
+                                                    <td className="px-6 py-3 font-bold text-foreground">
+                                                        {item.name}
+                                                    </td>
+                                                    <td className="px-6 py-3">
+                                                        {item.teacher ? (
+                                                            <span className="font-medium text-blue-600 dark:text-blue-400">
+                                                                {item.teacher.name}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-muted-foreground italic">Belum Diatur</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-3">
+                                                        {item.school_year ? (
+                                                            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2.5 py-1 text-xs font-semibold text-foreground">
+                                                                {item.school_year.name}
+                                                                {item.school_year.is_active && (
+                                                                    <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
                                                                 )}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-muted-foreground">-</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-3 text-right">
+                                                        <div className="flex justify-end gap-2 pr-1">
+                                                            <EditStudentClassModal
+                                                                studentClass={item}
+                                                                schoolYears={schoolYears}
+                                                                teachers={teachers}
                                                             />
-                                                        </td>
-                                                        <td className="px-6 py-4 text-center font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                                                            {studentClasses.from +
-                                                                index}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            {item.name}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            {item.school_year
-                                                                ?.name ?? '-'}
-                                                        </td>
-                                                        <td className="px-6 py-2 text-center">
-                                                            <div className="flex justify-center space-x-2">
-                                                                <EditStudentClassModal
-                                                                    studentClass={
-                                                                        item
-                                                                    }
-                                                                    schoolYears={
-                                                                        schoolYears
-                                                                    }
-                                                                />
-
-                                                                <DeleteDialog
-                                                                    trigger={
-                                                                        <button className="inline-flex items-center rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-600 focus:ring-2 focus:ring-red-400 focus:outline-none">
-                                                                            Hapus
-                                                                        </button>
-                                                                    }
-                                                                    title="Hapus Kelas"
-                                                                    description={`Yakin ingin menghapus kelas "${item.name}"?`}
-                                                                    onConfirm={() => {
-                                                                        router.delete(
-                                                                            route(
-                                                                                'admin.student-classes.destroy',
-                                                                                item.id,
-                                                                            ),
-                                                                        );
-                                                                    }}
-                                                                    cancelText="Batal"
-                                                                    confirmText="Hapus"
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )}
+                                                            <DeleteDialog
+                                                                trigger={
+                                                                    <button className="inline-flex items-center justify-center rounded-md border border-destructive/20 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground focus:ring-2 focus:ring-destructive/50 focus:outline-none">
+                                                                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                                                        Hapus
+                                                                    </button>
+                                                                }
+                                                                title="Hapus Kelas"
+                                                                description={`Yakin ingin menghapus kelas "${item.name}" secara permanen?`}
+                                                                onConfirm={() => {
+                                                                    router.delete(
+                                                                        route('admin.student-classes.destroy', item.id),
+                                                                        { preserveScroll: true }
+                                                                    );
+                                                                }}
+                                                                cancelText="Batal"
+                                                                confirmText="Ya, Hapus"
+                                                            />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
-                                    <div className="mb-2 px-6 py-3">
-                                        <InertiaPagination
-                                            pagination={studentClasses}
-                                        />
+                                    <div className="border-t border-border bg-card px-6 py-4">
+                                        <InertiaPagination pagination={studentClasses} />
                                     </div>
                                 </>
                             ) : (
-                                <div className="mb-3 rounded bg-gray-500 p-3 text-white shadow-sm">
-                                    Tidak ada data kelas.
+                                <div className="flex flex-col items-center justify-center py-16 text-center">
+                                    <LibraryBig className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                                    <h3 className="text-lg font-medium text-foreground">Kosong</h3>
+                                    <p className="mt-1 text-sm text-muted-foreground max-w-sm">
+                                        Data kelas belum tersedia atau hasil pencarian Anda tidak menemukan apa pun.
+                                    </p>
                                 </div>
                             )}
                         </div>

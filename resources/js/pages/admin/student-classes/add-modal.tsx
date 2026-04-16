@@ -11,8 +11,16 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
+import { LibraryBig, Loader2 } from 'lucide-react';
 
 interface SchoolYear {
     id: number;
@@ -22,8 +30,10 @@ interface SchoolYear {
 
 export function AddStudentClassModal({
     schoolYears,
+    teachers,
 }: {
     schoolYears: SchoolYear[];
+    teachers: any[];
 }) {
     const [open, setOpen] = useState(false);
 
@@ -31,10 +41,17 @@ export function AddStudentClassModal({
         name: '',
         school_year_id:
             schoolYears.find((y) => y.is_active)?.id ?? schoolYears[0]?.id ?? 0,
+        teacher_id: '',
     });
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+
+        const submitData = { ...data };
+        if (submitData.teacher_id === 'none') {
+            submitData.teacher_id = '';
+        }
+
         post(route('admin.student-classes.store'), {
             onSuccess: () => {
                 reset();
@@ -46,83 +63,92 @@ export function AddStudentClassModal({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button
-                    style={{ backgroundColor: '#4b986c', color: 'white' }}
-                    className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold shadow-md transition-all active:scale-95"
-                >
-                    + Tambah Kelas
-                </button>
+                <Button className="gap-2">
+                    <LibraryBig className="h-4 w-4" />
+                    Tambah Kelas
+                </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[480px]">
                 <form onSubmit={handleSubmit}>
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-foreground">
+                    <DialogHeader className="mb-4">
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <LibraryBig className="h-5 w-5" />
+                            </span>
                             Tambah Kelas Baru
                         </DialogTitle>
-                        <DialogDescription className="text-muted-foreground">
-                            Isi form berikut untuk menambahkan kelas baru
+                        <DialogDescription className="text-sm text-muted-foreground mt-1">
+                            Lengkapi informasi di bawah untuk mendaftarkan kelas baru ke dalam sistem akademik.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="grid gap-4 py-4">
+                    <div className="grid gap-5 py-2">
                         {/* Nama Kelas */}
                         <div className="grid gap-2">
-                            <Label htmlFor="name" className="text-foreground">
-                                Nama Kelas{' '}
-                                <span className="text-red-500">*</span>
+                            <Label htmlFor="name" className="text-sm font-semibold text-foreground">
+                                Nama Kelas <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 id="name"
                                 type="text"
-                                placeholder="Contoh: 10-A, Kelas 1A"
+                                placeholder="Cth: 10-A, Kelas 1A"
                                 value={data.name}
-                                onChange={(e) =>
-                                    setData('name', e.target.value)
-                                }
-                                className="border-border bg-card focus:ring-primary"
+                                onChange={(e) => setData('name', e.target.value)}
+                                className="w-full focus-visible:ring-primary bg-background border-input"
                                 required
                             />
-                            <InputError
-                                message={errors.name}
-                                className="mt-1"
-                            />
+                            <InputError message={errors.name} />
                         </div>
 
                         {/* Tahun Pelajaran */}
                         <div className="grid gap-2">
-                            <Label
-                                htmlFor="school_year_id"
-                                className="text-foreground"
-                            >
-                                Tahun Pelajaran{' '}
-                                <span className="text-red-500">*</span>
+                            <Label htmlFor="school_year_id" className="text-sm font-semibold text-foreground">
+                                Tahun Pelajaran <span className="text-destructive">*</span>
                             </Label>
-                            <select
-                                id="school_year_id"
-                                value={data.school_year_id}
-                                onChange={(e) =>
-                                    setData(
-                                        'school_year_id',
-                                        Number(e.target.value),
-                                    )
-                                }
-                                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                required
+                            <Select
+                                value={data.school_year_id ? data.school_year_id.toString() : ''}
+                                onValueChange={(val) => setData('school_year_id', Number(val))}
                             >
-                                {schoolYears.map((y) => (
-                                    <option key={y.id} value={y.id}>
-                                        {y.name} {y.is_active ? '(Aktif)' : ''}
-                                    </option>
-                                ))}
-                            </select>
-                            <InputError
-                                message={errors.school_year_id}
-                                className="mt-1"
-                            />
+                                <SelectTrigger className="w-full bg-background border-input focus:ring-primary">
+                                    <SelectValue placeholder="Pilih Tahun Pelajaran" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-56">
+                                    {schoolYears.map((y) => (
+                                        <SelectItem key={y.id} value={y.id.toString()}>
+                                            {y.name} {y.is_active ? '(Aktif)' : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.school_year_id} />
+                        </div>
+
+                        {/* Wali Kelas */}
+                        <div className="grid gap-2">
+                            <Label htmlFor="teacher_id" className="text-sm font-semibold text-foreground">
+                                Wali Kelas (Opsional)
+                            </Label>
+                            <Select
+                                value={data.teacher_id ? data.teacher_id.toString() : 'none'}
+                                onValueChange={(val) => setData('teacher_id', val)}
+                            >
+                                <SelectTrigger className="w-full bg-background border-input focus:ring-primary">
+                                    <SelectValue placeholder="Pilih Wali Kelas" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-56">
+                                    <SelectItem value="none">-- Belum Ditentukan --</SelectItem>
+                                    {teachers.map((t) => (
+                                        <SelectItem key={t.id} value={t.id.toString()}>
+                                            {t.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.teacher_id} />
                         </div>
                     </div>
 
-                    <DialogFooter className="gap-2">
+                    <DialogFooter className="mt-4 gap-2 pt-4 border-t border-border sm:justify-end">
                         <Button
                             type="button"
                             variant="outline"
@@ -130,20 +156,19 @@ export function AddStudentClassModal({
                                 reset();
                                 setOpen(false);
                             }}
-                            className="border-border hover:bg-secondary/20"
+                            className="bg-transparent border-input hover:bg-muted"
                         >
                             Batal
                         </Button>
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                            style={{
-                                backgroundColor: '#4b986c',
-                                color: 'white',
-                            }}
-                            className="hover:opacity-90"
-                        >
-                            {processing ? 'Menyimpan...' : 'Simpan'}
+                        <Button type="submit" disabled={processing} className="min-w-[100px]">
+                            {processing ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Menyimpan...
+                                </>
+                            ) : (
+                                'Simpan Kelas'
+                            )}
                         </Button>
                     </DialogFooter>
                 </form>

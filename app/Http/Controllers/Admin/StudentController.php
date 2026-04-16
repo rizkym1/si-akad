@@ -21,12 +21,14 @@ class StudentController extends Controller
     {
         $search = $request->input('search');
 
+        $entries = $request->input('entries', 10);
+
         $students = Student::query()
             ->when($search, function ($query, $search) {
                 $query->where('full_name', 'like', '%' . $search . '%')
                       ->orWhere('nisn', 'like', '%' . $search . '%');
             })
-            ->paginate(10)
+            ->paginate($entries)
             ->withQueryString();
 
         return Inertia::render('admin/students/index', [

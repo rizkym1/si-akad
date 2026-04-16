@@ -1,12 +1,12 @@
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { BookOpen, GraduationCap, School, Users } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { BookOpen, GraduationCap, School, Users, ChevronRight, Activity, TrendingUp } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Dashboard Utama',
         href: dashboard().url,
     },
 ];
@@ -52,314 +52,265 @@ export default function Dashboard({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4">
-                {/* ── Header ── */}
-                <div className="rounded-xl border border-sidebar-border/70 bg-white p-6 shadow-sm dark:border-sidebar-border dark:bg-gray-800">
-                    <div className="flex items-center gap-4">
-                        <div className="rounded-xl bg-blue-100 p-3 dark:bg-blue-900/30">
-                            <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+            <Head title="Dashboard Pusat" />
+            
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+                {/* ── Welcome Header ── */}
+                <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm">
+                    <div className="absolute top-0 right-0 -mt-16 -mr-16 text-primary/5">
+                        <School className="w-64 h-64" />
+                    </div>
+                    <div className="relative z-10 flex items-center gap-5">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
+                            <BookOpen className="h-8 w-8" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                Sistem Informasi Akademik
+                            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+                                Selamat Datang di Pusat Kendali
                             </h1>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Sistem Informasi Akademik — Ringkasan Data Siswa
+                            <p className="mt-1.5 flex items-center text-sm font-medium text-muted-foreground">
+                                <Activity className="mr-1.5 h-4 w-4 text-emerald-500" />
+                                Sistem Informasi Akademik berjalan stabil. Berikut ringkasan data hari ini.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                {/* ── Stats Cards ── */}
+                {/* ── Key Metrics Cards ── */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {/* Total Siswa Terdaftar */}
-                    <div className="rounded-xl border border-blue-200 bg-white p-6 shadow-sm dark:border-blue-900/50 dark:bg-gray-800">
-                        <div className="flex items-center justify-between">
+                    <div className="group rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/50 relative overflow-hidden">
+                        <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-blue-500/5 to-transparent"></div>
+                        <div className="relative flex justify-between">
                             <div>
-                                <p className="text-xs font-semibold tracking-wide text-blue-500 uppercase dark:text-blue-400">
-                                    Total Siswa Terdaftar
+                                <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+                                    Total Peserta Didik
                                 </p>
-                                <h3 className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
-                                    {total_students}
-                                </h3>
-                                <p className="mt-1 text-xs text-gray-400">
-                                    Tercatat dalam sistem akademik
-                                </p>
+                                <div className="mt-3 flex items-baseline gap-2">
+                                    <h3 className="text-4xl font-black text-foreground">
+                                        {total_students}
+                                    </h3>
+                                    <span className="text-sm font-medium text-muted-foreground">Siswa aktif</span>
+                                </div>
                             </div>
-                            <div className="rounded-full bg-blue-100 p-4 dark:bg-blue-900/30">
-                                <GraduationCap className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
+                                <GraduationCap className="h-6 w-6" />
                             </div>
                         </div>
                     </div>
 
                     {/* Total Kelas */}
-                    <div className="rounded-xl border border-green-200 bg-white p-6 shadow-sm dark:border-green-900/50 dark:bg-gray-800">
-                        <div className="flex items-center justify-between">
+                    <div className="group rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-emerald-500/50 relative overflow-hidden">
+                        <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-emerald-500/5 to-transparent"></div>
+                        <div className="relative flex justify-between">
                             <div>
-                                <p className="text-xs font-semibold tracking-wide text-green-500 uppercase dark:text-green-400">
-                                    Total Kelas
+                                <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+                                    Rombongan Belajar
                                 </p>
-                                <h3 className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
-                                    {total_classes}
-                                </h3>
-                                <p className="mt-1 text-xs text-gray-400">
-                                    Rombongan belajar aktif
-                                </p>
+                                <div className="mt-3 flex items-baseline gap-2">
+                                    <h3 className="text-4xl font-black text-foreground">
+                                        {total_classes}
+                                    </h3>
+                                    <span className="text-sm font-medium text-muted-foreground">Kelas Aktif</span>
+                                </div>
                             </div>
-                            <div className="rounded-full bg-green-100 p-4 dark:bg-green-900/30">
-                                <School className="h-8 w-8 text-green-600 dark:text-green-400" />
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
+                                <School className="h-6 w-6" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Wali Kelas / Guru */}
-                    <div className="rounded-xl border border-purple-200 bg-white p-6 shadow-sm dark:border-purple-900/50 dark:bg-gray-800">
-                        <div className="flex items-center justify-between">
+                    {/* Total Guru */}
+                    <div className="group rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-purple-500/50 relative overflow-hidden sm:col-span-2 lg:col-span-1">
+                        <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-purple-500/5 to-transparent"></div>
+                        <div className="relative flex justify-between">
                             <div>
-                                <p className="text-xs font-semibold tracking-wide text-purple-500 uppercase dark:text-purple-400">
-                                    Total Guru
+                                <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+                                    Tenaga Pendidik
                                 </p>
-                                <h3 className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
-                                    {total_teachers}
-                                </h3>
-                                <p className="mt-1 text-xs text-gray-400">
-                                    Tenaga pendidik terdaftar
-                                </p>
+                                <div className="mt-3 flex items-baseline gap-2">
+                                    <h3 className="text-4xl font-black text-foreground">
+                                        {total_teachers}
+                                    </h3>
+                                    <span className="text-sm font-medium text-muted-foreground">Guru & Staf</span>
+                                </div>
                             </div>
-                            <div className="rounded-full bg-purple-100 p-4 dark:bg-purple-900/30">
-                                <Users className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors duration-300">
+                                <Users className="h-6 w-6" />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* ── Jenis Kelamin + Per Kelas ── */}
-                <div className="grid gap-4 md:grid-cols-2">
-                    {/* Komposisi Jenis Kelamin */}
-                    <div className="rounded-xl border border-sidebar-border/70 bg-white p-6 shadow-sm dark:border-sidebar-border dark:bg-gray-800">
-                        <h3 className="mb-1 text-base font-bold text-gray-800 dark:text-gray-100">
-                            Komposisi Jenis Kelamin
-                        </h3>
-                        <p className="mb-5 text-xs text-gray-400">
-                            Berdasarkan data akademik siswa
-                        </p>
-
-                        {/* Donut visual sederhana */}
-                        <div className="mb-5 flex items-center gap-6">
-                            <div className="relative flex h-24 w-24 items-center justify-center">
-                                <svg
-                                    viewBox="0 0 36 36"
-                                    className="h-24 w-24 -rotate-90"
-                                >
-                                    <circle
-                                        cx="18"
-                                        cy="18"
-                                        r="15.9"
-                                        fill="none"
-                                        stroke="#e5e7eb"
-                                        strokeWidth="3"
-                                    />
+                {/* ── Charts & Breakdown ── */}
+                <div className="grid gap-6 lg:grid-cols-2">
+                    
+                    {/* Demografi Jenis Kelamin */}
+                    <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm">
+                        <div className="mb-6 border-b border-border pb-4">
+                            <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
+                                <Users className="h-5 w-5 text-primary" />
+                                Demografi Peserta Didik
+                            </h3>
+                            <p className="mt-1 text-sm text-muted-foreground">Rasio komposisi jenis kelamin seluruh siswa aktif.</p>
+                        </div>
+                        
+                        <div className="flex flex-1 items-center justify-center sm:justify-start gap-8 px-4 py-6">
+                            <div className="relative flex h-32 w-32 items-center justify-center">
+                                <svg viewBox="0 0 36 36" className="h-full w-full -rotate-90">
+                                    {/* Track */}
+                                    <circle cx="18" cy="18" r="15.9" fill="none" className="stroke-muted" strokeWidth="4" />
                                     {/* Laki-laki */}
                                     <circle
-                                        cx="18"
-                                        cy="18"
-                                        r="15.9"
-                                        fill="none"
-                                        stroke="#3b82f6"
-                                        strokeWidth="3"
-                                        strokeDasharray={`${malePercent} ${100 - malePercent}`}
-                                        strokeLinecap="round"
+                                        cx="18" cy="18" r="15.9" fill="none"
+                                        className="stroke-blue-500" strokeWidth="4"
+                                        strokeDasharray={`${malePercent} ${100 - malePercent}`} strokeLinecap="round"
                                     />
                                 </svg>
-                                <span className="absolute text-sm font-bold text-gray-700 dark:text-gray-200">
-                                    {malePercent}%
-                                </span>
+                                <div className="absolute flex flex-col items-center justify-center">
+                                    <span className="text-xl font-bold text-foreground">{malePercent}%</span>
+                                    <span className="text-[10px] uppercase font-bold text-muted-foreground text-center line-clamp-1">Laki-laki</span>
+                                </div>
                             </div>
-                            <div className="flex-1 space-y-3">
+
+                            <div className="flex-1 space-y-5 flex flex-col justify-center">
+                                {/* Bar Laki-Laki */}
                                 <div>
-                                    <div className="mb-1 flex justify-between text-sm">
-                                        <span className="flex items-center gap-1 font-medium text-gray-700 dark:text-gray-300">
-                                            <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500"></span>
+                                    <div className="mb-1.5 flex justify-between text-sm">
+                                        <span className="flex items-center gap-2 font-semibold text-foreground">
+                                            <span className="inline-block h-3 w-3 rounded bg-blue-500 shadow-sm border border-blue-600/20"></span>
                                             Laki-laki
                                         </span>
-                                        <span className="font-bold text-blue-600 dark:text-blue-400">
-                                            {students_by_gender.male} (
-                                            {malePercent}%)
+                                        <span className="font-bold text-foreground">
+                                            {students_by_gender.male}
                                         </span>
                                     </div>
-                                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
-                                        <div
-                                            className="h-full rounded-full bg-blue-500 transition-all"
-                                            style={{ width: `${malePercent}%` }}
-                                        />
+                                    <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                                        <div className="h-full rounded-full bg-blue-500 transition-all duration-1000 ease-out" style={{ width: `${malePercent}%` }} />
                                     </div>
                                 </div>
+                                {/* Bar Perempuan */}
                                 <div>
-                                    <div className="mb-1 flex justify-between text-sm">
-                                        <span className="flex items-center gap-1 font-medium text-gray-700 dark:text-gray-300">
-                                            <span className="inline-block h-2.5 w-2.5 rounded-full bg-pink-500"></span>
+                                    <div className="mb-1.5 flex justify-between text-sm">
+                                        <span className="flex items-center gap-2 font-semibold text-foreground">
+                                            <span className="inline-block h-3 w-3 rounded bg-pink-500 shadow-sm border border-pink-600/20"></span>
                                             Perempuan
                                         </span>
-                                        <span className="font-bold text-pink-600 dark:text-pink-400">
-                                            {students_by_gender.female} (
-                                            {femalePercent}%)
+                                        <span className="font-bold text-foreground">
+                                            {students_by_gender.female}
                                         </span>
                                     </div>
-                                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
-                                        <div
-                                            className="h-full rounded-full bg-pink-500 transition-all"
-                                            style={{
-                                                width: `${femalePercent}%`,
-                                            }}
-                                        />
+                                    <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                                        <div className="h-full rounded-full bg-pink-500 transition-all duration-1000 ease-out" style={{ width: `${femalePercent}%` }} />
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Total */}
-                        <div className="rounded-lg bg-gray-50 px-4 py-2 text-center text-sm text-gray-500 dark:bg-gray-700/50 dark:text-gray-400">
-                            Total{' '}
-                            <strong className="text-gray-800 dark:text-gray-100">
-                                {total_students}
-                            </strong>{' '}
-                            siswa terdaftar dalam sistem
                         </div>
                     </div>
 
-                    {/* Distribusi Per Kelas */}
-                    <div className="rounded-xl border border-sidebar-border/70 bg-white p-6 shadow-sm dark:border-sidebar-border dark:bg-gray-800">
-                        <h3 className="mb-1 text-base font-bold text-gray-800 dark:text-gray-100">
-                            Distribusi Siswa per Kelas
-                        </h3>
-                        <p className="mb-4 text-xs text-gray-400">
-                            Jumlah siswa di setiap rombongan belajar
-                        </p>
-                        <div className="max-h-52 space-y-2 overflow-y-auto pr-1">
+                    {/* Persebaran per Kelas */}
+                    <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm">
+                        <div className="mb-4 border-b border-border pb-4 flex justify-between items-center w-full">
+                            <div>
+                                <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
+                                    <TrendingUp className="h-5 w-5 text-primary" />
+                                    Distribusi Siswa per Kelas
+                                </h3>
+                                <p className="mt-1 text-sm text-muted-foreground">Analisis kepadatan kelas aktif saat ini.</p>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 space-y-4 overflow-y-auto max-h-[240px] pr-2 custom-scrollbar">
                             {students_by_class.length > 0 ? (
                                 students_by_class.map((item, index) => {
-                                    const pct =
-                                        total_students > 0
-                                            ? Math.round(
-                                                  (item.student_count /
-                                                      total_students) *
-                                                      100,
-                                              )
-                                            : 0;
-                                    const colors = [
-                                        'bg-blue-500',
-                                        'bg-green-500',
-                                        'bg-purple-500',
-                                        'bg-orange-500',
-                                        'bg-teal-500',
-                                        'bg-rose-500',
-                                    ];
+                                    const pct = total_students > 0 ? Math.round((item.student_count / total_students) * 100) : 0;
+                                    const colors = ['bg-primary', 'bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-cyan-500'];
                                     const color = colors[index % colors.length];
+                                    
                                     return (
-                                        <div key={index}>
-                                            <div className="mb-1 flex items-center justify-between text-xs">
-                                                <span className="font-medium text-gray-700 dark:text-gray-300">
+                                        <div key={index} className="group">
+                                            <div className="mb-1.5 flex items-center justify-between text-sm">
+                                                <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
                                                     {item.class_name}
                                                 </span>
-                                                <span className="font-bold text-gray-600 dark:text-gray-400">
-                                                    {item.student_count} siswa
+                                                <span className="font-bold text-muted-foreground">
+                                                    {item.student_count} siswa ({pct}%)
                                                 </span>
                                             </div>
-                                            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
-                                                <div
-                                                    className={`h-full rounded-full ${color} transition-all`}
-                                                    style={{ width: `${pct}%` }}
-                                                />
+                                            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                                                <div className={`h-full rounded-full ${color} transition-all duration-1000 ease-out`} style={{ width: `${pct}%` }} />
                                             </div>
                                         </div>
                                     );
                                 })
                             ) : (
-                                <p className="py-4 text-center text-sm text-gray-400">
-                                    Belum ada data kelas
-                                </p>
+                                <div className="flex h-full items-center justify-center pt-10">
+                                    <p className="text-sm font-medium text-muted-foreground">Belum ada distribusi kelas.</p>
+                                </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                {/* ── Siswa Terbaru ── */}
-                <div className="rounded-xl border border-sidebar-border/70 bg-white p-6 shadow-sm dark:border-sidebar-border dark:bg-gray-800">
-                    <div className="mb-4 flex items-center justify-between">
+                {/* ── Recent Registrations ── */}
+                <div className="rounded-2xl border border-border bg-card p-0 shadow-sm overflow-hidden">
+                    <div className="border-b border-border bg-muted/20 px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">
-                                Siswa Terbaru Terdaftar
-                            </h3>
-                            <p className="text-xs text-gray-400">
-                                Siswa yang baru saja didaftarkan ke sistem
-                            </p>
+                            <h3 className="text-lg font-bold text-foreground">Daftar Pendaftaran Terkini</h3>
+                            <p className="mt-1 text-sm text-muted-foreground">5 siswa terakhir yang dimasukkan ke basis data sistem.</p>
                         </div>
-                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                            {recent_students.length} entri terbaru
-                        </span>
+                        <Link href={route('admin.students.index')} className="shrink-0 text-sm font-semibold text-primary hover:text-primary/80 flex items-center">
+                            Lihat Semua Data <ChevronRight className="h-4 w-4 ml-1" />
+                        </Link>
                     </div>
+                    
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead>
-                                <tr className="border-b border-gray-200 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:border-gray-700 dark:text-gray-400">
-                                    <th className="pr-4 pb-3">
-                                        No. Induk (NISN)
-                                    </th>
-                                    <th className="pr-4 pb-3">Nama Lengkap</th>
-                                    <th className="pr-4 pb-3">Kelas</th>
-                                    <th className="pb-3">Tanggal Masuk</th>
+                        <table className="w-full text-left text-sm text-foreground">
+                            <thead className="bg-muted text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                <tr>
+                                    <th className="px-6 py-4">Nomor Induk / NISN</th>
+                                    <th className="px-6 py-4">Nama Lengkap Partisipan</th>
+                                    <th className="px-6 py-4">Kelas Ditempati</th>
+                                    <th className="px-6 py-4 text-right">Tanggal Registrasi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                            <tbody className="divide-y divide-border bg-background">
                                 {recent_students.length > 0 ? (
                                     recent_students.map((student, index) => (
-                                        <tr
-                                            key={student.id}
-                                            className="hover:bg-gray-50 dark:hover:bg-gray-700/30"
-                                        >
-                                            <td className="py-3 pr-4">
-                                                <span className="inline-flex items-center gap-1.5">
-                                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                        <tr key={student.id} className="transition-colors hover:bg-muted/40 group">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary ring-1 ring-primary/20">
                                                         {index + 1}
-                                                    </span>
-                                                    <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
-                                                        {student.nisn}
-                                                    </span>
-                                                </span>
+                                                    </div>
+                                                    <span className="font-mono text-sm font-medium text-foreground">{student.nisn}</span>
+                                                </div>
                                             </td>
-                                            <td className="py-3 pr-4 font-medium text-gray-900 dark:text-gray-100">
-                                                {student.full_name}
+                                            <td className="px-6 py-4">
+                                                <span className="font-bold text-foreground group-hover:text-primary transition-colors">{student.full_name}</span>
                                             </td>
-                                            <td className="py-3 pr-4">
+                                            <td className="px-6 py-4">
                                                 {student.class_name ? (
-                                                    <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                                    <span className="inline-flex items-center rounded-full bg-secondary/10 px-2.5 py-1 text-xs font-semibold text-secondary min-w-[max-content]">
                                                         {student.class_name}
                                                     </span>
                                                 ) : (
-                                                    <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-400 dark:bg-gray-700">
-                                                        Belum ada kelas
+                                                    <span className="inline-flex items-center rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">
+                                                        Belum Alokasi
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="py-3 text-xs text-gray-500 dark:text-gray-400">
-                                                {new Date(
-                                                    student.created_at,
-                                                ).toLocaleDateString('id-ID', {
-                                                    day: '2-digit',
-                                                    month: 'long',
-                                                    year: 'numeric',
+                                            <td className="px-6 py-4 text-right text-muted-foreground">
+                                                {new Date(student.created_at).toLocaleDateString('id-ID', {
+                                                    day: '2-digit', month: 'short', year: 'numeric'
                                                 })}
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td
-                                            colSpan={4}
-                                            className="py-8 text-center text-sm text-gray-400"
-                                        >
-                                            Belum ada data siswa terdaftar
+                                        <td colSpan={4} className="px-6 py-8 text-center bg-background">
+                                            <div className="text-sm font-medium text-muted-foreground">Belum ada catatan peserta didik terbaru.</div>
                                         </td>
                                     </tr>
                                 )}
@@ -368,6 +319,19 @@ export default function Dashboard({
                     </div>
                 </div>
             </div>
+            
+            <style dangerouslySetInnerHTML={{__html: `
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent; 
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background-color: var(--border); 
+                    border-radius: 20px;
+                }
+            `}} />
         </AppLayout>
     );
 }

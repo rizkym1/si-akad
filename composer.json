@@ -17,6 +17,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.9",
+        "league/csv": "^9.28",
+        "spatie/laravel-activitylog": "^5.0",
         "tightenco/ziggy": "^2.6"
     },
     "require-dev": {

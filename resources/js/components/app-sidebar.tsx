@@ -97,24 +97,24 @@ const adminNavItems: NavItem[] = [
 const teacherNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: '/teacher/dashboard',
         icon: LayoutGrid,
     },
-    // {
-    //     title: 'User Management',
-    //     href: '/users',
-    //     icon: LayoutGrid,
-    // },
-    // {
-    //     title: 'Room Management',
-    //     href: '/rooms',
-    //     icon: LayoutGrid,
-    // },
-    // {
-    //     title: 'Booking Management',
-    //     href: '/bookings',
-    //     icon: LayoutGrid,
-    // },
+    {
+        title: 'Manajemen Absensi',
+        href: '/teacher/attendances',
+        icon: CalendarCheck,
+    },
+    {
+        title: 'Daftar Siswa',
+        href: '/teacher/students',
+        icon: UserCircle,
+    },
+    {
+        title: 'Kalender Pendidikan',
+        href: '/teacher/academic-calendars',
+        icon: CalendarClock,
+    },
 ];
 
 const parentNavItems: NavItem[] = [

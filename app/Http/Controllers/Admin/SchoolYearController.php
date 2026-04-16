@@ -17,12 +17,14 @@ class SchoolYearController extends Controller
     {
         $search = $request->input('search');
 
+        $entries = $request->input('entries', 10);
+
         $schoolYears = SchoolYear::query()
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })
             ->orderBy('name', 'asc')
-            ->paginate(10)
+            ->paginate($entries)
             ->withQueryString();
 
         return Inertia::render('admin/school-years/index', [

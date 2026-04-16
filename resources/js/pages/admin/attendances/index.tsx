@@ -2,6 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Printer, Save, Filter, X } from 'lucide-react';
 
 interface Student {
     id: number;
@@ -21,7 +22,6 @@ interface Attendance {
     absent: number;
 }
 
-// ✅ Interface School dari DB
 interface SchoolYear {
     id: number;
     name: string;
@@ -67,25 +67,17 @@ export default function AttendanceIndex({
         { id: 12, name: 'Desember' },
     ];
     const [showModal, setShowModal] = useState(false);
-    const [filterSchoolYearId, setFilterSchoolYearId] = useState<number | null>(
-        activeSchoolYear,
-    );
-    const [filterClassId, setFilterClassId] = useState<number | null>(
-        activeClass,
-    );
+    const [filterSchoolYearId, setFilterSchoolYearId] = useState<number | null>(activeSchoolYear);
+    const [filterClassId, setFilterClassId] = useState<number | null>(activeClass);
     const [filterMonth, setFilterMonth] = useState<number>(activeMonth);
 
-    // State untuk menyimpan nilai inputan
-    // Bentuk: { student_id: { present, sick, permitted, absent } }
+    // Form Data state
     const [formData, setFormData] = useState<
-        Record<
-            number,
-            { present: number; sick: number; permitted: number; absent: number }
-        >
+        Record<number, { present: number; sick: number; permitted: number; absent: number }>
     >(() => {
         const initial: Record<any, any> = {};
         students.forEach((student) => {
-            const att = student.attendances?.[0]; // Ambil data absensi jika ada
+            const att = student.attendances?.[0]; 
             initial[student.id] = {
                 present: att?.present || 0,
                 sick: att?.sick || 0,
@@ -106,7 +98,7 @@ export default function AttendanceIndex({
             ...prev,
             [studentId]: {
                 ...prev[studentId],
-                [field]: numValue >= 0 ? numValue : 0, // Hindari negatif
+                [field]: numValue >= 0 ? numValue : 0, 
             },
         }));
     };
@@ -144,9 +136,7 @@ export default function AttendanceIndex({
         const schoolYear = schoolYears.find((y) => y.id === filterSchoolYearId);
         if (!schoolYear) return;
 
-        url =
-            route('admin.attendances.report.pdf') +
-            `?school_year_id=${schoolYear.id}&month=${filterMonthPrint}`;
+        url = route('admin.attendances.report.pdf') + `?school_year_id=${schoolYear.id}&month=${filterMonthPrint}`;
 
         window.open(url, '_blank');
         setShowModal(false);
@@ -156,59 +146,50 @@ export default function AttendanceIndex({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen Absensi" />
 
-            {/* ── MODAL FILTER ── */}
+            {/* ── MODAL CETAK LAPORAN ── */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/50 overflow-y-auto">
-                    <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800 my-8">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-base font-bold text-gray-800 dark:text-white">
-                                🖨️ Filter Laporan Absensi
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
+                    <div className="w-full max-w-md scale-100 rounded-2xl bg-card p-6 shadow-2xl transition-all dark:border overflow-hidden">
+                        <div className="mb-5 flex items-center justify-between border-b border-border pb-3">
+                            <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
+                                <Printer className="h-5 w-5 text-secondary" />
+                                Cetak Laporan PDF
                             </h2>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                             >
-                                ✕
+                                <X className="h-5 w-5" />
                             </button>
                         </div>
 
-                        {/* Form Per Tahun Pelajaran dari DB */}
-                        <>
-                            <div className="mb-4">
-                                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-foreground">
                                     Tahun Pelajaran
                                 </label>
                                 <select
                                     value={filterSchoolYearId ?? ''}
-                                    onChange={(e) =>
-                                        setFilterSchoolYearId(
-                                            Number(e.target.value),
-                                        )
-                                    }
-                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    onChange={(e) => setFilterSchoolYearId(Number(e.target.value))}
+                                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
                                 >
                                     {schoolYears.map((y) => (
                                         <option key={y.id} value={y.id}>
-                                            {y.name}{' '}
-                                            {y.is_active ? '(Aktif)' : ''}
+                                            {y.name} {y.is_active ? '(Aktif)' : ''}
                                         </option>
                                     ))}
                                 </select>
                             </div>
-                            <div className="mb-4">
-                                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Bulan (Opsional)
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-foreground">
+                                    Bulan (Periode Rekap)
                                 </label>
                                 <select
                                     value={filterMonthPrint}
-                                    onChange={(e) =>
-                                        setFilterMonthPrint(
-                                            Number(e.target.value),
-                                        )
-                                    }
-                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    onChange={(e) => setFilterMonthPrint(Number(e.target.value))}
+                                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
                                 >
-                                    <option value={0}>Semua Bulan (Rekapan 1 Tahun)</option>
+                                    <option value={0}>Keseluruhan (1 Tahun)</option>
                                     {months.map((m) => (
                                         <option key={m.id} value={m.id}>
                                             {m.name}
@@ -217,44 +198,35 @@ export default function AttendanceIndex({
                                 </select>
                             </div>
 
-                            {/* ✅ Preview periode dari start_date & end_date DB */}
-                            {filterSchoolYearId &&
-                                (() => {
-                                    const selected = schoolYears.find(
-                                        (y) => y.id === filterSchoolYearId,
-                                    );
-                                    let monthLabel = "Semua Bulan";
-                                    if (filterMonthPrint > 0) {
-                                         const m = months.find(x => x.id === filterMonthPrint);
-                                         if (m) monthLabel = m.name;
-                                    }
-                                    return selected ? (
-                                        <div className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                                            Periode:{' '}
-                                            <strong>{selected.name}</strong> ({monthLabel})
-                                            <br />
-                                        </div>
-                                    ) : null;
-                                })()}
-                        </>
+                            {filterSchoolYearId && (() => {
+                                const selected = schoolYears.find((y) => y.id === filterSchoolYearId);
+                                let monthLabel = "Semua Bulan";
+                                if (filterMonthPrint > 0) {
+                                    const m = months.find((x) => x.id === filterMonthPrint);
+                                    if (m) monthLabel = m.name;
+                                }
+                                return selected ? (
+                                    <div className="rounded-xl bg-orange-500/10 p-3 pt-2 text-sm text-orange-600 dark:text-orange-400 font-medium">
+                                        <span className="block text-xs uppercase tracking-wider mb-1 opacity-80">Pratinjau Export:</span>
+                                        T.A {selected.name} — Periode {monthLabel}
+                                    </div>
+                                ) : null;
+                            })()}
+                        </div>
 
-                        {/* Tombol Aksi */}
-                        <div className="flex justify-end gap-2">
+                        <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-border">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={handleCetak}
-                                style={{
-                                    backgroundColor: '#0369a1',
-                                    color: 'white',
-                                }}
-                                className="rounded-lg px-4 py-2 text-sm font-semibold transition hover:opacity-90"
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-5 py-2 text-sm font-bold text-secondary-foreground shadow-sm hover:opacity-90 active:scale-95 transition-all"
                             >
-                                🖨️ Cetak PDF
+                                <Printer className="h-4 w-4" />
+                                Generate PDF
                             </button>
                         </div>
                     </div>
@@ -263,106 +235,81 @@ export default function AttendanceIndex({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <div className="mx-auto px-4 py-4 text-gray-900 sm:px-6 lg:px-8 dark:text-gray-100">
-                        {/* ── Baris 1: Filter & Pencarian ── */}
-                        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                            {/* Filter kiri */}
-                            <div className="flex flex-wrap items-center gap-3">
-                                <div className="flex items-center gap-2">
-                                    <label className="text-sm font-medium whitespace-nowrap text-gray-600 dark:text-gray-400">
-                                        Tahun Pelajaran:
-                                    </label>
+                    <div className="mx-auto px-4 py-4 sm:px-6 lg:px-8">
+                        {/* Judul & Penjelasan Singkat */}
+                        <div className="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                                    Rekapitulasi Kehadiran Bulanan
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-1 cursor-default max-w-xl">
+                                    Gunakan panel ini untuk mengelola rekap bulanan siswa. Angka-angka di sini disusun secara otomatis melalui sinkronisasi guru setiap harinya, namun Anda tetap bebas melakukan penyesuaian (Override) jika esensial.
+                                </p>
+                            </div>
+                            
+                            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                                <button
+                                    onClick={() => setShowModal(true)}
+                                    className="inline-flex cursor-pointer items-center justify-center gap-2 border border-secondary text-secondary rounded-lg px-6 py-2.5 text-sm font-semibold shadow-sm transition-all hover:bg-secondary hover:text-white active:scale-95 bg-transparent"
+                                >
+                                    <Printer className="h-4 w-4" />
+                                    Cetak PDF
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95 border-0"
+                                >
+                                    <Save className="h-4 w-4" />
+                                    Simpan Perubahan
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Filter & Pencarian */}
+                        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <div className="flex w-full items-center gap-2 sm:w-auto">
+                                    <Filter className="h-4 w-4 text-muted-foreground mr-1 hidden sm:block" />
                                     <select
                                         value={filterSchoolYearId ?? ''}
                                         onChange={(e) => {
-                                            setFilterSchoolYearId(
-                                                Number(e.target.value),
-                                            );
-                                            router.get(
-                                                route(
-                                                    'admin.attendances.index',
-                                                ),
-                                                {
-                                                    search,
-                                                    school_year_id:
-                                                        e.target.value,
-                                                    class_id: filterClassId,
-                                                    month: filterMonth,
-                                                },
-                                                {
-                                                    preserveState: true,
-                                                    replace: true,
-                                                },
-                                            );
+                                            setFilterSchoolYearId(Number(e.target.value));
+                                            router.get(route('admin.attendances.index'), { search, school_year_id: e.target.value, class_id: filterClassId, month: filterMonth }, { preserveState: true, replace: true });
                                         }}
-                                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm w-full sm:w-36 focus:ring-2 focus:ring-primary outline-none text-foreground"
                                     >
+                                        <option value="" disabled>Tahun Ajaran</option>
                                         {schoolYears.map((y) => (
                                             <option key={y.id} value={y.id}>
-                                                {y.name}{' '}
-                                                {y.is_active ? '(Aktif)' : ''}
+                                                {y.name} {y.is_active ? '(Aktif)' : ''}
                                             </option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <label className="text-sm font-medium whitespace-nowrap text-gray-600 dark:text-gray-400">
-                                        Bulan:
-                                    </label>
+                                <div className="flex w-full items-center gap-2 sm:w-auto">
                                     <select
                                         value={filterMonth}
                                         onChange={(e) => {
                                             const monthVal = Number(e.target.value);
                                             setFilterMonth(monthVal);
-                                            router.get(
-                                                route('admin.attendances.index'),
-                                                {
-                                                    search,
-                                                    school_year_id: filterSchoolYearId,
-                                                    class_id: filterClassId,
-                                                    month: monthVal,
-                                                },
-                                                { preserveState: true, replace: true }
-                                            );
+                                            router.get(route('admin.attendances.index'), { search, school_year_id: filterSchoolYearId, class_id: filterClassId, month: monthVal }, { preserveState: true, replace: true });
                                         }}
-                                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm w-full sm:w-32 focus:ring-2 focus:ring-primary outline-none text-foreground"
                                     >
                                         {months.map((m) => (
-                                            <option key={m.id} value={m.id}>
-                                                {m.name}
-                                            </option>
+                                            <option key={m.id} value={m.id}>{m.name}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <label className="text-sm font-medium whitespace-nowrap text-gray-600 dark:text-gray-400">
-                                        Kelas:
-                                    </label>
+                                <div className="flex w-full items-center gap-2 sm:w-auto">
                                     <select
                                         value={filterClassId ?? ''}
                                         onChange={(e) => {
-                                            const classVal = e.target.value
-                                                ? Number(e.target.value)
-                                                : null;
+                                            const classVal = e.target.value ? Number(e.target.value) : null;
                                             setFilterClassId(classVal);
-                                            router.get(
-                                                route(
-                                                    'admin.attendances.index',
-                                                ),
-                                                {
-                                                    search,
-                                                    school_year_id:
-                                                        filterSchoolYearId,
-                                                    class_id: classVal,
-                                                    month: filterMonth,
-                                                },
-                                                {
-                                                    preserveState: true,
-                                                    replace: true,
-                                                },
-                                            );
+                                            router.get(route('admin.attendances.index'), { search, school_year_id: filterSchoolYearId, class_id: classVal, month: filterMonth }, { preserveState: true, replace: true });
                                         }}
-                                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm w-full sm:w-36 focus:ring-2 focus:ring-primary outline-none text-foreground"
                                     >
                                         <option value="">Semua Kelas</option>
                                         {classes.map((c) => (
@@ -374,216 +321,76 @@ export default function AttendanceIndex({
                                 </div>
                             </div>
 
-                            {/* Pencarian kanan */}
                             <input
                                 type="text"
-                                placeholder="Cari siswa..."
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none sm:w-56 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="Cari NISN atau Nama..."
+                                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm sm:w-60 focus:ring-2 focus:ring-primary outline-none text-foreground"
                                 defaultValue={search || ''}
                                 onChange={(e) => {
-                                    router.get(
-                                        route('admin.attendances.index'),
-                                        {
-                                            search: e.target.value,
-                                            school_year_id: filterSchoolYearId,
-                                            class_id: filterClassId,
-                                            month: filterMonth,
-                                        },
-                                        {
-                                            preserveState: true,
-                                            replace: true,
-                                        },
-                                    );
+                                    router.get(route('admin.attendances.index'), { search: e.target.value, school_year_id: filterSchoolYearId, class_id: filterClassId, month: filterMonth }, { preserveState: true, replace: true });
                                 }}
                             />
                         </div>
 
-                        {/* ── Baris 2: Tombol Aksi ── */}
-                        <div className="mb-4 flex justify-end gap-2">
-                            <button
-                                onClick={() => setShowModal(true)}
-                                style={{
-                                    backgroundColor: '#0369a1',
-                                    color: 'white',
-                                }}
-                                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-semibold shadow-sm transition-all hover:opacity-90 active:scale-95"
-                            >
-                                🖨️ Cetak
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                style={{
-                                    backgroundColor: '#0369a1',
-                                    color: 'white',
-                                }}
-                                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-semibold shadow-sm transition-all hover:opacity-90 active:scale-95"
-                            >
-                                Simpan
-                            </button>
-                        </div>
-                        <div className="relative overflow-x-auto border border-gray-200 shadow-md sm:rounded-lg dark:border-gray-700">
+                        <div className="relative overflow-x-auto border border-border bg-card shadow-sm sm:rounded-xl">
                             {students.length > 0 ? (
-                                <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
-                                    <thead className="bg-gray-50 text-sm font-semibold text-gray-700 uppercase dark:bg-gray-800 dark:text-gray-300">
-                                        <tr className="border-b dark:border-gray-700">
-                                            <th
-                                                scope="col"
-                                                className="w-16 px-6 py-4 text-center"
-                                            >
-                                                No
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="w-40 px-6 py-4"
-                                            >
-                                                NISN
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-6 py-4"
-                                            >
-                                                Nama Lengkap
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="w-28 px-4 py-4 text-center whitespace-nowrap"
-                                            >
-                                                L/P
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="w-28 px-4 py-4 text-center"
-                                            >
-                                                Hadir
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="w-28 px-4 py-4 text-center"
-                                            >
-                                                Sakit
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="w-28 px-4 py-4 text-center"
-                                            >
-                                                Ijin
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="w-28 px-4 py-4 text-center"
-                                            >
-                                                Alpa
-                                            </th>
+                                <table className="w-full text-left text-sm text-muted-foreground whitespace-nowrap">
+                                    <thead className="bg-muted text-foreground">
+                                        <tr className="border-b border-border">
+                                            <th className="w-12 px-6 py-4 text-center">No</th>
+                                            <th className="px-6 py-4">NISN</th>
+                                            <th className="px-6 py-4 min-w-[200px]">Nama Lengkap</th>
+                                            <th className="w-20 px-4 py-4 text-center">L/P</th>
+                                            <th className="w-24 px-4 py-4 text-center">Hadir</th>
+                                            <th className="w-24 px-4 py-4 text-center">Sakit</th>
+                                            <th className="w-24 px-4 py-4 text-center">Ijin</th>
+                                            <th className="w-24 px-4 py-4 text-center">Alpa</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {students.map((student, index) => (
-                                            <tr
-                                                key={student.id}
-                                                className="border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
-                                            >
-                                                <td className="px-6 py-3 text-center text-gray-900 dark:text-gray-200">
-                                                    {index + 1}
+                                            <tr key={student.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                                                <td className="px-6 py-3 text-center font-medium text-foreground">{index + 1}</td>
+                                                <td className="px-6 py-3 text-foreground font-mono text-sm">{student.nisn || '-'}</td>
+                                                <td className="px-6 py-3 font-semibold text-foreground">{student.full_name}</td>
+                                                <td className="px-4 py-3 text-center text-foreground">
+                                                    {(student.gender === 'Laki-Laki' || student.gender === 'L' || student.gender === 'male') ? 'L' :
+                                                     (student.gender === 'Perempuan' || student.gender === 'P' || student.gender === 'female') ? 'P' : '-'}
                                                 </td>
-                                                <td className="px-6 py-3 font-medium text-gray-900 dark:text-gray-200">
-                                                    {student.nisn || '-'}
-                                                </td>
-                                                <td className="px-6 py-3 font-medium text-gray-900 dark:text-gray-200">
-                                                    {student.full_name}
-                                                </td>
-                                                <td className="px-4 py-3 text-center text-gray-900 dark:text-gray-200">
-                                                    {
-                                                        // A. Cek jika datanya adalah Laki-laki (termasuk huruf L atau male)
-                                                        student.gender ===
-                                                            'Laki-Laki' ||
-                                                        student.gender ===
-                                                            'L' ||
-                                                        student.gender ===
-                                                            'male'
-                                                            ? 'Laki-laki'
-                                                            : // B. Jika bukan, cek jika datanya adalah Perempuan (termasuk huruf P atau female)
-                                                              student.gender ===
-                                                                    'Perempuan' ||
-                                                                student.gender ===
-                                                                    'P' ||
-                                                                student.gender ===
-                                                                    'female'
-                                                              ? 'Perempuan'
-                                                              : // C. Jika bukan keduanya, tampilkan nilai aslinya atau tanda strip (-)
-                                                                student.gender ||
-                                                                '-'
-                                                    }
-                                                </td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-2">
                                                     <input
                                                         type="number"
                                                         min="0"
-                                                        className="w-full rounded border-gray-300 px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                        value={
-                                                            formData[student.id]
-                                                                ?.present ?? 0
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleInputChange(
-                                                                student.id,
-                                                                'present',
-                                                                e.target.value,
-                                                            )
-                                                        }
+                                                        className="w-16 mx-auto block rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm focus:border-primary focus:ring-1 focus:ring-primary shadow-sm text-foreground"
+                                                        value={formData[student.id]?.present ?? 0}
+                                                        onChange={(e) => handleInputChange(student.id, 'present', e.target.value)}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-2">
                                                     <input
                                                         type="number"
                                                         min="0"
-                                                        className="w-full rounded border-gray-300 px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                        value={
-                                                            formData[student.id]
-                                                                ?.sick ?? 0
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleInputChange(
-                                                                student.id,
-                                                                'sick',
-                                                                e.target.value,
-                                                            )
-                                                        }
+                                                        className="w-16 mx-auto block rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 shadow-sm text-foreground"
+                                                        value={formData[student.id]?.sick ?? 0}
+                                                        onChange={(e) => handleInputChange(student.id, 'sick', e.target.value)}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-2">
                                                     <input
                                                         type="number"
                                                         min="0"
-                                                        className="w-full rounded border-gray-300 px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                        value={
-                                                            formData[student.id]
-                                                                ?.permitted ?? 0
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleInputChange(
-                                                                student.id,
-                                                                'permitted',
-                                                                e.target.value,
-                                                            )
-                                                        }
+                                                        className="w-16 mx-auto block rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm text-foreground"
+                                                        value={formData[student.id]?.permitted ?? 0}
+                                                        onChange={(e) => handleInputChange(student.id, 'permitted', e.target.value)}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-2">
                                                     <input
                                                         type="number"
                                                         min="0"
-                                                        className="w-full rounded border-gray-300 px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                        value={
-                                                            formData[student.id]
-                                                                ?.absent ?? 0
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleInputChange(
-                                                                student.id,
-                                                                'absent',
-                                                                e.target.value,
-                                                            )
-                                                        }
+                                                        className="w-16 mx-auto block rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 shadow-sm text-foreground"
+                                                        value={formData[student.id]?.absent ?? 0}
+                                                        onChange={(e) => handleInputChange(student.id, 'absent', e.target.value)}
                                                     />
                                                 </td>
                                             </tr>
@@ -591,9 +398,10 @@ export default function AttendanceIndex({
                                     </tbody>
                                 </table>
                             ) : (
-                                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                                    Tidak ada data siswa untuk tahun pelajaran
-                                    ini.
+                                <div className="py-16 text-center text-muted-foreground">
+                                    <Filter className="mx-auto h-12 w-12 opacity-20 mb-3" />
+                                    <p className="text-sm font-medium text-foreground">Tidak Ada Data</p>
+                                    <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">Siswa tidak ditemukan, silakan sesuaikan filter Tahun Pelajaran, Kelas, atau Bulan yang dipilih.</p>
                                 </div>
                             )}
                         </div>

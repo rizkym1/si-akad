@@ -21,6 +21,7 @@ class StudentClass extends Model
     protected $fillable = [
         'name',
         'school_year_id',
+        'teacher_id',
     ];
 
     /**
@@ -40,5 +41,10 @@ class StudentClass extends Model
     public function schoolYear()
     {
         return $this->belongsTo(SchoolYear::class);
+    }
+
+    public function teacher()
+    {
+        return $this->belongsTo(User::class, 'teacher_id');
     }
 }

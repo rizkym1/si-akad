@@ -44,7 +44,12 @@ class DashboardController extends Controller
             ]);
         }
 
-        // ── LOGIC ADMIN & GURU (Default Dashboard) ──
+        // ── LOGIC GURU ──
+        if ($user->role === 'teacher') {
+            return redirect()->route('teacher.dashboard');
+        }
+
+        // ── LOGIC ADMIN (Default Dashboard) ──
         // Total counts
         $total_students = Student::count();
         $total_classes = StudentClass::count();
