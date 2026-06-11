@@ -291,7 +291,7 @@ export default function Dashboard({
                                             </td>
                                             <td className="px-6 py-4">
                                                 {student.class_name ? (
-                                                    <span className="inline-flex items-center rounded-full bg-secondary/10 px-2.5 py-1 text-xs font-semibold text-secondary min-w-[max-content]">
+                                                    <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground min-w-[max-content]">
                                                         {student.class_name}
                                                     </span>
                                                 ) : (

@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { Printer, Save, Filter, X } from 'lucide-react';
+import { Printer, Filter, X } from 'lucide-react';
 
 interface Student {
     id: number;
@@ -71,63 +71,6 @@ export default function AttendanceIndex({
     const [filterClassId, setFilterClassId] = useState<number | null>(activeClass);
     const [filterMonth, setFilterMonth] = useState<number>(activeMonth);
 
-    // Form Data state
-    const [formData, setFormData] = useState<
-        Record<number, { present: number; sick: number; permitted: number; absent: number }>
-    >(() => {
-        const initial: Record<any, any> = {};
-        students.forEach((student) => {
-            const att = student.attendances?.[0]; 
-            initial[student.id] = {
-                present: att?.present || 0,
-                sick: att?.sick || 0,
-                permitted: att?.permitted || 0,
-                absent: att?.absent || 0,
-            };
-        });
-        return initial;
-    });
-
-    const handleInputChange = (
-        studentId: number,
-        field: keyof (typeof formData)[number],
-        value: string,
-    ) => {
-        const numValue = parseInt(value) || 0;
-        setFormData((prev) => ({
-            ...prev,
-            [studentId]: {
-                ...prev[studentId],
-                [field]: numValue >= 0 ? numValue : 0, 
-            },
-        }));
-    };
-
-    const handleSave = () => {
-        if (!filterSchoolYearId) {
-            alert('Pilih Tahun Pelajaran terlebih dahulu!');
-            return;
-        }
-
-        const attendancesToSave = Object.entries(formData).map(
-            ([studentId, data]) => ({
-                student_id: parseInt(studentId),
-                ...data,
-            }),
-        );
-
-        router.post(
-            route('admin.attendances.store'),
-            {
-                school_year_id: filterSchoolYearId,
-                month: filterMonth,
-                attendances: attendancesToSave,
-            },
-            {
-                preserveScroll: true,
-            },
-        );
-    };
     const [filterMonthPrint, setFilterMonthPrint] = useState<number>(0);
 
     const handleCetak = () => {
@@ -243,7 +186,7 @@ export default function AttendanceIndex({
                                     Rekapitulasi Kehadiran Bulanan
                                 </h2>
                                 <p className="text-sm text-muted-foreground mt-1 cursor-default max-w-xl">
-                                    Gunakan panel ini untuk mengelola rekap bulanan siswa. Angka-angka di sini disusun secara otomatis melalui sinkronisasi guru setiap harinya, namun Anda tetap bebas melakukan penyesuaian (Override) jika esensial.
+                                    Panel ini menampilkan rekapitulasi absensi bulanan siswa berdasarkan data yang dimasukkan oleh guru secara real-time.
                                 </p>
                             </div>
                             
@@ -254,13 +197,6 @@ export default function AttendanceIndex({
                                 >
                                     <Printer className="h-4 w-4" />
                                     Cetak PDF
-                                </button>
-                                <button
-                                    onClick={handleSave}
-                                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95 border-0"
-                                >
-                                    <Save className="h-4 w-4" />
-                                    Simpan Perubahan
                                 </button>
                             </div>
                         </div>
@@ -357,41 +293,17 @@ export default function AttendanceIndex({
                                                     {(student.gender === 'Laki-Laki' || student.gender === 'L' || student.gender === 'male') ? 'L' :
                                                      (student.gender === 'Perempuan' || student.gender === 'P' || student.gender === 'female') ? 'P' : '-'}
                                                 </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        className="w-16 mx-auto block rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm focus:border-primary focus:ring-1 focus:ring-primary shadow-sm text-foreground"
-                                                        value={formData[student.id]?.present ?? 0}
-                                                        onChange={(e) => handleInputChange(student.id, 'present', e.target.value)}
-                                                    />
+                                                <td className="px-4 py-2 text-center text-foreground font-semibold">
+                                                    {student.attendances?.[0]?.present ?? 0}
                                                 </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        className="w-16 mx-auto block rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 shadow-sm text-foreground"
-                                                        value={formData[student.id]?.sick ?? 0}
-                                                        onChange={(e) => handleInputChange(student.id, 'sick', e.target.value)}
-                                                    />
+                                                <td className="px-4 py-2 text-center text-foreground font-semibold">
+                                                    {student.attendances?.[0]?.sick ?? 0}
                                                 </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        className="w-16 mx-auto block rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm text-foreground"
-                                                        value={formData[student.id]?.permitted ?? 0}
-                                                        onChange={(e) => handleInputChange(student.id, 'permitted', e.target.value)}
-                                                    />
+                                                <td className="px-4 py-2 text-center text-foreground font-semibold">
+                                                    {student.attendances?.[0]?.permitted ?? 0}
                                                 </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        className="w-16 mx-auto block rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 shadow-sm text-foreground"
-                                                        value={formData[student.id]?.absent ?? 0}
-                                                        onChange={(e) => handleInputChange(student.id, 'absent', e.target.value)}
-                                                    />
+                                                <td className="px-4 py-2 text-center text-foreground font-semibold">
+                                                    {student.attendances?.[0]?.absent ?? 0}
                                                 </td>
                                             </tr>
                                         ))}

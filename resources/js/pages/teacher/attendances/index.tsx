@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Student {
     id: number;
@@ -55,7 +55,9 @@ export default function TeacherAttendanceIndex({
     const [filterDate, setFilterDate] = useState<string>(activeDate);
 
     // State form: Map student_id ke status
-    const [formData, setFormData] = useState<Record<number, { status: string; notes?: string }>>(() => {
+    const [formData, setFormData] = useState<Record<number, { status: string; notes?: string }>>({});
+
+    useEffect(() => {
         const initial: Record<number, { status: string; notes?: string }> = {};
         students.forEach((student) => {
             const att = student.daily_attendances?.[0];
@@ -64,8 +66,8 @@ export default function TeacherAttendanceIndex({
                 notes: att?.notes || '',
             };
         });
-        return initial;
-    });
+        setFormData(initial);
+    }, [students]);
 
     const handleStatusChange = (studentId: number, status: string) => {
         setFormData((prev) => ({
@@ -150,6 +152,7 @@ export default function TeacherAttendanceIndex({
                                     <input
                                         type="date"
                                         value={filterDate}
+                                        max={new Date().toISOString().split('T')[0]}
                                         onChange={(e) => {
                                             const newDate = e.target.value;
                                             setFilterDate(newDate);

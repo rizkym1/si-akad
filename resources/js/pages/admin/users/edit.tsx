@@ -67,7 +67,6 @@ export default function EditUser({ user }: { user: any }) {
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         post(route('admin.users.update', user.id), {
-            onSuccess: () => router.get(getReturnRoute(data.role)),
             forceFormData: true,
         });
     };

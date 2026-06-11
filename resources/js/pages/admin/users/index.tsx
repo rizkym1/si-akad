@@ -11,7 +11,7 @@ import { InertiaPagination } from '@/components/ui/inertia-pagination';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Edit, Eye, MoreVertical, Trash2, Search, UserX, UserPlus, Users, Link as LinkIcon, Download } from 'lucide-react';
+import { Edit, Eye, MoreVertical, Trash2, Search, UserX, UserPlus, Users, Link as LinkIcon, Download, Key } from 'lucide-react';
 import { useState } from 'react';
 
 interface User {
@@ -44,6 +44,8 @@ export default function UserIndex({
         current_page: number;
         last_page: number;
         links: any[];
+        prev_page_url: string | null;
+        next_page_url: string | null;
     };
     i: number;
     entries: any;
@@ -200,9 +202,7 @@ export default function UserIndex({
                                                 </th>
                                                 <th scope="col" className="px-6 py-4 w-16 text-center">NO</th>
                                                 <th scope="col" className="px-6 py-4">NAMA LENGKAP</th>
-                                                {(role === 'teacher' || role === 'admin' || !role) && (
-                                                    <th scope="col" className="px-6 py-4">IDENTITAS (NIK / EMAIL)</th>
-                                                )}
+                                                <th scope="col" className="px-6 py-4">IDENTITAS (NIK / EMAIL)</th>
                                                 {(!role) && <th scope="col" className="px-6 py-4 text-center">ROLE</th>}
                                                 <th scope="col" className="px-6 py-4 text-right">AKSI</th>
                                             </tr>
@@ -220,7 +220,7 @@ export default function UserIndex({
                                                         />
                                                     </td>
                                                     <td className="px-6 py-4 text-center text-muted-foreground">
-                                                        {i + index}
+                                                        {(users.from ?? 1) + index}
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
@@ -243,12 +243,10 @@ export default function UserIndex({
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    {(role === 'teacher' || role === 'admin' || !role) && (
-                                                        <td className="px-6 py-4">
-                                                            <div className="text-sm font-medium text-foreground">{user.nik || '-'}</div>
-                                                            <div className="text-xs text-muted-foreground">{user.email}</div>
-                                                        </td>
-                                                    )}
+                                                    <td className="px-6 py-4">
+                                                        <div className="text-sm font-medium text-foreground">{user.nik || '-'}</div>
+                                                        <div className="text-xs text-muted-foreground">{user.email}</div>
+                                                    </td>
                                                     {(!role) && (
                                                         <td className="px-6 py-4 text-center">
                                                             <span className="inline-flex items-center rounded-full bg-secondary/10 px-2.5 py-1 text-xs font-semibold text-secondary ring-1 ring-secondary/20 border-none capitalize">
@@ -276,6 +274,19 @@ export default function UserIndex({
                                                                             <Edit className="mr-2 h-4 w-4" />
                                                                             Edit Data
                                                                         </Link>
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem asChild>
+                                                                        <button 
+                                                                            onClick={() => {
+                                                                                if (confirm(`Reset password untuk ${user.name}? Password akan direset ke NIK atau 'password'.`)) {
+                                                                                    router.post(route('admin.users.reset-password', user.id), {}, { preserveScroll: true });
+                                                                                }
+                                                                            }}
+                                                                            className="flex items-center w-full cursor-pointer p-2 text-yellow-600 focus:text-yellow-700 focus:bg-yellow-50"
+                                                                        >
+                                                                            <Key className="mr-2 h-4 w-4" />
+                                                                            Reset Password
+                                                                        </button>
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuSeparator />
                                                                     <div className="px-2 py-1.5">

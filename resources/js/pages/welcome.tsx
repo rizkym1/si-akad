@@ -1,4 +1,4 @@
-import { dashboard, login, register } from '@/routes';
+import { dashboard, login } from '@/routes';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 
@@ -39,13 +39,7 @@ export default function Welcome() {
                                 >
                                     Masuk
                                 </Link>
-                                <div className="h-4 w-px bg-black/10 dark:bg-white/10"></div>
-                                <Link
-                                    href={register()}
-                                    className="inline-block text-sm font-medium text-neutral-600 transition-colors hover:text-black dark:text-neutral-400 dark:hover:text-white"
-                                >
-                                    Daftar
-                                </Link>
+
                             </>
                         )}
                     </nav>
@@ -129,62 +123,7 @@ export default function Welcome() {
                                         </Link>
                                     </div>
                                 </li>
-                                <li className="relative flex items-start gap-4">
-                                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-black/5 bg-white text-neutral-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-neutral-400 dark:shadow-none">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                            <circle cx="9" cy="7" r="4" />
-                                            <line
-                                                x1="19"
-                                                y1="8"
-                                                x2="19"
-                                                y2="14"
-                                            />
-                                            <line
-                                                x1="22"
-                                                y1="11"
-                                                x2="16"
-                                                y2="11"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-neutral-900 dark:text-neutral-200">
-                                            Daftar Akun Baru
-                                        </span>
-                                        <Link
-                                            href={register()}
-                                            className="group mt-1 inline-flex items-center gap-1 text-sm font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-green-400 dark:hover:text-green-300"
-                                        >
-                                            Buat akun pengelola
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                className="transition-transform group-hover:translate-x-1"
-                                            >
-                                                <path d="M5 12h14" />
-                                                <path d="m12 5 7 7-7 7" />
-                                            </svg>
-                                        </Link>
-                                    </div>
-                                </li>
+
                             </ul>
 
                             <div className="mt-auto">

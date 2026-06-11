@@ -17,7 +17,7 @@ interface Student {
     nisn: string | null;
     full_name: string;
     nickname: string | null;
-    gender: 'male' | 'female';
+    gender: string;
     place_of_birth: string | null;
     date_of_birth: string | null;
     address: string | null;
@@ -228,14 +228,16 @@ export default function ShowParent({ student }: { student: Student }) {
                                             Jenis Kelamin
                                         </dt>
                                         <dd className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-gray-900 dark:text-gray-200">
-                                            {student.gender === 'male' ? (
+                                            {(student.gender === 'male' || student.gender === 'Laki-Laki' || student.gender === 'L') ? (
                                                 <span className="rounded bg-blue-50 px-2 py-0.5 text-blue-700 ring-1 ring-blue-600/20 ring-inset dark:bg-blue-900/30 dark:text-blue-400">
                                                     Laki-laki
                                                 </span>
-                                            ) : (
+                                            ) : (student.gender === 'female' || student.gender === 'Perempuan' || student.gender === 'P') ? (
                                                 <span className="rounded bg-pink-50 px-2 py-0.5 text-pink-700 ring-1 ring-pink-600/20 ring-inset dark:bg-pink-900/30 dark:text-pink-400">
                                                     Perempuan
                                                 </span>
+                                            ) : (
+                                                '-'
                                             )}
                                         </dd>
                                     </div>

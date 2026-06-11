@@ -137,7 +137,6 @@ export default function EditStudent({
 
         post(route('admin.students.update', student.id), {
             forceFormData: true,
-            onSuccess: () => router.visit(route('admin.students.index')),
         });
     };
 

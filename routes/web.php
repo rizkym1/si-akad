@@ -39,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('parents', [UserController::class, 'index'])->defaults('role', 'parent')->name('parents.index');
         Route::resource('users', UserController::class);
         Route::post('/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
+        Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
         Route::resource('students', StudentController::class);
         Route::get('students/{student}/card/pdf', [StudentController::class, 'cardPdf'])->name('students.card.pdf');
         Route::get('students/report/pdf', [StudentController::class, 'reportPdf'])->name('students.report.pdf');
@@ -47,7 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/student-classes/bulk-delete', [StudentClassController::class, 'bulkDelete'])->name('student-classes.bulk-delete');
         // Absensi
         Route::get('attendances/report/pdf', [AttendanceController::class, 'reportPdf'])->name('attendances.report.pdf');
-        Route::resource('attendances', AttendanceController::class)->only(['index', 'store']);
+        Route::resource('attendances', AttendanceController::class)->only(['index']);
         Route::post('/attendances/bulk-delete', [AttendanceController::class, 'bulkDelete'])->name('attendances.bulk-delete');
         // Route untuk mendapatkan daftar siswa (digunakan oleh modal)
         Route::get('students/list', [StudentController::class, 'list'])
@@ -58,11 +59,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Academic Calendar
         Route::resource('academic-calendars', AcademicCalendarController::class)->except(['create', 'edit', 'show']);
 
-        // Nilai Kokurikuler (RDM)
-        // Nilai Kokurikuler (RDM)
+        // Penilaian Perkembangan Anak (RDM)
         Route::get('nilai-kokurikuler', [NilaiKokurikulerController::class, 'index'])
             ->name('nilai-kokurikuler.index');
-        Route::get('nilai-kokurikuler/{penilaianId}/penilaian', [NilaiKokurikulerController::class, 'penilaian'])
+        Route::get('nilai-kokurikuler/{nisn}/penilaian', [NilaiKokurikulerController::class, 'penilaian'])
             ->name('nilai-kokurikuler.penilaian');
     });
 

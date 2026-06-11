@@ -188,8 +188,19 @@ class UserController extends Controller
 
     public function bulkDelete(Request $request)
     {
-    $request->validate(['ids' => 'required|array']);
-    User::whereIn('id', $request->ids)->delete();
-    return to_route('admin.users.index');
+        $request->validate(['ids' => 'required|array']);
+        User::whereIn('id', $request->ids)->delete();
+        return to_route('admin.users.index');
+    }
+
+    public function resetPassword(User $user)
+    {
+        // Reset password ke NIK (jika ada) atau 'password'
+        $newPassword = $user->nik ? $user->nik : 'password';
+        $user->update([
+            'password' => Hash::make($newPassword)
+        ]);
+
+        return back()->with('success', 'Password berhasil direset menjadi: ' . $newPassword);
     }
 }

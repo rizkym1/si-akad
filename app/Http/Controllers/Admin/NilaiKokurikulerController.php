@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Student;
+use App\Models\StudentClass;
 use App\Services\RdmService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,41 +14,62 @@ class NilaiKokurikulerController extends Controller
     public function __construct(protected RdmService $rdmService) {}
 
     /**
-     * Halaman index: daftar penilaian
+     * Halaman index: daftar siswa lokal
      */
     public function index(Request $request)
-{
-    $penilaian = collect($this->rdmService->getAllPenilaian());
-    $kelasList = $this->rdmService->getKelasList();
+    {
+        $query = StudentClass::select('id', 'name');
 
-    // Default ke kelas pertama
-    $selectedKelas = $request->get('kelas_id', $kelasList[0]['kelas_id'] ?? null);
+        if (auth()->user()->role === 'teacher') {
+            $query->where('teacher_id', auth()->id());
+        }
 
-    // Filter berdasarkan kelas yang dipilih
-    if ($selectedKelas) {
-        $penilaian = $penilaian->filter(
-            fn($p) => (string)$p['koor_kelas_id'] === (string)$selectedKelas
-        )->values();
+        $kelasList = $query->get();
+        
+        // Default ke kelas pertama jika ada
+        $selectedKelas = $request->get('class_id', $kelasList->first()?->id);
+
+        $siswaList = [];
+        if ($selectedKelas) {
+            // Pastikan jika teacher, kelas yang dipilih benar-benar miliknya (validasi ekstra)
+            $isValidClass = true;
+            if (auth()->user()->role === 'teacher') {
+                $isValidClass = $kelasList->contains('id', $selectedKelas);
+            }
+
+            if ($isValidClass) {
+                $siswaList = Student::where('class_id', $selectedKelas)
+                    ->select('id', 'nisn', 'full_name')
+                    ->orderBy('full_name')
+                    ->get();
+            }
+        }
+
+        return Inertia::render('admin/nilai-kokurikuler/index', [
+            'kelasList'     => $kelasList,
+            'selectedKelas' => (string)$selectedKelas,
+            'siswaList'     => $siswaList,
+        ]);
     }
 
-    return Inertia::render('admin/nilai-kokurikuler/index', [
-        'penilaian'     => $penilaian,
-        'kelasList'     => $kelasList,
-        'selectedKelas' => (string)$selectedKelas,
-    ]);
-}
-
     /**
-     * Halaman penilaian: daftar siswa + nilai per penilaian
+     * Halaman penilaian: detail 3 kriteria rapor untuk siswa tertentu
      */
-    public function penilaian(int $penilaianId)
+    public function penilaian(string $nisn)
     {
-        $detail  = $this->rdmService->getPenilaianById($penilaianId);
-        $siswaList = $this->rdmService->getSiswaNilaiByPenilaian($penilaianId);
+        $student = Student::with('studentClass')->where('nisn', $nisn)->firstOrFail();
+
+        if (auth()->user()->role === 'teacher') {
+            if ($student->studentClass?->teacher_id !== auth()->id()) {
+                abort(403, 'Unauthorized access to this student');
+            }
+        }
+
+        $rapor = $this->rdmService->getRaporPerkembanganAnak($nisn);
 
         return Inertia::render('admin/nilai-kokurikuler/penilaian', [
-            'detail'    => $detail,
-            'siswaList' => $siswaList,
+            'student' => $student,
+            'rapor'   => $rapor,
         ]);
     }
 }

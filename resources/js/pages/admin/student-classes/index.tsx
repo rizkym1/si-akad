@@ -50,6 +50,8 @@ export default function StudentClassIndex({
         current_page: number;
         last_page: number;
         links: any[];
+        prev_page_url: string | null;
+        next_page_url: string | null;
     };
     entries: any;
     search: string;

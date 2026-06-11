@@ -68,6 +68,8 @@ export default function StudentIndex({
         current_page: number;
         last_page: number;
         links: any[];
+        prev_page_url: string | null;
+        next_page_url: string | null;
     };
     schoolYears: SchoolYear[];
     i: number;
@@ -281,7 +283,7 @@ export default function StudentIndex({
                                                         />
                                                     </td>
                                                     <td className="px-6 py-4 text-center text-muted-foreground">
-                                                        {i + index}
+                                                        {(students.from ?? 1) + index}
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">

@@ -144,45 +144,4 @@ class AttendanceController extends Controller
         return $pdf->stream('laporan-absensi-' . now()->format('Ymd') . '.pdf');
     }
 
-    /**
-     * Menyimpan/Memperbarui banyak data absensi sekaligus.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'school_year_id' => 'required|exists:school_years,id',
-            'month'          => 'required|integer|min:1|max:12',
-            'attendances' => 'required|array',
-            'attendances.*.student_id' => 'required|exists:students,id',
-            'attendances.*.present'    => 'nullable|integer|min:0',
-            'attendances.*.sick'       => 'nullable|integer|min:0',
-            'attendances.*.permitted'  => 'nullable|integer|min:0',
-            'attendances.*.absent'     => 'nullable|integer|min:0',
-        ]);
-
-        $schoolYearId = $validated['school_year_id'];
-        $monthId = $validated['month'];
-        
-        $upsertData = [];
-        foreach ($validated['attendances'] as $attendanceData) {
-            $upsertData[] = [
-                'student_id'     => $attendanceData['student_id'],
-                'school_year_id' => $schoolYearId,
-                'month'          => $monthId,
-                'present'        => $attendanceData['present'] ?? 0,
-                'sick'           => $attendanceData['sick'] ?? 0,
-                'permitted'      => $attendanceData['permitted'] ?? 0,
-                'absent'         => $attendanceData['absent'] ?? 0,
-            ];
-        }
-
-        Attendance::upsert(
-            $upsertData,
-            ['student_id', 'school_year_id', 'month'], // unique columns
-            ['present', 'sick', 'permitted', 'absent'] // columns to update
-        );
-
-        return redirect()->back()
-            ->with('success', "Input absensi bulan $monthId berhasil disimpan!");
-    }
 }

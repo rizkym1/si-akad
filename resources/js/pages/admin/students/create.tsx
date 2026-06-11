@@ -140,7 +140,6 @@ export default function CreateStudent({
 
         post(route('admin.students.store'), {
             forceFormData: true,
-            onSuccess: () => router.visit(route('admin.students.index')),
         });
     };
 

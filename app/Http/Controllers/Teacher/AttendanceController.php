@@ -64,7 +64,7 @@ class AttendanceController extends Controller
     {
         $request->validate([
             'school_year_id' => 'required|exists:school_years,id',
-            'date'           => 'required|date',
+            'date'           => 'required|date|before_or_equal:today',
             'attendances'    => 'required|array',
             'attendances.*.student_id' => 'required|exists:students,id',
             'attendances.*.status'     => 'required|in:present,sick,permitted,absent',

@@ -18,34 +18,14 @@ class AcademicRecordController extends Controller
         }
         $student->load(['studentClass.schoolYear']);
         
-        $records = [];
-        
+        $rapor = [];
         if ($student->nisn) {
-            $rdmResult = $this->rdmService->getNilaiBySiswa($student->nisn);
-            
-            if (!empty($rdmResult['nilai'])) {
-                foreach ($rdmResult['nilai'] as $idx => $n) {
-                    $records[] = [
-                        'id' => $idx + 1,
-                        'penilaian_id' => $idx + 1,
-                        'nisn' => $rdmResult['siswa']['nisn'] ?? $student->nisn,
-                        'nama_siswa' => $rdmResult['siswa']['nama'] ?? $student->full_name,
-                        'nama_rombel' => $rdmResult['siswa']['kelas'] ?? ($student->studentClass?->name ?? '-'),
-                        'predikat' => $n['predikat'],
-                        'deskripsi' => 'Capaian kompetensi ' . $n['predikat'] . ' (' . $n['nilai_data'] . ')',
-                        'penilaian' => [
-                            'id' => $idx + 1,
-                            'tanggal_kegiatan' => null, // RDM tak menyimpan tgl spesifik
-                            'nama_kegiatan' => $n['penilaian_deskripsi'] ?: 'Evaluasi Berkala',
-                            'lokasi_kegiatan' => 'Sekolah',
-                        ],
-                    ];
-                }
-            }
+            $rapor = $this->rdmService->getRaporPerkembanganAnak($student->nisn);
         }
+
         return Inertia::render('parent/academic-records/index', [
             'student' => $student,
-            'records' => $records,
+            'rapor'   => $rapor,
         ]);
     }
 }

@@ -115,6 +115,11 @@ const teacherNavItems: NavItem[] = [
         href: '/teacher/academic-calendars',
         icon: CalendarClock,
     },
+    {
+        title: 'Penilaian Perkembangan Anak',
+        href: '/admin/nilai-kokurikuler',
+        icon: Award,
+    },
 ];
 
 const parentNavItems: NavItem[] = [

@@ -65,9 +65,7 @@ export default function CreateUser() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('admin.users.store'), {
-            onSuccess: () => router.get(getReturnRoute(data.role)),
-        });
+        post(route('admin.users.store'));
     };
 
     return (

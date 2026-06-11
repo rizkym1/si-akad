@@ -108,8 +108,8 @@ export default function TeacherStudentsIndex({
                                                 <td className="px-6 py-4 text-foreground">{student.nisn || '-'}</td>
                                                 <td className="px-6 py-4 text-foreground font-semibold">{student.full_name}</td>
                                                 <td className="px-6 py-4 text-center text-foreground">
-                                                    {(student.gender === 'Laki-Laki' || student.gender === 'L') ? 'L' :
-                                                     (student.gender === 'Perempuan' || student.gender === 'P') ? 'P' : '-'}
+                                                    {(student.gender === 'Laki-Laki' || student.gender === 'L' || student.gender === 'male') ? 'L' :
+                                                     (student.gender === 'Perempuan' || student.gender === 'P' || student.gender === 'female') ? 'P' : '-'}
                                                 </td>
                                                 <td className="px-6 py-4 text-center text-foreground">
                                                     {student.student_class?.name || '-'}
