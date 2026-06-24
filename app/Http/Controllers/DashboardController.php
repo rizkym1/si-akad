@@ -26,6 +26,7 @@ class DashboardController extends Controller
                         'full_name' => $child->full_name,
                         'nis' => $child->nis,
                         'nisn' => $child->nisn,
+                        'status' => $child->status,
                         'photo' => $child->photo,
                         'class_name' => $child->studentClass ? $child->studentClass->name : null,
                         'school_year' => ($child->studentClass && $child->studentClass->schoolYear) ? $child->studentClass->schoolYear->name : null,
@@ -52,19 +53,28 @@ class DashboardController extends Controller
         // ── LOGIC ADMIN (Default Dashboard) ──
         // Total counts
         $total_students = Student::count();
+        $active_students = Student::where('status', 'aktif')->count();
+        $graduated_students = Student::where('status', 'lulus')->count();
+
         $total_classes = StudentClass::count();
+        $active_classes = StudentClass::whereHas('schoolYear', function ($q) {
+            $q->where('is_active', true);
+        })->count();
+        $inactive_classes = $total_classes - $active_classes;
+        
         $total_teachers = User::where('role', 'teacher')->count(); // ← Ambil dari users
         $total_subjects = 0; // Nanti ganti setelah ada tabel subjects
 
         // Siswa berdasarkan gender
         $students_by_gender = [
-            'male' => Student::where('gender', 'male')->count(),
-            'female' => Student::where('gender', 'female')->count(),
+            'male' => Student::where('status', 'aktif')->where('gender', 'male')->count(),
+            'female' => Student::where('status', 'aktif')->where('gender', 'female')->count(),
         ];
 
         // Siswa berdasarkan kelas
         $students_by_class = DB::table('students')
             ->join('student_classes', 'students.class_id', '=', 'student_classes.id')
+            ->where('students.status', 'aktif')
             ->select('student_classes.name as class_name', DB::raw('count(*) as student_count'))
             ->groupBy('student_classes.id', 'student_classes.name')
             ->orderBy('student_count', 'desc')
@@ -72,6 +82,7 @@ class DashboardController extends Controller
 
         // 5 Siswa terbaru
         $recent_students = Student::with('studentClass')
+            ->where('status', 'aktif')
             ->latest()
             ->take(5)
             ->get()
@@ -87,7 +98,11 @@ class DashboardController extends Controller
 
         return Inertia::render('dashboard', [
             'total_students' => $total_students,
+            'active_students' => $active_students,
+            'graduated_students' => $graduated_students,
             'total_classes' => $total_classes,
+            'active_classes' => $active_classes,
+            'inactive_classes' => $inactive_classes,
             'total_teachers' => $total_teachers,
             'total_subjects' => $total_subjects,
             'students_by_gender' => $students_by_gender,

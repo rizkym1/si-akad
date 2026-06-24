@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Plus, Minus } from 'lucide-react';
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const page = usePage();
@@ -23,19 +23,28 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         <SidebarGroup className="px-2 py-0">
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
-                {items.map((item) =>
-                    item.items && item.items.length > 0 ? (
+                {items.map((item) => {
+                    const isItemActive =
+                        item.isActive ||
+                        (item.items &&
+                            item.items.some((subItem) =>
+                                page.url.startsWith(subItem.href)
+                            ));
+
+                    return item.items && item.items.length > 0 ? (
                         <Collapsible
                             key={item.title}
                             asChild
-                            defaultOpen={item.isActive}
+                            defaultOpen={isItemActive}
+                            className="group/collapsible"
                         >
                             <SidebarMenuItem>
                                 <CollapsibleTrigger asChild>
                                     <SidebarMenuButton tooltip={item.title}>
                                         {item.icon && <item.icon />}
-                                        <span>{item.title}</span>
-                                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                        <span className="truncate">{item.title}</span>
+                                        <Plus className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:hidden" />
+                                        <Minus className="ml-auto hidden transition-transform duration-200 group-data-[state=open]/collapsible:block" />
                                     </SidebarMenuButton>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
@@ -51,7 +60,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                                     )}
                                                 >
                                                     <Link href={subItem.href}>
-                                                        <span>
+                                                        <span className="truncate">
                                                             {subItem.title}
                                                         </span>
                                                     </Link>
@@ -75,12 +84,12 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                             >
                                 <Link href={item.href} prefetch>
                                     {item.icon && <item.icon />}
-                                    <span>{item.title}</span>
+                                    <span className="truncate">{item.title}</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                    ),
-                )}
+                    );
+                })}
             </SidebarMenu>
         </SidebarGroup>
     );

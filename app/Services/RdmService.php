@@ -227,34 +227,15 @@ class RdmService
     /**
      * Ambil rapor perkembangan anak (3 kriteria) dari RDM
      */
-    public function getRaporPerkembanganAnak(string $nisn): array
+    public function getRaporPerkembanganAnak(?string $nisn): array
     {
-        $siswa = \App\Models\Student::where('nisn', $nisn)->first();
-
-        if (!$siswa) {
-            return [
-                [
-                    'kriteria'  => 'Nilai Agama dan Budi Pekerti',
-                    'deskripsi' => null,
-                ],
-                [
-                    'kriteria'  => 'Jati Diri',
-                    'deskripsi' => null,
-                ],
-                [
-                    'kriteria'  => 'Dasar-dasar Literasi, Matematika, Sains, Teknologi, Rekayasa, Seni',
-                    'deskripsi' => null,
-                ],
-            ];
-        }
-
-        $rapor = DB::connection('rdm')
-            ->table('e_rapor')
-            ->where('siswa_id', $siswa->id)
-            ->whereIn('jenisnilai_id', [1, 2, 3])
-            ->orderBy('rapor_id', 'asc')
-            ->get()
-            ->keyBy('jenisnilai_id');
+        // Penilaian Perkembangan Anak menggunakan deskripsi terbaru dari database RDM 
+        // yang diterapkan sama rata untuk semua siswa sesuai permintaan.
+        $rapor = collect([
+            1 => DB::connection('rdm')->table('e_rapor')->where('jenisnilai_id', 1)->whereNotNull('rapor_deskripsi')->orderBy('rapor_id', 'desc')->first(),
+            2 => DB::connection('rdm')->table('e_rapor')->where('jenisnilai_id', 2)->whereNotNull('rapor_deskripsi')->orderBy('rapor_id', 'desc')->first(),
+            3 => DB::connection('rdm')->table('e_rapor')->where('jenisnilai_id', 3)->whereNotNull('rapor_deskripsi')->orderBy('rapor_id', 'desc')->first(),
+        ])->filter();
 
         return [
             [
@@ -279,17 +260,18 @@ class RdmService
     {
         if (!$text) return null;
 
-        // 1. Perbaiki tanda baca berantakan (titik sebelum koma, koma spasi, dsb)
-        $text = str_replace('.,', ',', $text);
-        $text = str_replace(' ,', ',', $text);
-        $text = str_replace('..', '.', $text);
+        // 1. Perbaiki tanda baca berantakan
+        $text = preg_replace('/\.,/', ',', $text);
+        $text = preg_replace('/ \.,/', ',', $text);
+        $text = preg_replace('/ ,/', ',', $text);
+        $text = preg_replace('/\.\./', '.', $text);
 
         // 2. Hilangkan kata "Anak" yang redundan karena sudah ada awalan "Ananda" di UI
-        $text = str_ireplace('mampu Anak ', 'mampu ', $text);
-        $text = str_ireplace('perlu bimbingan dalam Anak ', 'perlu bimbingan dalam ', $text);
+        $text = preg_replace('/mampu\s+anak\s+/i', 'mampu ', $text);
+        $text = preg_replace('/perlu bimbingan dalam\s+anak\s+/i', 'perlu bimbingan dalam ', $text);
 
         // 3. Lowercase huruf kapital yang muncul di tengah kalimat setelah kata "mampu " atau "dalam "
-        $text = preg_replace_callback('/(mampu |perlu bimbingan dalam )([A-Z])/', function($matches) {
+        $text = preg_replace_callback('/(mampu\s+|perlu bimbingan dalam\s+)([A-Z])/i', function($matches) {
             return $matches[1] . strtolower($matches[2]);
         }, $text);
 
@@ -298,4 +280,6 @@ class RdmService
 
         return $text;
     }
+
+
 }

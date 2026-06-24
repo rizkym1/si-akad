@@ -56,6 +56,7 @@ interface Student {
     guardian_name: string | null;
     guardian_job: string | null;
     guardian_address: string | null;
+    status: string;
 }
 
 export default function ShowStudent({ student }: { student: Student }) {
@@ -65,7 +66,7 @@ export default function ShowStudent({ student }: { student: Student }) {
             href: '/admin/students',
         },
         {
-            title: `Buku Induk: ${student.nickname || student.full_name}`,
+            title: `Detail Siswa: ${student.nickname || student.full_name}`,
             href: `/admin/students/${student.id}`,
         },
     ];
@@ -95,7 +96,7 @@ export default function ShowStudent({ student }: { student: Student }) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Buku Induk Siswa - ${student.full_name}`} />
+            <Head title={`Detail Siswa - ${student.full_name}`} />
             <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
                 {/* ── Top Navigation ── */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -235,6 +236,27 @@ export default function ShowStudent({ student }: { student: Student }) {
                                     <div>
                                         <p className="text-xs font-semibold text-muted-foreground uppercase">Diterima di Kelas</p>
                                         <p className="font-medium text-foreground">{student.accepted_grade || '-'}</p>
+                                    </div>
+                                </div>
+                                <div className="border-t border-border pt-4 mt-2"></div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-xs font-semibold text-muted-foreground uppercase">Kelas Saat Ini</p>
+                                        <p className="font-medium text-foreground">
+                                            {student.status === 'lulus' ? 'LULUS' : (student.student_class ? `${student.student_class.name} (${student.student_class.school_year?.name})` : 'Belum memiliki kelas')}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-semibold text-muted-foreground uppercase">Status Siswa</p>
+                                        <p className="font-medium mt-1">
+                                            {student.status === 'lulus' ? (
+                                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800 dark:bg-green-900/30 dark:text-green-400">Lulus</span>
+                                            ) : student.status === 'aktif' ? (
+                                                <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Aktif</span>
+                                            ) : (
+                                                <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-800 dark:bg-gray-800 dark:text-gray-300">{student.status}</span>
+                                            )}
+                                        </p>
                                     </div>
                                 </div>
                             </div>

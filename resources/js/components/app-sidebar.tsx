@@ -34,7 +34,7 @@ const adminNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Manajemen Pengguna',
+        title: 'Pengguna',
         href: '#',
         icon: User2,
         isActive:
@@ -44,11 +44,11 @@ const adminNavItems: NavItem[] = [
             window.location.pathname.startsWith('/admin/admins'),
         items: [
             {
-                title: 'Data Admin',
+                title: 'Admin',
                 href: '/admin/admins',
             },
             {
-                title: 'Data Guru',
+                title: 'Guru',
                 href: '/admin/teachers',
             },
             {
@@ -58,7 +58,7 @@ const adminNavItems: NavItem[] = [
         ],
     },
     {
-        title: 'Manajemen Tahun Pelajaran',
+        title: 'Tahun Pelajaran',
         href: '/admin/school-years',
         icon: CalendarCheck,
     },
@@ -68,17 +68,17 @@ const adminNavItems: NavItem[] = [
         icon: CalendarClock,
     },
     {
-        title: 'Manajemen Kelas',
+        title: 'Kelas',
         href: '/admin/student-classes',
         icon: School,
     },
     {
-        title: 'Manajemen Siswa',
+        title: 'Siswa',
         href: '/admin/students',
         icon: UserCircle,
     },
     {
-        title: 'Manajemen Absensi',
+        title: 'Absensi',
         href: '/admin/attendances',
         icon: CalendarCheck,
     },
@@ -101,7 +101,7 @@ const teacherNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Manajemen Absensi',
+        title: 'Absensi',
         href: '/teacher/attendances',
         icon: CalendarCheck,
     },

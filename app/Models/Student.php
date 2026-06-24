@@ -46,7 +46,9 @@ class Student extends Model
         'accepted_grade',
         'photo',
         'class_id',
+        'school_year_id',
         'user_id',
+        'status',
     ];
 
     /**

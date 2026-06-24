@@ -1,6 +1,7 @@
 import { DeleteDialog } from '@/components/ui/delete-dialog';
 import { Entries } from '@/components/ui/entries';
 import { InertiaPagination } from '@/components/ui/inertia-pagination';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
@@ -167,7 +168,7 @@ export default function StudentClassIndex({
                                                     />
                                                 </th>
                                                 <th scope="col" className="px-6 py-4 w-16 text-center">NO</th>
-                                                <th scope="col" className="px-6 py-4">NAMA KELAS</th>
+                                                <SortableHeader column="name" label="NAMA KELAS" />
                                                 <th scope="col" className="px-6 py-4">WALI KELAS</th>
                                                 <th scope="col" className="px-6 py-4">TAHUN PELAJARAN</th>
                                                 <th scope="col" className="px-6 py-4 text-right">AKSI</th>
@@ -204,9 +205,9 @@ export default function StudentClassIndex({
                                                         {item.school_year ? (
                                                             <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2.5 py-1 text-xs font-semibold text-foreground">
                                                                 {item.school_year.name}
-                                                                {item.school_year.is_active && (
+                                                                {item.school_year.is_active ? (
                                                                     <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                                                                )}
+                                                                ) : null}
                                                             </span>
                                                         ) : (
                                                             <span className="text-muted-foreground">-</span>

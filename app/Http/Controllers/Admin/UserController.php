@@ -21,6 +21,9 @@ class UserController extends Controller
         $entries = $request->input('entries', 10);
         $role = $request->route('role') ?? $request->query('role');
 
+        $sort = $request->input('sort', 'name');
+        $direction = $request->input('direction', 'asc');
+
         $users = User::query()
             ->when($role, function ($query, $role) {
                 // The DB values might be 'guru' and 'kepala_sekolah'
@@ -32,6 +35,7 @@ class UserController extends Controller
                       ->orWhere('email', 'like', '%' . $search . '%');
                 });
             })
+            ->orderBy($sort, $direction)
             ->paginate($entries)
             ->withQueryString(); // Maintain search parameters during pagination
 

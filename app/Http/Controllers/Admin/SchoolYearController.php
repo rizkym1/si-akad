@@ -19,11 +19,14 @@ class SchoolYearController extends Controller
 
         $entries = $request->input('entries', 10);
 
+        $sort = $request->input('sort', 'name');
+        $direction = $request->input('direction', 'asc');
+
         $schoolYears = SchoolYear::query()
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })
-            ->orderBy('name', 'asc')
+            ->orderBy($sort, $direction)
             ->paginate($entries)
             ->withQueryString();
 

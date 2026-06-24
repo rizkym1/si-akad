@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Calendar, GraduationCap, School, Users } from 'lucide-react';
+import { Calendar, GraduationCap, School, Users, Award } from 'lucide-react';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Beranda Orang Tua',
@@ -16,6 +16,7 @@ interface ChildData {
     photo: string | null;
     class_name: string | null;
     school_year: string | null;
+    status: string;
 }
 interface UpcomingEvent {
     id: number;
@@ -120,23 +121,33 @@ export default function ParentDashboard({
                                                         Kelas Saat Ini
                                                     </p>
                                                     <p className="font-semibold text-gray-800 dark:text-gray-200">
-                                                        {child.class_name ||
-                                                            'Belum Masuk Kelas'}
+                                                        {child.status === 'lulus' ? 'LULUS' : (child.class_name ? `${child.class_name} (${child.school_year})` : 'Belum Masuk Kelas')}
                                                     </p>
                                                 </div>
                                             </div>
 
                                             <div className="flex items-center gap-3">
-                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                                                    <Calendar className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30">
+                                                    <Award className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                        Tahun Ajaran
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium mb-1">
+                                                        Status Siswa
                                                     </p>
                                                     <p className="font-semibold text-gray-800 dark:text-gray-200">
-                                                        {child.school_year ||
-                                                            '-'}
+                                                        {child.status === 'lulus' ? (
+                                                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800 dark:bg-green-900/30 dark:text-green-400">Lulus</span>
+                                                        ) : child.status === 'aktif' ? (
+                                                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Aktif</span>
+                                                        ) : child.status === 'pindah' ? (
+                                                            <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">Pindah</span>
+                                                        ) : child.status === 'dikeluarkan' ? (
+                                                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-900/30 dark:text-red-400">Dikeluarkan</span>
+                                                        ) : child.status === 'wafat' ? (
+                                                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-800 dark:bg-gray-800 dark:text-gray-400">Wafat</span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-400 capitalize">{child.status || '-'}</span>
+                                                        )}
                                                     </p>
                                                 </div>
                                             </div>

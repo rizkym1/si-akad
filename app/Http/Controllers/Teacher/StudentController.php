@@ -22,6 +22,10 @@ class StudentController extends Controller
 
         if ($request->has('class_id') && $request->class_id != '') {
             $query->where('class_id', $request->class_id);
+        } elseif ($request->has('school_year_id') && $request->school_year_id != '') {
+            $query->whereHas('studentClass', function ($q) use ($request) {
+                $q->where('school_year_id', $request->school_year_id);
+            });
         }
 
         if ($request->has('search') && $request->search != '') {
@@ -32,13 +36,19 @@ class StudentController extends Controller
             });
         }
 
+        $sort = $request->input('sort', 'full_name');
+        $direction = $request->input('direction', 'asc');
+
         $entries = $request->input('entries', 10);
-        $students = $query->paginate($entries)->withQueryString();
+        $students = $query->orderBy($sort, $direction)->paginate($entries)->withQueryString();
+
+        $school_years = \App\Models\SchoolYear::whereIn('id', $student_classes->pluck('school_year_id')->unique())->get();
 
         return Inertia::render('teacher/students/index', [
             'students' => $students,
             'student_classes' => $student_classes,
-            'filters' => $request->only(['search', 'class_id']),
+            'school_years' => $school_years,
+            'filters' => $request->only(['search', 'class_id', 'school_year_id']),
         ]);
     }
 

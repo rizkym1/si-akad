@@ -79,10 +79,12 @@ export default function EditStudent({
         child_order: string;
         photo: File | null;
         class_id: number | null;
+        status: string;
         student_phone: string;
         student_address: string;
         previous_school: string;
         accepted_date: string;
+        accepted_grade: string;
         father_name: string;
         mother_name: string;
         phone: string;
@@ -111,10 +113,12 @@ export default function EditStudent({
         child_order: student.child_order || '',
         photo: null,
         class_id: student.class_id || null,
+        status: student.status || 'aktif',
         student_phone: student.student_phone || '',
         student_address: student.student_address || '',
         previous_school: student.previous_school || '',
         accepted_date: student.accepted_date || '',
+        accepted_grade: student.accepted_grade || '',
         father_name: student.father_name || '',
         mother_name: student.mother_name || '',
         phone: student.phone || '',
@@ -139,6 +143,36 @@ export default function EditStudent({
             forceFormData: true,
         });
     };
+
+    const JOB_OPTIONS = [
+        'Dokter',
+        'Pilot',
+        'Pedagang',
+        'Petani/Peternak',
+        'Nelayan',
+        'Buruh',
+        'Sopir/Masinis',
+        'Politikus',
+        'Lainnya',
+        'Tidak Bekerja',
+        'Pensiunan',
+        'PNS',
+        'TNI/Polisi',
+        'Guru/Dosen',
+        'Pegawai Swasta',
+        'Wiraswasta/Wirausaha',
+        'Pengacara/Hakim/Jaksa/Notaris',
+    ];
+
+    const [isCustomFatherJob, setIsCustomFatherJob] = useState(
+        data.father_job ? (!JOB_OPTIONS.includes(data.father_job)) : false
+    );
+    const [isCustomMotherJob, setIsCustomMotherJob] = useState(
+        data.mother_job ? (!JOB_OPTIONS.includes(data.mother_job)) : false
+    );
+    const [isCustomGuardianJob, setIsCustomGuardianJob] = useState(
+        data.guardian_job ? (!JOB_OPTIONS.includes(data.guardian_job)) : false
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -180,7 +214,6 @@ export default function EditStudent({
                                             onChange={(e) =>
                                                 setData('nisn', e.target.value)
                                             }
-                                            required
                                         />
                                         <InputError
                                             message={errors.nisn}
@@ -298,7 +331,6 @@ export default function EditStudent({
                                                     e.target.value,
                                                 )
                                             }
-                                            required
                                         />
                                         <InputError
                                             message={errors.date_of_birth}
@@ -486,6 +518,51 @@ export default function EditStudent({
                                         />
                                     </div>
 
+                                    <div>
+                                        <Label htmlFor="accepted_grade">
+                                            Diterima di Kelas
+                                        </Label>
+                                        <Select
+                                            value={data.accepted_grade}
+                                            onValueChange={(value) =>
+                                                setData('accepted_grade', value)
+                                            }
+                                        >
+                                            <SelectTrigger className="mt-1 w-full">
+                                                <SelectValue placeholder="Pilih Kelas Penerimaan" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {student_classes.length > 0 ? (
+                                                    student_classes.map(
+                                                        (item) => (
+                                                            <SelectItem
+                                                                key={`grade-${item.id}`}
+                                                                value={`${item.name} - ${item.school_year?.name ?? '-'}`}
+                                                            >
+                                                                {item.name} -{' '}
+                                                                {item
+                                                                    .school_year
+                                                                    ?.name ??
+                                                                    '-'}
+                                                            </SelectItem>
+                                                        ),
+                                                    )
+                                                ) : (
+                                                    <SelectItem
+                                                        value="no-data"
+                                                        disabled
+                                                    >
+                                                        Belum ada data kelas
+                                                    </SelectItem>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError
+                                            message={errors.accepted_grade}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
                                     {/* ✅ Dropdown Kelas dengan relasi school_year */}
                                     <div>
                                         <Label htmlFor="class_id">
@@ -541,6 +618,30 @@ export default function EditStudent({
                                         </Select>
                                         <InputError
                                             message={errors.class_id}
+                                            className="mt-2"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="status">
+                                            Status Siswa
+                                        </Label>
+                                        <Select
+                                            value={data.status || 'aktif'}
+                                            onValueChange={(value) =>
+                                                setData('status', value)
+                                            }
+                                        >
+                                            <SelectTrigger className="mt-1 w-full">
+                                                <SelectValue placeholder="Pilih Status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="aktif">Aktif</SelectItem>
+                                                <SelectItem value="lulus">Lulus</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError
+                                            message={errors.status}
                                             className="mt-2"
                                         />
                                     </div>
@@ -699,18 +800,40 @@ export default function EditStudent({
                                         <Label htmlFor="father_job">
                                             Pekerjaan Ayah
                                         </Label>
-                                        <Input
-                                            id="father_job"
-                                            type="text"
-                                            value={data.father_job}
-                                            className="mt-1 block w-full"
-                                            onChange={(e) =>
-                                                setData(
-                                                    'father_job',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
+                                        <Select
+                                            value={isCustomFatherJob ? 'Lainnya' : (data.father_job || '')}
+                                            onValueChange={(value) => {
+                                                if (value === 'Lainnya') {
+                                                    setIsCustomFatherJob(true);
+                                                    setData('father_job', '');
+                                                } else {
+                                                    setIsCustomFatherJob(false);
+                                                    setData('father_job', value);
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="mt-1 w-full">
+                                                <SelectValue placeholder="-Pilih-" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {JOB_OPTIONS.map((job) => (
+                                                    <SelectItem key={job} value={job}>
+                                                        {job}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {isCustomFatherJob && (
+                                            <Input
+                                                type="text"
+                                                placeholder="Sebutkan pekerjaan ayah..."
+                                                value={data.father_job}
+                                                className="mt-2 block w-full"
+                                                onChange={(e) =>
+                                                    setData('father_job', e.target.value)
+                                                }
+                                            />
+                                        )}
                                         <InputError
                                             message={errors.father_job}
                                             className="mt-2"
@@ -721,18 +844,40 @@ export default function EditStudent({
                                         <Label htmlFor="mother_job">
                                             Pekerjaan Ibu
                                         </Label>
-                                        <Input
-                                            id="mother_job"
-                                            type="text"
-                                            value={data.mother_job}
-                                            className="mt-1 block w-full"
-                                            onChange={(e) =>
-                                                setData(
-                                                    'mother_job',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
+                                        <Select
+                                            value={isCustomMotherJob ? 'Lainnya' : (data.mother_job || '')}
+                                            onValueChange={(value) => {
+                                                if (value === 'Lainnya') {
+                                                    setIsCustomMotherJob(true);
+                                                    setData('mother_job', '');
+                                                } else {
+                                                    setIsCustomMotherJob(false);
+                                                    setData('mother_job', value);
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="mt-1 w-full">
+                                                <SelectValue placeholder="-Pilih-" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {JOB_OPTIONS.map((job) => (
+                                                    <SelectItem key={job} value={job}>
+                                                        {job}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {isCustomMotherJob && (
+                                            <Input
+                                                type="text"
+                                                placeholder="Sebutkan pekerjaan ibu..."
+                                                value={data.mother_job}
+                                                className="mt-2 block w-full"
+                                                onChange={(e) =>
+                                                    setData('mother_job', e.target.value)
+                                                }
+                                            />
+                                        )}
                                         <InputError
                                             message={errors.mother_job}
                                             className="mt-2"
@@ -760,144 +905,26 @@ export default function EditStudent({
 
                                     {/* ── Alamat Orang Tua ── */}
                                     <div className="md:col-span-2">
-                                        <h3 className="mb-3 text-sm font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
-                                            Alamat Orang Tua
-                                        </h3>
-                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                            {/* a. Dusun/Jalan */}
-                                            <div className="md:col-span-2 lg:col-span-3">
-                                                <Label htmlFor="address_street">
-                                                    Dusun / Jalan
-                                                </Label>
-                                                <Input
-                                                    id="address_street"
-                                                    type="text"
-                                                    placeholder="Contoh: Dusun Sirnagalih RT 38 RW 18"
-                                                    value={data.address_street}
-                                                    className="mt-1 block w-full"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'address_street',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
-                                                <InputError
-                                                    message={
-                                                        errors.address_street
-                                                    }
-                                                    className="mt-2"
-                                                />
-                                            </div>
-
-                                            {/* b. Kelurahan/Desa */}
-                                            <div>
-                                                <Label htmlFor="address_village">
-                                                    Kelurahan / Desa
-                                                </Label>
-                                                <Input
-                                                    id="address_village"
-                                                    type="text"
-                                                    placeholder="Contoh: Gunungcupu"
-                                                    value={data.address_village}
-                                                    className="mt-1 block w-full"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'address_village',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
-                                                <InputError
-                                                    message={
-                                                        errors.address_village
-                                                    }
-                                                    className="mt-2"
-                                                />
-                                            </div>
-
-                                            {/* c. Kecamatan */}
-                                            <div>
-                                                <Label htmlFor="address_district">
-                                                    Kecamatan
-                                                </Label>
-                                                <Input
-                                                    id="address_district"
-                                                    type="text"
-                                                    placeholder="Contoh: Sindangkasih"
-                                                    value={
-                                                        data.address_district
-                                                    }
-                                                    className="mt-1 block w-full"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'address_district',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
-                                                <InputError
-                                                    message={
-                                                        errors.address_district
-                                                    }
-                                                    className="mt-2"
-                                                />
-                                            </div>
-
-                                            {/* d. Kabupaten/Kota */}
-                                            <div>
-                                                <Label htmlFor="address_city">
-                                                    Kabupaten / Kota
-                                                </Label>
-                                                <Input
-                                                    id="address_city"
-                                                    type="text"
-                                                    placeholder="Contoh: Ciamis"
-                                                    value={data.address_city}
-                                                    className="mt-1 block w-full"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'address_city',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
-                                                <InputError
-                                                    message={
-                                                        errors.address_city
-                                                    }
-                                                    className="mt-2"
-                                                />
-                                            </div>
-
-                                            {/* e. Provinsi */}
-                                            <div>
-                                                <Label htmlFor="address_province">
-                                                    Provinsi
-                                                </Label>
-                                                <Input
-                                                    id="address_province"
-                                                    type="text"
-                                                    placeholder="Contoh: Jawa Barat"
-                                                    value={
-                                                        data.address_province
-                                                    }
-                                                    className="mt-1 block w-full"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'address_province',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
-                                                <InputError
-                                                    message={
-                                                        errors.address_province
-                                                    }
-                                                    className="mt-2"
-                                                />
-                                            </div>
-                                        </div>
+                                        <Label htmlFor="address_street">
+                                            Alamat Lengkap Orang Tua
+                                        </Label>
+                                        <textarea
+                                            id="address_street"
+                                            name="address_street"
+                                            value={data.address_street}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
+                                            rows={3}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'address_street',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        ></textarea>
+                                        <InputError
+                                            message={errors.address_street}
+                                            className="mt-2"
+                                        />
                                     </div>
                                 </div>
                             </FormSection>
@@ -931,18 +958,40 @@ export default function EditStudent({
                                         <Label htmlFor="guardian_job">
                                             Pekerjaan Wali
                                         </Label>
-                                        <Input
-                                            id="guardian_job"
-                                            type="text"
-                                            value={data.guardian_job}
-                                            className="mt-1 block w-full"
-                                            onChange={(e) =>
-                                                setData(
-                                                    'guardian_job',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
+                                        <Select
+                                            value={isCustomGuardianJob ? 'Lainnya' : (data.guardian_job || '')}
+                                            onValueChange={(value) => {
+                                                if (value === 'Lainnya') {
+                                                    setIsCustomGuardianJob(true);
+                                                    setData('guardian_job', '');
+                                                } else {
+                                                    setIsCustomGuardianJob(false);
+                                                    setData('guardian_job', value);
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="mt-1 w-full">
+                                                <SelectValue placeholder="-Pilih-" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {JOB_OPTIONS.map((job) => (
+                                                    <SelectItem key={job} value={job}>
+                                                        {job}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {isCustomGuardianJob && (
+                                            <Input
+                                                type="text"
+                                                placeholder="Sebutkan pekerjaan wali..."
+                                                value={data.guardian_job}
+                                                className="mt-2 block w-full"
+                                                onChange={(e) =>
+                                                    setData('guardian_job', e.target.value)
+                                                }
+                                            />
+                                        )}
                                         <InputError
                                             message={errors.guardian_job}
                                             className="mt-2"

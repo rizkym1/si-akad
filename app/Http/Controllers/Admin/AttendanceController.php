@@ -26,7 +26,7 @@ class AttendanceController extends Controller
         $schoolYears = SchoolYear::orderBy('name', 'desc')
             ->get(['id', 'name', 'is_active']);
             
-        $classes = \App\Models\StudentClass::select('id', 'name')->orderBy('name')->get();
+        $classes = \App\Models\StudentClass::select('id', 'name', 'school_year_id')->orderBy('name')->get();
 
         $activeSchoolYear = $request->input('school_year_id') 
             ?? $schoolYears->where('is_active', true)->first()?->id 
@@ -55,7 +55,7 @@ class AttendanceController extends Controller
                 $query->where('school_year_id', $activeSchoolYear)
                       ->where('month', $activeMonth);
             }])
-            ->orderBy('full_name')
+            ->orderBy($request->input('sort', 'full_name'), $request->input('direction', 'asc'))
             ->get();
 
         return Inertia::render('admin/attendances/index', [

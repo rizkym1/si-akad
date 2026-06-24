@@ -46,6 +46,7 @@ interface Student {
         name: string;
         email: string;
     } | null;
+    status: string;
 }
 export default function ShowParent({ student }: { student: Student }) {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -160,11 +161,24 @@ export default function ShowParent({ student }: { student: Student }) {
                                 <dl className="space-y-4">
                                     <div>
                                         <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                            Tahun Ajaran
+                                            Tahun Pelajaran
                                         </dt>
                                         <dd className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-200">
-                                            {student.student_class?.school_year
-                                                ?.name || 'Belum diatur'}
+                                            {student.student_class?.school_year?.name || 'Belum diatur'}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                            Status Siswa
+                                        </dt>
+                                        <dd className="mt-1">
+                                            {student.status === 'lulus' ? (
+                                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800 dark:bg-green-900/30 dark:text-green-400">Lulus</span>
+                                            ) : student.status === 'aktif' ? (
+                                                <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Aktif</span>
+                                            ) : (
+                                                <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-800 dark:bg-gray-800 dark:text-gray-300">{student.status}</span>
+                                            )}
                                         </dd>
                                     </div>
                                     <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700/50">
@@ -172,8 +186,7 @@ export default function ShowParent({ student }: { student: Student }) {
                                             Kelas Saat Ini
                                         </dt>
                                         <dd className="mt-1 text-lg font-bold text-indigo-600 dark:text-indigo-400">
-                                            {student.student_class?.name ||
-                                                'Belum masuk kelas'}
+                                            {student.status === 'lulus' ? 'LULUS' : (student.student_class ? `${student.student_class.name} (${student.student_class.school_year?.name})` : 'Belum masuk kelas')}
                                         </dd>
                                     </div>
                                 </dl>

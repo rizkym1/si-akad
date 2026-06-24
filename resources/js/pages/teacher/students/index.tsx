@@ -1,3 +1,4 @@
+import { SortableHeader } from '@/components/ui/sortable-header';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
@@ -23,17 +24,38 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function TeacherStudentsIndex({
     students,
     student_classes,
+    school_years,
     filters,
 }: {
     students: { data: Student[], links: any[] };
-    student_classes: { id: number; name: string }[];
-    filters: { search?: string; class_id?: string };
+    school_years?: { id: number; name: string; is_active: boolean }[];
+    student_classes: { id: number; name: string; school_year_id: number }[];
+    filters: { search?: string; class_id?: string; school_year_id?: string };
 }) {
+    const combinedFilterValue = filters.class_id ? `class_${filters.class_id}` : (filters.school_year_id ? `sy_${filters.school_year_id}` : '');
 
-    const handleFilterChange = (key: string, value: string) => {
+    const handleCombinedFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const val = e.target.value;
+        let class_id = '';
+        let school_year_id = '';
+
+        if (val.startsWith('class_')) {
+            class_id = val.replace('class_', '');
+        } else if (val.startsWith('sy_')) {
+            school_year_id = val.replace('sy_', '');
+        }
+
         router.get(
             route('teacher.students.index'),
-            { ...filters, [key]: value },
+            { ...filters, class_id, school_year_id },
+            { preserveState: true, replace: true }
+        );
+    };
+
+    const handleSearchChange = (value: string) => {
+        router.get(
+            route('teacher.students.index'),
+            { ...filters, search: value },
             { preserveState: true, replace: true }
         );
     };
@@ -55,18 +77,25 @@ export default function TeacherStudentsIndex({
                         <div className="mb-6 flex flex-wrap items-center gap-4">
                             <div className="flex items-center gap-2">
                                 <label className="text-sm font-medium whitespace-nowrap text-foreground">
-                                    Filter Kelas:
+                                    Pilih T.A / Kelas:
                                 </label>
                                 <select
-                                    value={filters.class_id || ''}
-                                    onChange={(e) => handleFilterChange('class_id', e.target.value)}
-                                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    value={combinedFilterValue}
+                                    onChange={handleCombinedFilterChange}
+                                    className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none w-full sm:w-auto"
                                 >
-                                    <option value="">Semua Kelas</option>
-                                    {student_classes.map((c) => (
-                                        <option key={c.id} value={c.id}>
-                                            {c.name}
-                                        </option>
+                                    <option value="">Semua Tahun Ajaran & Kelas</option>
+                                    {school_years?.map((sy) => (
+                                        <optgroup key={`sy_${sy.id}`} label={`T.A. ${sy.name} ${sy.is_active ? '(Aktif)' : ''}`}>
+                                            <option value={`sy_${sy.id}`}>Semua Kelas di T.A. {sy.name}</option>
+                                            {student_classes
+                                                .filter((c) => c.school_year_id === sy.id)
+                                                .map((c) => (
+                                                    <option key={`class_${c.id}`} value={`class_${c.id}`}>
+                                                        {c.name}
+                                                    </option>
+                                                ))}
+                                        </optgroup>
                                     ))}
                                 </select>
                             </div>
@@ -80,9 +109,9 @@ export default function TeacherStudentsIndex({
                                     placeholder="Cari NISN atau Nama..."
                                     className="pl-10 text-sm"
                                     defaultValue={filters.search}
-                                    onBlur={(e) => handleFilterChange('search', e.target.value)}
+                                    onBlur={(e) => handleSearchChange(e.target.value)}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter') handleFilterChange('search', e.currentTarget.value);
+                                        if (e.key === 'Enter') handleSearchChange(e.currentTarget.value);
                                     }}
                                 />
                             </div>
@@ -94,8 +123,8 @@ export default function TeacherStudentsIndex({
                                     <thead className="bg-muted text-foreground">
                                         <tr className="border-b border-border">
                                             <th className="w-16 px-6 py-4 text-center">No</th>
-                                            <th className="px-6 py-4">NISN</th>
-                                            <th className="px-6 py-4">Nama Lengkap</th>
+                                            <SortableHeader column="nisn" label="NISN" />
+                                            <SortableHeader column="full_name" label="Nama Lengkap" />
                                             <th className="px-6 py-4 text-center">L/P</th>
                                             <th className="px-6 py-4 text-center">Kelas</th>
                                             <th className="w-24 px-6 py-4 text-center">Aksi</th>

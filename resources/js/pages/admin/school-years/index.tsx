@@ -1,6 +1,7 @@
 import { DeleteDialog } from '@/components/ui/delete-dialog';
 import { Entries } from '@/components/ui/entries';
 import { InertiaPagination } from '@/components/ui/inertia-pagination';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
@@ -159,12 +160,8 @@ export default function SchoolYearIndex({
                                                 <th scope="col" className="px-6 py-4 w-16 text-center">
                                                     NO
                                                 </th>
-                                                <th scope="col" className="px-6 py-4">
-                                                    TAHUN AJARAN
-                                                </th>
-                                                <th scope="col" className="px-6 py-4 text-center">
-                                                    STATUS
-                                                </th>
+                                                <SortableHeader column="name" label="TAHUN AJARAN" />
+                                                <SortableHeader column="is_active" label="STATUS" align="center" />
                                                 <th scope="col" className="px-6 py-4 text-right">
                                                     AKSI
                                                 </th>

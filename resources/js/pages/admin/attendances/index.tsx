@@ -1,5 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Printer, Filter, X } from 'lucide-react';
@@ -46,7 +47,7 @@ export default function AttendanceIndex({
 }: {
     students: Student[];
     schoolYears: SchoolYear[];
-    classes: { id: number; name: string }[];
+    classes: { id: number; name: string; school_year_id: number }[];
     activeSchoolYear: number | null;
     activeMonth: number;
     activeClass: number | null;
@@ -70,6 +71,38 @@ export default function AttendanceIndex({
     const [filterSchoolYearId, setFilterSchoolYearId] = useState<number | null>(activeSchoolYear);
     const [filterClassId, setFilterClassId] = useState<number | null>(activeClass);
     const [filterMonth, setFilterMonth] = useState<number>(activeMonth);
+
+    const [combinedFilterValue, setCombinedFilterValue] = useState<string>(() => {
+        if (activeClass) return `class_${activeClass}`;
+        if (activeSchoolYear) return `sy_${activeSchoolYear}`;
+        return '';
+    });
+
+    const handleCombinedFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const val = e.target.value;
+        setCombinedFilterValue(val);
+        let sy_id: number | null = null;
+        let c_id: number | null = null;
+
+        if (val.startsWith('sy_')) {
+            sy_id = Number(val.replace('sy_', ''));
+        } else if (val.startsWith('class_')) {
+            c_id = Number(val.replace('class_', ''));
+            const cls = classes.find((c) => c.id === c_id);
+            if (cls) {
+                sy_id = cls.school_year_id;
+            }
+        }
+
+        setFilterSchoolYearId(sy_id);
+        setFilterClassId(c_id);
+        
+        router.get(
+            route('admin.attendances.index'),
+            { search, school_year_id: sy_id, class_id: c_id, month: filterMonth },
+            { preserveState: true, replace: true }
+        );
+    };
 
     const [filterMonthPrint, setFilterMonthPrint] = useState<number>(0);
 
@@ -207,18 +240,22 @@ export default function AttendanceIndex({
                                 <div className="flex w-full items-center gap-2 sm:w-auto">
                                     <Filter className="h-4 w-4 text-muted-foreground mr-1 hidden sm:block" />
                                     <select
-                                        value={filterSchoolYearId ?? ''}
-                                        onChange={(e) => {
-                                            setFilterSchoolYearId(Number(e.target.value));
-                                            router.get(route('admin.attendances.index'), { search, school_year_id: e.target.value, class_id: filterClassId, month: filterMonth }, { preserveState: true, replace: true });
-                                        }}
-                                        className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm w-full sm:w-36 focus:ring-2 focus:ring-primary outline-none text-foreground"
+                                        className="w-full rounded-lg border border-input bg-background py-2 px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none text-foreground sm:w-64"
+                                        value={combinedFilterValue}
+                                        onChange={handleCombinedFilterChange}
                                     >
-                                        <option value="" disabled>Tahun Ajaran</option>
-                                        {schoolYears.map((y) => (
-                                            <option key={y.id} value={y.id}>
-                                                {y.name} {y.is_active ? '(Aktif)' : ''}
-                                            </option>
+                                        <option value="">Semua Tahun Ajaran & Kelas</option>
+                                        {schoolYears.map((sy) => (
+                                            <optgroup key={`sy_${sy.id}`} label={`T.A. ${sy.name} ${sy.is_active ? '(Aktif)' : ''}`}>
+                                                <option value={`sy_${sy.id}`}>Semua Kelas di T.A. {sy.name}</option>
+                                                {classes
+                                                    .filter((c) => c.school_year_id === sy.id)
+                                                    .map((c) => (
+                                                        <option key={`class_${c.id}`} value={`class_${c.id}`}>
+                                                            {c.name}
+                                                        </option>
+                                                    ))}
+                                            </optgroup>
                                         ))}
                                     </select>
                                 </div>
@@ -230,28 +267,10 @@ export default function AttendanceIndex({
                                             setFilterMonth(monthVal);
                                             router.get(route('admin.attendances.index'), { search, school_year_id: filterSchoolYearId, class_id: filterClassId, month: monthVal }, { preserveState: true, replace: true });
                                         }}
-                                        className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm w-full sm:w-32 focus:ring-2 focus:ring-primary outline-none text-foreground"
+                                        className="rounded-lg border border-input bg-background px-3 py-2 text-sm w-full sm:w-32 focus:ring-2 focus:ring-primary outline-none text-foreground"
                                     >
                                         {months.map((m) => (
                                             <option key={m.id} value={m.id}>{m.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="flex w-full items-center gap-2 sm:w-auto">
-                                    <select
-                                        value={filterClassId ?? ''}
-                                        onChange={(e) => {
-                                            const classVal = e.target.value ? Number(e.target.value) : null;
-                                            setFilterClassId(classVal);
-                                            router.get(route('admin.attendances.index'), { search, school_year_id: filterSchoolYearId, class_id: classVal, month: filterMonth }, { preserveState: true, replace: true });
-                                        }}
-                                        className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm w-full sm:w-36 focus:ring-2 focus:ring-primary outline-none text-foreground"
-                                    >
-                                        <option value="">Semua Kelas</option>
-                                        {classes.map((c) => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.name}
-                                            </option>
                                         ))}
                                     </select>
                                 </div>
@@ -274,8 +293,8 @@ export default function AttendanceIndex({
                                     <thead className="bg-muted text-foreground">
                                         <tr className="border-b border-border">
                                             <th className="w-12 px-6 py-4 text-center">No</th>
-                                            <th className="px-6 py-4">NISN</th>
-                                            <th className="px-6 py-4 min-w-[200px]">Nama Lengkap</th>
+                                            <SortableHeader column="nisn" label="NISN" />
+                                            <SortableHeader column="full_name" label="Nama Lengkap" className="min-w-[200px]" />
                                             <th className="w-20 px-4 py-4 text-center">L/P</th>
                                             <th className="w-24 px-4 py-4 text-center">Hadir</th>
                                             <th className="w-24 px-4 py-4 text-center">Sakit</th>

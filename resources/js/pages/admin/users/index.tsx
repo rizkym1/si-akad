@@ -8,6 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { InertiaPagination } from '@/components/ui/inertia-pagination';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -57,11 +58,11 @@ export default function UserIndex({
 
     const pageTitle =
         role === 'admin'
-            ? 'Data Administrator'
+            ? 'Admin'
             : role === 'teacher'
-              ? 'Data Guru & Staf'
+              ? 'Guru'
               : role === 'parent'
-                ? 'Data Orang Tua'
+                ? 'Orang Tua'
                 : 'Pusat Manajemen Pengguna';
 
     const dynamicBreadcrumbs: BreadcrumbItem[] = [
@@ -201,9 +202,9 @@ export default function UserIndex({
                                                     />
                                                 </th>
                                                 <th scope="col" className="px-6 py-4 w-16 text-center">NO</th>
-                                                <th scope="col" className="px-6 py-4">NAMA LENGKAP</th>
-                                                <th scope="col" className="px-6 py-4">IDENTITAS (NIK / EMAIL)</th>
-                                                {(!role) && <th scope="col" className="px-6 py-4 text-center">ROLE</th>}
+                                                <SortableHeader column="name" label="NAMA LENGKAP" />
+                                                <SortableHeader column="email" label="IDENTITAS (NIK / EMAIL)" />
+                                                {(!role) && <SortableHeader column="role" label="ROLE" align="center" />}
                                                 <th scope="col" className="px-6 py-4 text-right">AKSI</th>
                                             </tr>
                                         </thead>

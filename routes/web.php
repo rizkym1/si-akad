@@ -62,7 +62,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Penilaian Perkembangan Anak (RDM)
         Route::get('nilai-kokurikuler', [NilaiKokurikulerController::class, 'index'])
             ->name('nilai-kokurikuler.index');
-        Route::get('nilai-kokurikuler/{nisn}/penilaian', [NilaiKokurikulerController::class, 'penilaian'])
+        Route::get('nilai-kokurikuler/{id}/penilaian', [NilaiKokurikulerController::class, 'penilaian'])
             ->name('nilai-kokurikuler.penilaian');
     });
 

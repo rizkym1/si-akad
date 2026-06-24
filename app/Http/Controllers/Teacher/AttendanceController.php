@@ -47,7 +47,9 @@ class AttendanceController extends Controller
             $studentsQuery->where('full_name', 'like', "%{$search}%");
         }
 
-        $students = $studentsQuery->get();
+        $students = $studentsQuery
+            ->orderBy($request->input('sort', 'full_name'), $request->input('direction', 'asc'))
+            ->get();
 
         return Inertia::render('teacher/attendances/index', [
             'students' => $students,

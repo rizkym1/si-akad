@@ -1,5 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Leaf, Search, Filter, ClipboardList, PenTool } from 'lucide-react';
@@ -13,11 +14,13 @@ interface Siswa {
 interface Kelas {
     id: string | number;
     name: string;
+    school_year_id: number;
 }
 
 interface Props {
     siswaList: Siswa[];
     kelasList: Kelas[];
+    school_years?: { id: number; name: string; is_active: boolean }[];
     selectedKelas: string;
 }
 
@@ -31,6 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function NilaiKokurikulerIndex({
     siswaList = [],
     kelasList = [],
+    school_years = [],
     selectedKelas = '',
 }: Props) {
     const [search, setSearch] = useState('');
@@ -75,17 +79,23 @@ export default function NilaiKokurikulerIndex({
                         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
                             <div className="flex w-full items-center gap-2 sm:w-auto">
                                 <Filter className="h-4 w-4 text-muted-foreground mr-1 hidden sm:block" />
-                                <label className="text-sm font-medium whitespace-nowrap text-foreground">Filter Kelas:</label>
+                                <label className="text-sm font-medium whitespace-nowrap text-foreground">Pilih T.A / Kelas:</label>
                                 <select
                                     value={selectedKelas}
                                     onChange={(e) => handleKelasChange(e.target.value)}
-                                    className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm w-full sm:w-48 focus:ring-2 focus:ring-primary outline-none"
+                                    className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm w-full sm:w-auto focus:ring-2 focus:ring-primary outline-none"
                                 >
                                     <option value="" disabled>Pilih Rombongan Belajar</option>
-                                    {safeKelasList.map((k) => (
-                                        <option key={k.id} value={k.id}>
-                                            {k.name}
-                                        </option>
+                                    {school_years?.map((sy) => (
+                                        <optgroup key={`sy_${sy.id}`} label={`T.A. ${sy.name} ${sy.is_active ? '(Aktif)' : ''}`}>
+                                            {safeKelasList
+                                                .filter((c) => c.school_year_id === sy.id)
+                                                .map((k) => (
+                                                    <option key={`class_${k.id}`} value={k.id}>
+                                                        {k.name}
+                                                    </option>
+                                                ))}
+                                        </optgroup>
                                     ))}
                                 </select>
                             </div>
@@ -126,8 +136,8 @@ export default function NilaiKokurikulerIndex({
                                     <thead className="bg-muted text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                         <tr className="border-b border-border">
                                             <th scope="col" className="w-16 px-6 py-4 text-center">NO</th>
-                                            <th scope="col" className="px-6 py-4">NISN</th>
-                                            <th scope="col" className="px-6 py-4">NAMA SISWA</th>
+                                            <SortableHeader column="nisn" label="NISN" />
+                                            <SortableHeader column="full_name" label="NAMA SISWA" />
                                             <th scope="col" className="px-6 py-4 text-center">STATUS</th>
                                             <th scope="col" className="px-6 py-4 text-right">TINDAKAN</th>
                                         </tr>
@@ -153,7 +163,7 @@ export default function NilaiKokurikulerIndex({
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex justify-end gap-2 pr-1">
-                                                        <Link href={route('admin.nilai-kokurikuler.penilaian', item.nisn)}>
+                                                        <Link href={route('admin.nilai-kokurikuler.penilaian', item.id)}>
                                                             <button className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-all hover:bg-muted focus:ring-2 focus:ring-primary/50 shadow-sm opacity-90 group-hover:opacity-100">
                                                                 <PenTool className="h-3.5 w-3.5 mr-1.5" />
                                                                 Lihat Penilaian

@@ -20,21 +20,44 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $classId = $request->input('class_id');
+        $schoolYearId = $request->input('school_year_id');
+        $status = $request->input('status');
 
         $entries = $request->input('entries', 10);
 
+        $sort = $request->input('sort', 'full_name');
+        $direction = $request->input('direction', 'asc');
+
         $students = Student::query()
+            ->with(['studentClass', 'schoolYear'])
             ->when($search, function ($query, $search) {
-                $query->where('full_name', 'like', '%' . $search . '%')
+                $query->where(function($q) use ($search) {
+                    $q->where('full_name', 'like', '%' . $search . '%')
                       ->orWhere('nisn', 'like', '%' . $search . '%');
+                });
             })
+            ->when($classId, function ($query, $classId) {
+                $query->where('class_id', $classId);
+            })
+            ->when($schoolYearId, function ($query, $schoolYearId) {
+                $query->where('school_year_id', $schoolYearId);
+            })
+            ->when($status, function ($query, $status) {
+                $query->where('status', $status);
+            })
+            ->orderBy($sort, $direction)
             ->paginate($entries)
             ->withQueryString();
 
         return Inertia::render('admin/students/index', [
             'students'      => $students,
-            'schoolYears' => SchoolYear::orderBy('name', 'desc')->get(['id', 'name', 'is_active']),
+            'schoolYears'   => SchoolYear::orderBy('name', 'desc')->get(['id', 'name', 'is_active']),
+            'studentClasses' => StudentClass::with('schoolYear')->orderBy('name')->get(['id', 'name', 'school_year_id']),
             'search'        => $search,
+            'class_id'      => $classId,
+            'school_year_id' => $schoolYearId,
+            'status'        => $status,
             'entries'       => $request->input('entries', 10),
         ]);
     }
@@ -130,8 +153,8 @@ class StudentController extends Controller
     'full_name'        => ['required', 'string', 'max:255'],
     'nickname'         => ['nullable', 'string', 'max:255'],
     'place_of_birth'   => ['nullable', 'string', 'max:255'],
-    'nisn'             => ['required', 'string', 'max:255', 'unique:students,nisn'],
-    'date_of_birth'    => ['required', 'date'],
+    'nisn'             => ['nullable', 'string', 'max:255', 'unique:students,nisn'],
+    'date_of_birth'    => ['nullable', 'date'],
     'gender'           => ['nullable', 'in:male,female'],
     'religion'         => ['nullable', 'string', 'max:255'],
     'family_status'    => ['nullable', 'string', 'max:255'],
@@ -153,9 +176,11 @@ class StudentController extends Controller
     'student_address'  => ['nullable', 'string'],
     'previous_school'  => ['nullable', 'string', 'max:255'],
     'accepted_date'    => ['nullable', 'date'],
+    'accepted_grade'   => ['nullable', 'string', 'max:255'],
     'class_id'         => ['nullable', 'exists:student_classes,id'],
     'user_id'          => ['nullable', 'exists:users,id'],
     'photo'            => ['nullable', 'image', 'max:2048'],
+    'status'           => ['nullable', 'in:aktif,lulus,pindah,keluar'],
 ]);
 
         $photoPath = null;
@@ -163,7 +188,51 @@ class StudentController extends Controller
             $photoPath = $request->file('photo')->store('students/photos', 'public');
         }
 
-        Student::create(array_merge($validated, [
+        $studentData = $validated;
+        
+        if (empty($studentData['school_year_id'])) {
+            if (!empty($studentData['class_id'])) {
+                $class = \App\Models\StudentClass::find($studentData['class_id']);
+                if ($class) {
+                    $studentData['school_year_id'] = $class->school_year_id;
+                }
+            } else {
+                $activeYear = \App\Models\SchoolYear::where('is_active', true)->first();
+                if ($activeYear) {
+                    $studentData['school_year_id'] = $activeYear->id;
+                }
+            }
+        }
+        
+        // Auto-create parent user if not selected
+        if (empty($studentData['user_id'])) {
+            $parentName = $request->input('father_name') ?: ($request->input('mother_name') ?: 'Orang Tua');
+            $accountName = $parentName . ' (Ortu dari ' . $request->input('full_name') . ')';
+            $baseEmailStr = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $parentName));
+            
+            if (empty($baseEmailStr)) {
+                $fallbackStr = $request->input('nisn') ?: ($request->input('nis') ?: rand(1000, 9999));
+                $baseEmailStr = 'ortu' . preg_replace('/[^a-zA-Z0-9]/', '', $fallbackStr);
+            }
+            
+            $uniqueEmail = $baseEmailStr . '@gmail.com';
+            $counter = 1;
+            while (\App\Models\User::where('email', $uniqueEmail)->exists()) {
+                $uniqueEmail = $baseEmailStr . $counter . '@gmail.com';
+                $counter++;
+            }
+
+            $newUser = \App\Models\User::create([
+                'name' => $accountName,
+                'email' => $uniqueEmail,
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'parent',
+            ]);
+
+            $studentData['user_id'] = $newUser->id;
+        }
+
+        Student::create(array_merge($studentData, [
             'photo' => $photoPath,
         ]));
 
@@ -208,8 +277,8 @@ class StudentController extends Controller
     'full_name'        => ['required', 'string', 'max:255'],
     'nickname'         => ['nullable', 'string', 'max:255'],
     'place_of_birth'   => ['nullable', 'string', 'max:255'],
-    'nisn'             => ['required', 'string', 'max:255', 'unique:students,nisn,' . $id],
-    'date_of_birth'    => ['required', 'date'],
+    'nisn'             => ['nullable', 'string', 'max:255', 'unique:students,nisn,' . $id],
+    'date_of_birth'    => ['nullable', 'date'],
     'gender'           => ['nullable', 'in:male,female'],
     'religion'         => ['nullable', 'string', 'max:255'],
     'family_status'    => ['nullable', 'string', 'max:255'],
@@ -231,9 +300,11 @@ class StudentController extends Controller
     'student_address'  => ['nullable', 'string'],
     'previous_school'  => ['nullable', 'string', 'max:255'],
     'accepted_date'    => ['nullable', 'date'],
+    'accepted_grade'   => ['nullable', 'string', 'max:255'],
     'class_id'         => ['nullable', 'exists:student_classes,id'],
     'user_id'          => ['nullable', 'exists:users,id'],
     'photo'            => ['nullable', 'image', 'max:2048'],
+    'status'           => ['nullable', 'in:aktif,lulus,pindah,keluar'],
 ]);
 
         if ($request->hasFile('photo')) {
@@ -245,7 +316,51 @@ class StudentController extends Controller
             unset($validated['photo']);
         }
 
-        $student->update($validated);
+        $studentData = $validated;
+        
+        if (empty($studentData['school_year_id'])) {
+            if (!empty($studentData['class_id'])) {
+                $class = \App\Models\StudentClass::find($studentData['class_id']);
+                if ($class) {
+                    $studentData['school_year_id'] = $class->school_year_id;
+                }
+            } else {
+                $activeYear = \App\Models\SchoolYear::where('is_active', true)->first();
+                if ($activeYear) {
+                    $studentData['school_year_id'] = $activeYear->id;
+                }
+            }
+        }
+        
+        // Auto-create parent user if not selected and not already linked
+        if (empty($studentData['user_id'])) {
+            $parentName = $request->input('father_name') ?: ($request->input('mother_name') ?: 'Orang Tua');
+            $accountName = $parentName . ' (Ortu dari ' . $request->input('full_name') . ')';
+            $baseEmailStr = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $parentName));
+            
+            if (empty($baseEmailStr)) {
+                $fallbackStr = $request->input('nisn') ?: ($request->input('nis') ?: rand(1000, 9999));
+                $baseEmailStr = 'ortu' . preg_replace('/[^a-zA-Z0-9]/', '', $fallbackStr);
+            }
+            
+            $uniqueEmail = $baseEmailStr . '@gmail.com';
+            $counter = 1;
+            while (\App\Models\User::where('email', $uniqueEmail)->exists()) {
+                $uniqueEmail = $baseEmailStr . $counter . '@gmail.com';
+                $counter++;
+            }
+
+            $newUser = \App\Models\User::create([
+                'name' => $accountName,
+                'email' => $uniqueEmail,
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'parent',
+            ]);
+
+            $studentData['user_id'] = $newUser->id;
+        }
+
+        $student->update($studentData);
 
         return redirect()->route('admin.students.index')->with('success', 'Siswa berhasil diperbarui.');
     }

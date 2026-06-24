@@ -21,10 +21,14 @@ class StudentClassController extends Controller
 
         $entries = $request->input('entries', 10);
 
+        $sort = $request->input('sort', 'name');
+        $direction = $request->input('direction', 'asc');
+
         $studentClasses = StudentClass::with(['schoolYear', 'teacher'])
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })
+            ->orderBy($sort, $direction)
             ->paginate($entries)
             ->withQueryString();
 

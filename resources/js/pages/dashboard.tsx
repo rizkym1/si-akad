@@ -13,7 +13,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface DashboardProps {
     total_students: number;
+    active_students: number;
+    graduated_students: number;
     total_classes: number;
+    active_classes: number;
+    inactive_classes: number;
     total_teachers: number;
     total_subjects: number;
     students_by_gender: {
@@ -35,19 +39,23 @@ interface DashboardProps {
 
 export default function Dashboard({
     total_students,
+    active_students,
+    graduated_students,
     total_classes,
+    active_classes,
+    inactive_classes,
     total_teachers,
     students_by_gender,
     students_by_class,
     recent_students,
 }: DashboardProps) {
     const malePercent =
-        total_students > 0
-            ? Math.round((students_by_gender.male / total_students) * 100)
+        active_students > 0
+            ? Math.round((students_by_gender.male / active_students) * 100)
             : 0;
     const femalePercent =
-        total_students > 0
-            ? Math.round((students_by_gender.female / total_students) * 100)
+        active_students > 0
+            ? Math.round((students_by_gender.female / active_students) * 100)
             : 0;
 
     return (
@@ -90,7 +98,17 @@ export default function Dashboard({
                                     <h3 className="text-4xl font-black text-foreground">
                                         {total_students}
                                     </h3>
-                                    <span className="text-sm font-medium text-muted-foreground">Siswa aktif</span>
+                                    <span className="text-sm font-medium text-muted-foreground">Total Keseluruhan</span>
+                                </div>
+                                <div className="mt-2 flex items-center gap-3 text-sm">
+                                    <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
+                                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                                        {active_students} Aktif
+                                    </span>
+                                    <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                                        <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                                        {graduated_students} Lulus
+                                    </span>
                                 </div>
                             </div>
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
@@ -111,7 +129,17 @@ export default function Dashboard({
                                     <h3 className="text-4xl font-black text-foreground">
                                         {total_classes}
                                     </h3>
-                                    <span className="text-sm font-medium text-muted-foreground">Kelas Aktif</span>
+                                    <span className="text-sm font-medium text-muted-foreground">Total Kelas</span>
+                                </div>
+                                <div className="mt-2 flex items-center gap-3 text-sm">
+                                    <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                                        <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                                        {active_classes} Aktif
+                                    </span>
+                                    <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 font-medium">
+                                        <div className="h-2 w-2 rounded-full bg-gray-400"></div>
+                                        {inactive_classes} Tidak Aktif
+                                    </span>
                                 </div>
                             </div>
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
@@ -223,7 +251,7 @@ export default function Dashboard({
                         <div className="flex-1 space-y-4 overflow-y-auto max-h-[240px] pr-2 custom-scrollbar">
                             {students_by_class.length > 0 ? (
                                 students_by_class.map((item, index) => {
-                                    const pct = total_students > 0 ? Math.round((item.student_count / total_students) * 100) : 0;
+                                    const pct = active_students > 0 ? Math.round((item.student_count / active_students) * 100) : 0;
                                     const colors = ['bg-primary', 'bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-cyan-500'];
                                     const color = colors[index % colors.length];
                                     

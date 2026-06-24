@@ -8,6 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { InertiaPagination } from '@/components/ui/inertia-pagination';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -18,6 +19,7 @@ interface Student {
     id: number;
     full_name: string;
     nickname: string | null;
+    nis: string | null;
     nisn: string;
     date_of_birth: string;
     gender: 'male' | 'female' | null | string;
@@ -35,6 +37,7 @@ interface Student {
     photo: string | null;
     class_id: number | null;
     school_year_id: number | null;
+    status: string;
     created_at: string;
     updated_at: string;
 }
@@ -55,9 +58,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function StudentIndex({
     students,
     schoolYears,
+    studentClasses,
     i,
     entries,
     search,
+    class_id,
+    school_year_id,
 }: {
     students: {
         data: Student[];
@@ -72,9 +78,13 @@ export default function StudentIndex({
         next_page_url: string | null;
     };
     schoolYears: SchoolYear[];
+    studentClasses: { id: number; name: string; school_year_id?: number }[];
     i: number;
     entries: any;
     search: string;
+    class_id: string | null;
+    school_year_id: string | null;
+    status: string | null;
 }) {
     const { props } = usePage();
     const [selected, setSelected] = useState<string[]>([]);
@@ -102,6 +112,25 @@ export default function StudentIndex({
         const url = route('admin.students.report.pdf') + `?school_year_id=${filterSchoolYearId}`;
         window.open(url, '_blank');
         setShowModal(false);
+    };
+
+    const combinedFilterValue = class_id ? `class_${class_id}` : (school_year_id ? `sy_${school_year_id}` : '');
+
+    const handleCombinedFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const val = e.target.value;
+        let newClassId = '';
+        let newSyId = '';
+        if (val.startsWith('class_')) {
+            newClassId = val.replace('class_', '');
+        } else if (val.startsWith('sy_')) {
+            newSyId = val.replace('sy_', '');
+        }
+
+        router.get(
+            route('admin.students.index'),
+            { search: search, entries: entries, class_id: newClassId, school_year_id: newSyId, status: status },
+            { preserveState: true, replace: true },
+        );
     };
 
     return (
@@ -230,21 +259,61 @@ export default function StudentIndex({
                                 )}
                             </div>
 
-                            <div className="relative w-full sm:w-64">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <input
-                                    type="text"
-                                    placeholder="Cari NISN, nama lengkap..."
-                                    className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none text-foreground placeholder:text-muted-foreground"
-                                    defaultValue={search || ''}
-                                    onChange={(e) => {
-                                        router.get(
-                                            route('admin.students.index'),
-                                            { search: e.target.value, entries: entries },
-                                            { preserveState: true, replace: true },
-                                        );
-                                    }}
-                                />
+                            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                                <div className="relative w-full sm:w-64">
+                                    <select
+                                        className="w-full rounded-lg border border-input bg-background py-2 px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none text-foreground"
+                                        value={combinedFilterValue}
+                                        onChange={handleCombinedFilterChange}
+                                    >
+                                        <option value="">Semua Tahun Ajaran & Kelas</option>
+                                        {schoolYears.map((sy) => (
+                                            <optgroup key={`sy_${sy.id}`} label={`T.A. ${sy.name} ${sy.is_active ? '(Aktif)' : ''}`}>
+                                                <option value={`sy_${sy.id}`}>Semua Kelas di T.A. {sy.name}</option>
+                                                {studentClasses
+                                                    .filter((c) => c.school_year_id === sy.id)
+                                                    .map((c) => (
+                                                        <option key={`class_${c.id}`} value={`class_${c.id}`}>
+                                                            {c.name}
+                                                        </option>
+                                                    ))}
+                                            </optgroup>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="relative w-full sm:w-48">
+                                    <select
+                                        className="w-full rounded-lg border border-input bg-background py-2 px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none text-foreground"
+                                        value={status || ''}
+                                        onChange={(e) => {
+                                            router.get(
+                                                route('admin.students.index'),
+                                                { search: search, entries: entries, school_year_id: school_year_id, class_id: class_id, status: e.target.value },
+                                                { preserveState: true, replace: true },
+                                            );
+                                        }}
+                                    >
+                                        <option value="">Semua Status</option>
+                                        <option value="aktif">Aktif</option>
+                                        <option value="lulus">Lulus</option>
+                                    </select>
+                                </div>
+                                <div className="relative w-full sm:w-64">
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <input
+                                        type="text"
+                                        placeholder="Cari NISN, nama lengkap..."
+                                        className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none text-foreground placeholder:text-muted-foreground"
+                                        defaultValue={search || ''}
+                                        onChange={(e) => {
+                                            router.get(
+                                                route('admin.students.index'),
+                                                { search: e.target.value, entries: entries, class_id: class_id, school_year_id: school_year_id, status: status },
+                                                { preserveState: true, replace: true },
+                                            );
+                                        }}
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -264,8 +333,8 @@ export default function StudentIndex({
                                                     />
                                                 </th>
                                                 <th scope="col" className="px-6 py-4 w-16 text-center">NO</th>
-                                                <th scope="col" className="px-6 py-4 min-w-[200px]">NAMA & KELAMIN</th>
-                                                <th scope="col" className="px-6 py-4">NISN</th>
+                                                <SortableHeader column="full_name" label="NAMA & KELAMIN" className="min-w-[200px]" />
+                                                <SortableHeader column="nis" label="NIS" />
                                                 <th scope="col" className="px-6 py-4">KONTAK / ORTU</th>
                                                 <th scope="col" className="px-6 py-4 text-right">AKSI</th>
                                             </tr>
@@ -304,12 +373,15 @@ export default function StudentIndex({
                                                                     ) : (student.gender === 'Perempuan' || student.gender === 'P' || student.gender === 'female') ? (
                                                                         <span className="text-pink-500 font-semibold">Perempuan</span>
                                                                     ) : '-'}
+                                                                    {student.status === 'lulus' && (
+                                                                        <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">Lulus</span>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className="font-mono text-sm">{student.nisn || '-'}</span>
+                                                        <span className="font-mono text-sm">{student.nis || '-'}</span>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="text-sm font-medium text-foreground">{student.father_name || student.mother_name || student.guardian_name || '-'}</div>
