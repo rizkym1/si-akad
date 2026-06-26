@@ -26,7 +26,7 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Penilaian Perkembangan Anak',
+        title: 'Penilaian Anak',
         href: '/admin/nilai-kokurikuler',
     },
 ];
@@ -58,7 +58,7 @@ export default function NilaiKokurikulerIndex({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Penilaian Perkembangan Anak" />
+            <Head title="Penilaian Anak" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
@@ -67,7 +67,7 @@ export default function NilaiKokurikulerIndex({
                         <div className="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                             <div>
                                 <h2 className="text-xl font-bold text-foreground">
-                                    Penilaian Perkembangan Anak
+                                    Penilaian Anak
                                 </h2>
                                 <p className="text-sm text-muted-foreground mt-1 cursor-default max-w-xl">
                                     Pantau dan kelola laporan perkembangan anak yang diintegrasikan secara sinkron dari sistem RDM.

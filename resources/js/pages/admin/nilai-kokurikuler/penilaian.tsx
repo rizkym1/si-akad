@@ -24,7 +24,7 @@ interface Props {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Penilaian Perkembangan Anak',
+        title: 'Penilaian Anak',
         href: '/admin/nilai-kokurikuler',
     },
     {

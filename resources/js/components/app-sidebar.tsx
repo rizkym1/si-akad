@@ -83,12 +83,12 @@ const adminNavItems: NavItem[] = [
         icon: CalendarCheck,
     },
     // {
-    //     title: 'Penilaian Perkembangan Anak',
+    //     title: 'Penilaian Anak',
     //     href: '/admin/child-development-assessments',
     //     icon: Award,
     // },
     {
-        title: 'Penilaian Perkembangan Anak',
+        title: 'Penilaian Anak',
         href: '/admin/nilai-kokurikuler',
         icon: Award,
     },
@@ -116,7 +116,7 @@ const teacherNavItems: NavItem[] = [
         icon: CalendarClock,
     },
     {
-        title: 'Penilaian Perkembangan Anak',
+        title: 'Penilaian Anak',
         href: '/admin/nilai-kokurikuler',
         icon: Award,
     },

@@ -100,7 +100,7 @@ export default function AcademicRecordIndex({ student, rapor }: PageProps) {
                     <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <h2 className="flex items-center gap-2 text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
                             <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500" />
-                            Penilaian Perkembangan Anak
+                            Penilaian Anak
                         </h2>
                     </div>
 
