@@ -18,10 +18,7 @@ class AcademicRecordController extends Controller
         }
         $student->load(['studentClass.schoolYear']);
         
-        $rapor = [];
-        if ($student->nisn) {
-            $rapor = $this->rdmService->getRaporPerkembanganAnak($student->nisn);
-        }
+        $rapor = $this->rdmService->getRaporPerkembanganAnak($student->nisn);
 
         return Inertia::render('parent/academic-records/index', [
             'student' => $student,
