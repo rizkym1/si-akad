@@ -12,7 +12,7 @@ import { SortableHeader } from '@/components/ui/sortable-header';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Edit, Eye, MoreVertical, Printer, Trash2, Search, UserPlus, FileSearch, X } from 'lucide-react';
+import { Edit, Eye, MoreVertical, Printer, Trash2, Search, UserPlus, FileSearch, X, FileText } from 'lucide-react';
 import { useState } from 'react';
 
 interface Student {
@@ -108,8 +108,8 @@ export default function StudentIndex({
         );
     };
 
-    const handleCetak = () => {
-        const url = route('admin.students.report.pdf') + `?school_year_id=${filterSchoolYearId}`;
+    const handleCetakBiodataMassal = () => {
+        const url = route('admin.students.biodata.bulk-pdf') + `?school_year_id=${filterSchoolYearId}`;
         window.open(url, '_blank');
         setShowModal(false);
     };
@@ -143,8 +143,8 @@ export default function StudentIndex({
                     <div className="w-full max-w-md scale-100 rounded-2xl bg-card p-6 shadow-2xl transition-all dark:border border-border overflow-hidden">
                         <div className="mb-5 flex items-center justify-between border-b border-border pb-3">
                             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-                                <Printer className="h-5 w-5 text-secondary" />
-                                Cetak PDF Buku Induk
+                                <FileText className="h-5 w-5 text-secondary" />
+                                Cetak PDF Biodata Massal
                             </h2>
                             <button
                                 onClick={() => setShowModal(false)}
@@ -171,7 +171,7 @@ export default function StudentIndex({
                                     ))}
                                 </select>
                                 <p className="mt-2 text-xs text-muted-foreground">
-                                    Dokumen ini akan mencetak rekapitulasi data induk seluruh siswa yang tergabung di tahun ajaran yang dipilih secara lengkap.
+                                    Dokumen ini akan mencetak form biodata seluruh siswa yang tergabung di tahun ajaran yang dipilih secara lengkap.
                                 </p>
                             </div>
                         </div>
@@ -184,11 +184,11 @@ export default function StudentIndex({
                                 Batal
                             </button>
                             <button
-                                onClick={handleCetak}
-                                className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-5 py-2 text-sm font-bold text-secondary-foreground shadow-sm hover:opacity-90 active:scale-95 transition-all"
+                                onClick={handleCetakBiodataMassal}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-bold text-primary-foreground shadow-sm hover:opacity-90 active:scale-95 transition-all"
                             >
-                                <Printer className="h-4 w-4" />
-                                Generate PDF
+                                <FileText className="h-4 w-4" />
+                                Cetak Biodata Massal
                             </button>
                         </div>
                     </div>
@@ -215,7 +215,7 @@ export default function StudentIndex({
                                     className="inline-flex cursor-pointer items-center justify-center gap-2 border border-secondary text-secondary rounded-lg px-6 py-2.5 text-sm font-semibold shadow-sm transition-all hover:bg-secondary hover:text-white active:scale-95 bg-transparent"
                                 >
                                     <Printer className="h-4 w-4" />
-                                    Cetak Buku Induk
+                                    Cetak Biodata Siswa
                                 </button>
 
                                 <Link

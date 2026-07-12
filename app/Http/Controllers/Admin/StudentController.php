@@ -63,20 +63,28 @@ class StudentController extends Controller
     }
 
     /**
-     * Cetak kartu siswa PDF
+     * Cetak biodata form siswa PDF (Massal per Tahun Pelajaran)
      */
-    public function cardPdf(Student $student)
+    public function bulkBiodataPdf(Request $request)
     {
-        $student->load('studentClass');
+        $schoolYearId = $request->query('school_year_id');
+        
+        $schoolYear = $schoolYearId
+            ? SchoolYear::find($schoolYearId)
+            : SchoolYear::where('is_active', '=', true)->first();
 
-        $qrUrl = 'https://quickchart.io/qr?size=120&text='
-            . urlencode(route('admin.students.show', $student->id));
+        $students = Student::with(['studentClass.schoolYear'])
+            ->when($schoolYear, function ($q) use ($schoolYear) {
+                $q->whereHas('studentClass', function ($q) use ($schoolYear) {
+                    $q->where('school_year_id', $schoolYear->id);
+                });
+            })
+            ->orderBy('full_name')
+            ->get();
 
-        $qrBase64 = base64_encode(file_get_contents($qrUrl));
-
-        $pdf = Pdf::loadView('card-pdf', [
-            'student'  => $student,
-            'qrBase64' => $qrBase64,
+        $pdf = Pdf::loadView('bulk-biodata-pdf', [
+            'students'  => $students,
+            'schoolYear' => $schoolYear,
         ])
         ->setPaper('A4', 'portrait')
         ->setOption([
@@ -85,51 +93,30 @@ class StudentController extends Controller
             'dpi'                  => 150,
         ]);
 
-        return $pdf->stream('kartu-siswa-' . $student->id . '.pdf');
+        $filename = 'biodata-siswa-massal-' . str_replace('/', '-', ($schoolYear?->name ?? 'semua')) . '.pdf';
+        return $pdf->stream($filename);
     }
 
     /**
-     * Cetak laporan siswa PDF
+     * Cetak biodata form siswa PDF
      */
-    public function reportPdf(Request $request)
-{
-    $schoolYearId = $request->query('school_year_id');
+    public function biodataPdf(Student $student)
+    {
+        $student->load(['studentClass.schoolYear']);
 
-    $schoolYear = $schoolYearId
-        ? SchoolYear::find($schoolYearId)
-        : SchoolYear::where('is_active', '=', true)->first();
+        $pdf = Pdf::loadView('biodata-pdf', [
+            'student'  => $student,
+        ])
+        ->setPaper('A4', 'portrait')
+        ->setOption([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled'      => true,
+            'dpi'                  => 150,
+        ]);
 
-    $students = Student::with(['studentClass.schoolYear'])
-        ->when($schoolYear, function ($q) use ($schoolYear) {
-            $q->whereHas('studentClass', function ($q) use ($schoolYear) {
-                $q->where('school_year_id', $schoolYear->id);
-            });
-        })
-        ->orderBy('full_name')
-        ->get();
+        return $pdf->stream('biodata-siswa-' . $student->nisn . '.pdf');
+    }
 
-    $total       = $students->count();
-    $totalMale   = $students->where('gender', 'male')->count();
-    $totalFemale = $students->where('gender', 'female')->count();
-    $perClass    = $students->groupBy(fn($s) => $s->studentClass?->name ?? 'Tanpa Kelas')
-                            ->map->count();
-
-    $logoBase64 = base64_encode(file_get_contents(public_path('images/logo_alislam.png')));
-
-    $periode = $schoolYear?->name ?? 'Semua Periode';
-
-    $pdf = Pdf::loadView('report-pdf', [
-        'students'    => $students,
-        'total'       => $total,
-        'totalMale'   => $totalMale,
-        'totalFemale' => $totalFemale,
-        'perClass'    => $perClass,
-        'logoBase64'  => $logoBase64,
-        'periode'     => $periode,
-    ])->setPaper('a4', 'portrait');
-
-    return $pdf->stream('laporan-siswa-' . now()->format('Ymd') . '.pdf');
-}
 
     /**
      * Show the form for creating a new resource.

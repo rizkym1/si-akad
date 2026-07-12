@@ -12,6 +12,8 @@ import {
     Users2,
     Calendar,
     Contact,
+    Printer,
+    FileText,
 } from 'lucide-react';
 
 interface StudentClass {
@@ -107,6 +109,18 @@ export default function ShowStudent({ student }: { student: Student }) {
                         <ArrowLeft className="h-5 w-5" />
                         Kembali ke Database Siswa
                     </Link>
+                    
+                    <div className="flex items-center gap-2">
+                        <a 
+                            href={`/admin/students/${student.id}/biodata/pdf`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        >
+                            <FileText className="h-4 w-4" />
+                            Cetak Biodata
+                        </a>
+                    </div>
                 </div>
 
                 {/* ── Main Profile Header ── */}

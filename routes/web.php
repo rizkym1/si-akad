@@ -41,8 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
         Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
         Route::resource('students', StudentController::class);
-        Route::get('students/{student}/card/pdf', [StudentController::class, 'cardPdf'])->name('students.card.pdf');
-        Route::get('students/report/pdf', [StudentController::class, 'reportPdf'])->name('students.report.pdf');
+        Route::get('students/biodata/bulk-pdf', [StudentController::class, 'bulkBiodataPdf'])->name('students.biodata.bulk-pdf');
+        Route::get('students/{student}/biodata/pdf', [StudentController::class, 'biodataPdf'])->name('students.biodata.pdf');
         Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete'])->name('students.bulk-delete');
         Route::resource('student-classes', StudentClassController::class);
         Route::post('/student-classes/bulk-delete', [StudentClassController::class, 'bulkDelete'])->name('student-classes.bulk-delete');
@@ -84,7 +84,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Portal khusus Orang Tua (Parent)
     Route::middleware(['auth'])->prefix('parent')->name('parent.')->group(function () {
         Route::get('students/{student}', [\App\Http\Controllers\Parent\StudentController::class, 'show'])->name('students.show');
-        Route::get('students/{student}/card/pdf', [\App\Http\Controllers\Parent\StudentController::class, 'cardPdf'])->name('students.card.pdf');
 
         // Presensi / Kehadiran Anak
         Route::get('attendances', [\App\Http\Controllers\Parent\AttendanceController::class, 'index'])->name('attendances.index');

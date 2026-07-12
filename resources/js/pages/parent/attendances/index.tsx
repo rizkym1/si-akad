@@ -59,7 +59,7 @@ const months = [
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Beranda', href: '/dashboard' },
-    { title: 'Laporan Kehadiran', href: '/parent/attendances' },
+    { title: 'Lapor Kehadiran', href: '/parent/attendances' },
 ];
 
 export default function AttendanceIndex({
@@ -101,13 +101,13 @@ export default function AttendanceIndex({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Laporan Kehadiran" />
+            <Head title="Riwayat Kehadiran" />
             <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-4 sm:p-6">
                 
                 {/* Header & Filters */}
                 <div className="flex flex-col justify-between gap-6 rounded-xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm lg:flex-row lg:items-center dark:border-gray-700 dark:bg-gray-800">
                     <div className="space-y-1">
-                        <h1 className="text-xl sm:text-2xl font-bold dark:text-white">Laporan Kehadiran</h1>
+                        <h1 className="text-xl sm:text-2xl font-bold dark:text-white">Riwayat Kehadiran</h1>
                         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                             Pantau riwayat absensi anak asuh Anda di sekolah secara real-time.
                         </p>

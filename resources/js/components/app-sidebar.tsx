@@ -129,7 +129,7 @@ const parentNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Laporan Kehadiran',
+        title: 'Riwayat Kehadiran',
         href: '/parent/attendances',
         icon: CalendarCheck,
     },
