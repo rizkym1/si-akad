@@ -49,9 +49,9 @@ class JuneAttendanceSeeder extends Seeder
             return;
         }
 
-        // Buat range tanggal dari 1 Juni hingga 30 Juni 2026
+        // Buat range tanggal dari 1 Juni hingga 19 Juni 2026
         $startDate = Carbon::createFromDate($year, $month, 1);
-        $endDate = Carbon::createFromDate($year, $month, 30);
+        $endDate = Carbon::createFromDate($year, $month, 19);
         $period = CarbonPeriod::create($startDate, $endDate);
 
         $insertedDailyCount = 0;
@@ -62,11 +62,10 @@ class JuneAttendanceSeeder extends Seeder
                 continue;
             }
 
-            // Generate waktu acak di sekitar jam 07:30 (antara 07:28 sampai 07:35)
-            // Jadi jeda tidak lebih dari 5 menit dari jadwal asli.
-            $randomMinute = rand(28, 35);
-            $randomHour = 7;
-            $randomSecond = rand(0, 59);
+            // Kelas masuk mulai jam 08:00
+            $randomMinute = 0;
+            $randomHour = 8;
+            $randomSecond = 0;
             
             $attendanceTime = $date->copy()->setTime($randomHour, $randomMinute, $randomSecond);
 

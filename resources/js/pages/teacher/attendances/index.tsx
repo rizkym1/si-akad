@@ -54,6 +54,7 @@ export default function TeacherAttendanceIndex({
     const [filterSchoolYearId, setFilterSchoolYearId] = useState<number | null>(activeSchoolYear);
     const [filterClassId, setFilterClassId] = useState<number | null>(activeClass);
     const [filterDate, setFilterDate] = useState<string>(activeDate);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const [combinedFilterValue, setCombinedFilterValue] = useState<string>(() => {
         if (activeClass) return `class_${activeClass}`;
@@ -95,7 +96,7 @@ export default function TeacherAttendanceIndex({
         students.forEach((student) => {
             const att = student.daily_attendances?.[0];
             initial[student.id] = {
-                status: att?.status || 'present', // Default Hadir!
+                status: att?.status || '', // Kosongkan default
                 notes: att?.notes || '',
             };
         });
@@ -113,8 +114,16 @@ export default function TeacherAttendanceIndex({
     };
 
     const handleSave = () => {
+        setErrorMessage(null);
+
         if (!filterSchoolYearId) {
-            alert('Pilih Tahun Pelajaran terlebih dahulu!');
+            setErrorMessage('Pilih Tahun Pelajaran terlebih dahulu!');
+            return;
+        }
+
+        const unselectedStudents = students.filter(student => !formData[student.id]?.status);
+        if (unselectedStudents.length > 0) {
+            setErrorMessage(`Harap isi status kehadiran untuk semua siswa! (Ada ${unselectedStudents.length} siswa yang belum dipilih)`);
             return;
         }
 
@@ -148,7 +157,7 @@ export default function TeacherAttendanceIndex({
                         <div className="mb-6">
                             <h2 className="text-xl font-bold text-foreground">Absensi Harian Siswa</h2>
                             <p className="text-sm text-muted-foreground mt-1">
-                                Tentukan tanggal absensi. Secara otomatis semua siswa diatur ke status "Hadir" (H) agar lebih cepat. Klik Simpan Data jika sudah selesai.
+                                Tentukan tanggal absensi. Anda diwajibkan untuk memilih status kehadiran setiap siswa satu per satu sebelum dapat menyimpan data.
                             </p>
                         </div>
 
@@ -215,6 +224,18 @@ export default function TeacherAttendanceIndex({
                                 }}
                             />
                         </div>
+
+                        {/* Error Message */}
+                        {errorMessage && (
+                            <div className="mb-4 flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                <span className="font-medium">{errorMessage}</span>
+                            </div>
+                        )}
 
                         {/* Tombol Simpan */}
                         <div className="mb-4 flex justify-end">
