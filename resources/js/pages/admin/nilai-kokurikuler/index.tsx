@@ -9,6 +9,7 @@ interface Siswa {
     id: number;
     nisn: string;
     full_name: string;
+    status?: string;
 }
 
 interface Kelas {
@@ -157,9 +158,15 @@ export default function NilaiKokurikulerIndex({
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
-                                                        Aktif
-                                                    </span>
+                                                    {item.status === 'lulus' ? (
+                                                        <span className="inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-600 dark:text-green-400">
+                                                            Lulus
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                                                            Aktif
+                                                        </span>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex justify-end gap-2 pr-1">

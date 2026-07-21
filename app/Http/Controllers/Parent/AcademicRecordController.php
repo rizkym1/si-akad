@@ -9,7 +9,7 @@ class AcademicRecordController extends Controller
 {
     public function __construct(protected RdmService $rdmService) {}
     /**
-     * Menampilkan riwayat akademik/nilai anak.
+     * Menampilkan Penilaian anak/nilai anak.
      */
     public function index(Student $student)
     {

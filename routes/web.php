@@ -91,7 +91,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Kalender Pendidikan
         Route::get('academic-calendars', [\App\Http\Controllers\Admin\AcademicCalendarController::class, 'index'])->name('academic-calendars.index');
 
-        // Riwayat Akademik Anak (Nilai/RDM)
+        // Penilaian Anak Anak (Nilai/RDM)
         Route::get('students/{student}/academic-records', [\App\Http\Controllers\Parent\AcademicRecordController::class, 'index'])->name('students.academic-records.index');
     });
 });

@@ -46,7 +46,7 @@ class NilaiKokurikulerController extends Controller
 
             if ($isValidClass) {
                 $siswaList = Student::where('class_id', $selectedKelas)
-                    ->select('id', 'nisn', 'full_name')
+                    ->select('id', 'nisn', 'full_name', 'status')
                     ->orderBy($request->input('sort', 'full_name'), $request->input('direction', 'asc'))
                     ->get();
             }

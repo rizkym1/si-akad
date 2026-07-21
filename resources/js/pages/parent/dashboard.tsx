@@ -165,7 +165,7 @@ export default function ParentDashboard({
                                             href={`/parent/students/${child.id}/academic-records`}
                                             className="flex flex-col justify-center py-4 text-center text-sm font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-gray-700/50 dark:hover:text-indigo-400"
                                         >
-                                            Riwayat Akademik
+                                            Penilaian Anak
                                         </Link>
                                     </div>
                                 </div>

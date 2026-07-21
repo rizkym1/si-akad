@@ -80,7 +80,7 @@ export default function ShowParent({ student }: { student: Student }) {
                         <ArrowLeft className="h-5 w-5" />
                         Kembali ke Beranda
                     </Link>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    {/* <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                         <a
                             href={`/parent/students/${student.id}/card/pdf`}
                             target="_blank"
@@ -90,7 +90,7 @@ export default function ShowParent({ student }: { student: Student }) {
                             <Printer className="h-4 w-4" />
                             Cetak Kartu Anak (PDF)
                         </a>
-                    </div>
+                    </div> */}
                 </div>
                 {/* ── Main Profile Header ── */}
                 <div className="overflow-hidden rounded-2xl border border-sidebar-border bg-white shadow-sm dark:bg-gray-800">

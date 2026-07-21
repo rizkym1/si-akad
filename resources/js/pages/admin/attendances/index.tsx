@@ -222,8 +222,8 @@ export default function AttendanceIndex({
                                     Panel ini menampilkan rekapitulasi absensi bulanan siswa berdasarkan data yang dimasukkan oleh guru secara real-time.
                                 </p>
                             </div>
-                            
                             <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                                {/* 
                                 <button
                                     onClick={() => setShowModal(true)}
                                     className="inline-flex cursor-pointer items-center justify-center gap-2 border border-secondary text-secondary rounded-lg px-6 py-2.5 text-sm font-semibold shadow-sm transition-all hover:bg-secondary hover:text-white active:scale-95 bg-transparent"
@@ -231,6 +231,7 @@ export default function AttendanceIndex({
                                     <Printer className="h-4 w-4" />
                                     Cetak PDF
                                 </button>
+                                */}
                             </div>
                         </div>
 

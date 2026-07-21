@@ -89,6 +89,9 @@
 </head>
 <body>
 
+    @if($student->status)
+        <div style="text-align: center; font-weight: bold; font-size: 16pt; margin-bottom: 10px; color: #333;">*** SISWA {{ strtoupper($student->status) }} ***</div>
+    @endif
     <div style="text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 20px; font-size: 14pt;">NOMOR INDUK ANAK</div>
     
     <table style="width: 100%; margin-bottom: 20px;">
@@ -124,8 +127,8 @@
                 @if($student->photo)
                     <img src="{{ public_path('storage/' . $student->photo) }}" class="photo-img" style="border: 1px solid #000; margin-left: auto;">
                 @else
-                    <table style="margin-left: auto; width: 3cm; height: 4cm; border: 1px solid #000;">
-                        <tr><td style="text-align: center; vertical-align: middle;">Fhoto<br>3 X 4</td></tr>
+                    <table style="margin-left: auto; width: 3cm; border: 1px solid #000; border-collapse: collapse;">
+                        <tr><td style="text-align: center; vertical-align: middle; height: 4cm; padding: 0;">Fhoto<br>3 X 4</td></tr>
                     </table>
                 @endif
             </td>
@@ -176,8 +179,8 @@
                 </table>
             </td>
             <td style="width: 30%; text-align: right; vertical-align: bottom;">
-                <table style="margin-left: auto; width: 3cm; height: 4cm; border: 1px solid #000;">
-                    <tr><td style="text-align: center; vertical-align: middle;">Fhoto<br>3 X 4</td></tr>
+                <table style="margin-left: auto; width: 3cm; border: 1px solid #000; border-collapse: collapse;">
+                    <tr><td style="text-align: center; vertical-align: middle; height: 4cm; padding: 0;">Fhoto<br>3 X 4</td></tr>
                 </table>
             </td>
         </tr>
@@ -232,8 +235,8 @@
                 </table>
             </td>
             <td style="width: 30%; text-align: right; vertical-align: top;">
-                <table style="margin-left: auto; width: 3cm; height: 4cm; border: 1px solid #000;">
-                    <tr><td style="text-align: center; vertical-align: middle;">Fhoto<br>3 X 4</td></tr>
+                <table style="margin-left: auto; width: 3cm; border: 1px solid #000; border-collapse: collapse;">
+                    <tr><td style="text-align: center; vertical-align: middle; height: 4cm; padding: 0;">Fhoto<br>3 X 4</td></tr>
                 </table>
             </td>
         </tr>
