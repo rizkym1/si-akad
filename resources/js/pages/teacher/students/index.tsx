@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 
 interface Student {
     id: number;
+    nis: string;
     nisn: string;
     full_name: string;
     gender: string;
@@ -106,7 +107,7 @@ export default function TeacherStudentsIndex({
                                 </div>
                                 <Input
                                     type="text"
-                                    placeholder="Cari NISN atau Nama..."
+                                    placeholder="Cari NIS atau Nama..."
                                     className="pl-10 text-sm"
                                     defaultValue={filters.search}
                                     onBlur={(e) => handleSearchChange(e.target.value)}
@@ -123,7 +124,7 @@ export default function TeacherStudentsIndex({
                                     <thead className="bg-muted text-foreground">
                                         <tr className="border-b border-border">
                                             <th className="w-16 px-6 py-4 text-center">No</th>
-                                            <SortableHeader column="nisn" label="NISN" />
+                                            <SortableHeader column="nis" label="NIS" />
                                             <SortableHeader column="full_name" label="Nama Lengkap" />
                                             <th className="px-6 py-4 text-center">L/P</th>
                                             <th className="px-6 py-4 text-center">Kelas</th>
@@ -134,7 +135,7 @@ export default function TeacherStudentsIndex({
                                         {students.data.map((student, i) => (
                                             <tr key={student.id} className="border-b border-border bg-card hover:bg-muted/50 transition-colors">
                                                 <td className="px-6 py-4 text-center text-foreground font-medium">{i + 1}</td>
-                                                <td className="px-6 py-4 text-foreground">{student.nisn || '-'}</td>
+                                                <td className="px-6 py-4 text-foreground">{student.nis || '-'}</td>
                                                 <td className="px-6 py-4 text-foreground font-semibold">{student.full_name}</td>
                                                 <td className="px-6 py-4 text-center text-foreground">
                                                     {(student.gender === 'Laki-Laki' || student.gender === 'L' || student.gender === 'male') ? 'L' :

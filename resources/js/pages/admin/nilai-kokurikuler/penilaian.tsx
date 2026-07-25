@@ -4,6 +4,7 @@ import { Head, Link } from '@inertiajs/react';
 
 interface Student {
     id: number;
+    nis: string;
     nisn: string;
     full_name: string;
     student_class: {
@@ -67,10 +68,10 @@ export default function PenilaianPerkembanganAnakDetail({ student, rapor }: Prop
                                 </div>
                                 <div>
                                     <p className="text-gray-500 dark:text-gray-400">
-                                        NISN
+                                        NIS
                                     </p>
                                     <p className="font-semibold text-gray-900 dark:text-white">
-                                        {student?.nisn ?? '-'}
+                                        {student?.nis ?? '-'}
                                     </p>
                                 </div>
                                 <div>

@@ -8,6 +8,7 @@ import { Printer, Filter, X } from 'lucide-react';
 interface Student {
     id: number;
     full_name: string;
+    nis: string;
     nisn: string;
     gender: string;
     attendances: Attendance[];
@@ -279,7 +280,7 @@ export default function AttendanceIndex({
 
                             <input
                                 type="text"
-                                placeholder="Cari NISN atau Nama..."
+                                placeholder="Cari NIS atau Nama..."
                                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm sm:w-60 focus:ring-2 focus:ring-primary outline-none text-foreground"
                                 defaultValue={search || ''}
                                 onChange={(e) => {
@@ -294,7 +295,7 @@ export default function AttendanceIndex({
                                     <thead className="bg-muted text-foreground">
                                         <tr className="border-b border-border">
                                             <th className="w-12 px-6 py-4 text-center">No</th>
-                                            <SortableHeader column="nisn" label="NISN" />
+                                            <SortableHeader column="nis" label="NIS" />
                                             <SortableHeader column="full_name" label="Nama Lengkap" className="min-w-[200px]" />
                                             <th className="w-20 px-4 py-4 text-center">L/P</th>
                                             <th className="w-24 px-4 py-4 text-center">Hadir</th>
@@ -307,7 +308,7 @@ export default function AttendanceIndex({
                                         {students.map((student, index) => (
                                             <tr key={student.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                                                 <td className="px-6 py-3 text-center font-medium text-foreground">{index + 1}</td>
-                                                <td className="px-6 py-3 text-foreground font-mono text-sm">{student.nisn || '-'}</td>
+                                                <td className="px-6 py-3 text-foreground font-mono text-sm">{student.nis || '-'}</td>
                                                 <td className="px-6 py-3 font-semibold text-foreground">{student.full_name}</td>
                                                 <td className="px-4 py-3 text-center text-foreground">
                                                     {(student.gender === 'Laki-Laki' || student.gender === 'L' || student.gender === 'male') ? 'L' :

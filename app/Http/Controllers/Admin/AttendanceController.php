@@ -36,7 +36,7 @@ class AttendanceController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where(function($q) use ($search) {
                     $q->where('full_name', 'like', '%' . $search . '%')
-                      ->orWhere('nisn', 'like', '%' . $search . '%');
+                      ->orWhere('nis', 'like', '%' . $search . '%');
                 });
             })
             ->when($filterClassId, function ($query, $filterClassId) {
@@ -107,7 +107,7 @@ class AttendanceController extends Controller
                 $absent = $attendances->sum('absent');
                 return [
                     'name'      => $student->full_name,
-                    'nisn'      => $student->nisn,
+                    'nis'       => $student->nis,
                     'gender'    => $student->gender,
                     'class'     => $student->studentClass?->name ?? '-',
                     'present'   => $present,

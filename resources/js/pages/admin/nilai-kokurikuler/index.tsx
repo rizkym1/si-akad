@@ -7,6 +7,7 @@ import { Leaf, Search, Filter, ClipboardList, PenTool } from 'lucide-react';
 
 interface Siswa {
     id: number;
+    nis: string;
     nisn: string;
     full_name: string;
     status?: string;
@@ -46,7 +47,7 @@ export default function NilaiKokurikulerIndex({
     const filtered = safeSiswaList.filter(
         (s) =>
             (s.full_name?.toLowerCase() || '').includes(search.toLowerCase()) ||
-            (s.nisn?.toLowerCase() || '').includes(search.toLowerCase()),
+            (s.nis?.toLowerCase() || '').includes(search.toLowerCase()),
     );
 
     const handleKelasChange = (kelasId: string) => {
@@ -105,7 +106,7 @@ export default function NilaiKokurikulerIndex({
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <input
                                     type="text"
-                                    placeholder="Cari nama atau NISN..."
+                                    placeholder="Cari nama atau NIS..."
                                     className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
@@ -137,7 +138,7 @@ export default function NilaiKokurikulerIndex({
                                     <thead className="bg-muted text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                         <tr className="border-b border-border">
                                             <th scope="col" className="w-16 px-6 py-4 text-center">NO</th>
-                                            <SortableHeader column="nisn" label="NISN" />
+                                            <SortableHeader column="nis" label="NIS" />
                                             <SortableHeader column="full_name" label="NAMA SISWA" />
                                             <th scope="col" className="px-6 py-4 text-center">STATUS</th>
                                             <th scope="col" className="px-6 py-4 text-right">TINDAKAN</th>
@@ -150,7 +151,7 @@ export default function NilaiKokurikulerIndex({
                                                     {index + 1}
                                                 </td>
                                                 <td className="px-6 py-4 font-medium text-foreground">
-                                                    {item.nisn ?? '-'}
+                                                    {item.nis ?? '-'}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="font-bold text-foreground">

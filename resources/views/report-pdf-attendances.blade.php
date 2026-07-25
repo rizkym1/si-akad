@@ -198,7 +198,7 @@
             <tr>
                 <th style="width:20pt">No</th>
                 <th>Nama Lengkap</th>
-                <th>NISN</th>
+                <th>NIS</th>
                 <th>L/P</th>
                 <th>Kelas</th>
                 <th>Hadir</th>
@@ -214,7 +214,7 @@
             <tr>
                 <td class="center">{{ $i + 1 }}</td>
                 <td>{{ $row['name'] }}</td>
-                <td class="center">{{ $row['nisn'] }}</td>
+                <td class="center">{{ $row['nis'] }}</td>
                 <td class="center">
                     {{ in_array($row['gender'] ?? '', ['Laki-Laki', 'L', 'male']) ? 'Laki-laki' : (in_array($row['gender'] ?? '', ['Perempuan', 'P', 'female']) ? 'Perempuan' : ($row['gender'] ?? '-')) }}
                 </td>

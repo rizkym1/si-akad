@@ -44,7 +44,10 @@ class AttendanceController extends Controller
             $studentsQuery->where('class_id', $targetClassId);
         }
         if ($search) {
-            $studentsQuery->where('full_name', 'like', "%{$search}%");
+            $studentsQuery->where(function($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+            });
         }
 
         $students = $studentsQuery
