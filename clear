@@ -1,0 +1,25 @@
+[0;1;32m●[0m nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (]8;;file://VM-0-13-debian/usr/lib/systemd/system/nginx.service\/usr/lib/systemd/system/nginx.service]8;;\; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Wed 2026-07-29 13:27:46 CST; 4 days ago
+ Invocation: 284085da1e4644059fdd9f3b58f66a15
+       Docs: ]8;;man:nginx(8)\man:nginx(8)]8;;\
+    Process: 1769835 ExecReload=/usr/sbin/nginx -g daemon on; master_process on; -s reload (code=exited, status=0/SUCCESS)
+   Main PID: 647282 (nginx)
+      Tasks: 3[0;38:5:245m (limit: 2261)[0m
+     Memory: 11.4M (peak: 24.2M, swap: 3.1M, swap peak: 4.7M)
+        CPU: 6.004s
+     CGroup: /system.slice/nginx.service
+             ├─[0;38:5:245m 647282 "nginx: master process /usr/sbin/nginx -g daemon on; master_process on;"[0m
+             ├─[0;38:5:245m1770071 "nginx: worker process"[0m
+             └─[0;38:5:245m1770072 "nginx: worker process"[0m
+
+Jul 29 13:27:46 VM-0-13-debian systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.
+Jul 31 14:52:39 VM-0-13-debian systemd[1]: Reloading nginx.service - A high performance web server and a reverse proxy server...
+Jul 31 14:52:39 VM-0-13-debian nginx[1761985]: 2026/07/31 14:52:39 [notice] 1761985#1761985: signal process started
+Jul 31 14:52:39 VM-0-13-debian systemd[1]: Reloaded nginx.service - A high performance web server and a reverse proxy server.
+Jul 31 14:55:46 VM-0-13-debian systemd[1]: Reloading nginx.service - A high performance web server and a reverse proxy server...
+Jul 31 14:55:46 VM-0-13-debian nginx[1763913]: 2026/07/31 14:55:46 [notice] 1763913#1763913: signal process started
+Jul 31 14:55:46 VM-0-13-debian systemd[1]: Reloaded nginx.service - A high performance web server and a reverse proxy server.
+Jul 31 15:04:38 VM-0-13-debian systemd[1]: Reloading nginx.service - A high performance web server and a reverse proxy server...
+Jul 31 15:04:38 VM-0-13-debian nginx[1769835]: 2026/07/31 15:04:38 [notice] 1769835#1769835: signal process started
+Jul 31 15:04:38 VM-0-13-debian systemd[1]: Reloaded nginx.service - A high performance web server and a reverse proxy server.
