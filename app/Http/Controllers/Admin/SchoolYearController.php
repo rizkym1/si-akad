@@ -26,6 +26,7 @@ class SchoolYearController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })
+            ->orderBy('is_active', 'desc')
             ->orderBy($sort, $direction)
             ->paginate($entries)
             ->withQueryString();

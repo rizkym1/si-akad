@@ -17,7 +17,9 @@ class DashboardController extends Controller
 
         // ── LOGIC KHUSUS ORANG TUA ──
         if ($user->role === 'parent') {
-            $children = Student::with('studentClass.schoolYear')
+            $children = Student::with(['studentClass.schoolYear', 'dailyAttendances' => function($q) {
+                $q->where('date', now()->toDateString());
+            }])
                 ->where('user_id', $user->id)
                 ->get()
                 ->map(function ($child) {
@@ -30,6 +32,7 @@ class DashboardController extends Controller
                         'photo' => $child->photo,
                         'class_name' => $child->studentClass ? $child->studentClass->name : null,
                         'school_year' => ($child->studentClass && $child->studentClass->schoolYear) ? $child->studentClass->schoolYear->name : null,
+                        'today_attendance' => $child->dailyAttendances->first() ? $child->dailyAttendances->first()->status : null,
                     ];
                 });
 

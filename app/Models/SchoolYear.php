@@ -9,6 +9,7 @@ class SchoolYear extends Model
     protected $fillable = [
         'name',
         'is_active',
+        'calendar_file',
     ];
 
     
@@ -17,6 +18,13 @@ class SchoolYear extends Model
     {
         return $this->hasMany(Student::class);
     }
+
+    public function getCalendarFileUrlAttribute()
+    {
+        return $this->calendar_file ? asset('storage/' . $this->calendar_file) : null;
+    }
+
+    protected $appends = ['calendar_file_url'];
 
     /**
      * Relasi ke penilaian perkembangan anak

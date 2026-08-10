@@ -17,6 +17,7 @@ interface ChildData {
     class_name: string | null;
     school_year: string | null;
     status: string;
+    today_attendance: string | null;
 }
 interface UpcomingEvent {
     id: number;
@@ -147,6 +148,30 @@ export default function ParentDashboard({
                                                             <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-800 dark:bg-gray-800 dark:text-gray-400">Wafat</span>
                                                         ) : (
                                                             <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-400 capitalize">{child.status || '-'}</span>
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                                                    <Calendar className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium mb-1">
+                                                        Kehadiran Hari Ini
+                                                    </p>
+                                                    <p className="font-semibold text-gray-800 dark:text-gray-200">
+                                                        {child.today_attendance === 'present' ? (
+                                                            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">Hadir</span>
+                                                        ) : child.today_attendance === 'sick' ? (
+                                                            <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-semibold text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Sakit</span>
+                                                        ) : child.today_attendance === 'permitted' ? (
+                                                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Izin</span>
+                                                        ) : child.today_attendance === 'absent' ? (
+                                                            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-900/30 dark:text-red-400">Alpa</span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-800 dark:bg-gray-800 dark:text-gray-400">Belum Ada Data</span>
                                                         )}
                                                     </p>
                                                 </div>

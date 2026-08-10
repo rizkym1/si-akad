@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\NilaiKokurikulerController;
 use App\Http\Controllers\Admin\SchoolYearController;
 use App\Http\Controllers\Admin\StudentClassController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\StudentPromotionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AcademicCalendarController;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +47,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete'])->name('students.bulk-delete');
         Route::resource('student-classes', StudentClassController::class);
         Route::post('/student-classes/bulk-delete', [StudentClassController::class, 'bulkDelete'])->name('student-classes.bulk-delete');
+        Route::get('/student-classes/{student_class}/promotions', [StudentPromotionController::class, 'create'])->name('student-classes.promotions.create');
+        Route::post('/student-classes/{student_class}/promotions', [StudentPromotionController::class, 'store'])->name('student-classes.promotions.store');
         // Absensi
         Route::get('attendances/report/pdf', [AttendanceController::class, 'reportPdf'])->name('attendances.report.pdf');
         Route::resource('attendances', AttendanceController::class)->only(['index']);
@@ -55,6 +58,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('students.list');
         Route::resource('school-years', SchoolYearController::class);
         Route::post('/school-years/bulk-delete', [SchoolYearController::class, 'bulkDelete'])->name('school-years.bulk-delete');
+        Route::post('/school-years/{school_year}/upload-calendar', [AcademicCalendarController::class, 'uploadCalendar'])->name('school-years.upload-calendar');
 
         // Academic Calendar
         Route::resource('academic-calendars', AcademicCalendarController::class)->except(['create', 'edit', 'show']);

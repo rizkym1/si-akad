@@ -25,6 +25,9 @@ import {
     Plus,
     Trash,
     Info,
+    Upload,
+    Download,
+    FileText,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -60,6 +63,11 @@ interface Event {
 
 interface PageProps extends Record<string, unknown> {
     events: Event[];
+    activeSchoolYear: {
+        id: number;
+        name: string;
+        calendar_file_url: string | null;
+    } | null;
     auth: {
         user: {
             role: string;
@@ -76,10 +84,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Kalender Pendidikan', href: '/admin/academic-calendars' },
 ];
 
-export default function AcademicCalendarIndex({ events }: PageProps) {
+export default function AcademicCalendarIndex({ events, activeSchoolYear }: PageProps) {
     const { auth, flash } = usePage<PageProps>().props;
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
     const [showFlash, setShowFlash] = useState(false);
 
@@ -99,6 +108,18 @@ export default function AcademicCalendarIndex({ events }: PageProps) {
         end_date: '',
         type: 'event' as 'holiday' | 'event',
         description: '',
+    });
+
+    const {
+        data: uploadData,
+        setData: setUploadData,
+        post: postUpload,
+        processing: processingUpload,
+        errors: errorsUpload,
+        reset: resetUpload,
+        clearErrors: clearErrorsUpload,
+    } = useForm({
+        calendar_file: null as File | null,
     });
 
     useEffect(() => {
@@ -153,6 +174,18 @@ export default function AcademicCalendarIndex({ events }: PageProps) {
             post('/admin/academic-calendars', {
                 onSuccess: () => {
                     handleCloseModal();
+                },
+            });
+        }
+    };
+
+    const handleUploadSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (activeSchoolYear) {
+            postUpload(`/admin/school-years/${activeSchoolYear.id}/upload-calendar`, {
+                onSuccess: () => {
+                    setIsUploadModalOpen(false);
+                    resetUpload();
                 },
             });
         }
@@ -330,6 +363,50 @@ export default function AcademicCalendarIndex({ events }: PageProps) {
                                 >
                                     <Plus className="h-3 w-3" /> Tambah
                                 </Button>
+                            )}
+                        </div>
+
+                        {/* ── Document Upload Section ── */}
+                        <div className="flex flex-col gap-2 border-b pb-4 dark:border-gray-700">
+                            <h3 className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                                Dokumen Kalender ({activeSchoolYear?.name || 'Tidak ada TA aktif'})
+                            </h3>
+                            {activeSchoolYear?.calendar_file_url ? (
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full text-xs"
+                                        onClick={() => window.open(activeSchoolYear.calendar_file_url!, '_blank')}
+                                    >
+                                        <Download className="mr-2 h-3 w-3" /> Unduh PDF
+                                    </Button>
+                                    {isAdmin && (
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="w-auto px-2"
+                                            title="Ganti Dokumen"
+                                            onClick={() => setIsUploadModalOpen(true)}
+                                        >
+                                            <Upload className="h-3 w-3" />
+                                        </Button>
+                                    )}
+                                </div>
+                            ) : (
+                                isAdmin ? (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full text-xs border-dashed"
+                                        onClick={() => setIsUploadModalOpen(true)}
+                                        disabled={!activeSchoolYear}
+                                    >
+                                        <Upload className="mr-2 h-3 w-3" /> Unggah PDF Kalender
+                                    </Button>
+                                ) : (
+                                    <p className="text-xs text-gray-500">Belum ada dokumen</p>
+                                )
                             )}
                         </div>
 
@@ -520,6 +597,52 @@ export default function AcademicCalendarIndex({ events }: PageProps) {
                                 disabled={processing}
                             >
                                 {processing ? 'Menyimpan...' : 'Simpan'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <form onSubmit={handleUploadSubmit}>
+                        <DialogHeader>
+                            <DialogTitle>Unggah Kalender Pendidikan</DialogTitle>
+                            <DialogDescription className="text-muted-foreground">
+                                Unggah file PDF, JPG, atau PNG maksimal 5MB. Dokumen ini akan disematkan pada Tahun Pelajaran {activeSchoolYear?.name}.
+                            </DialogDescription>
+                        </DialogHeader>
+                        
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="calendar_file" className="text-foreground">
+                                    File Kalender <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="calendar_file"
+                                    type="file"
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    onChange={(e) => setUploadData('calendar_file', e.target.files?.[0] || null)}
+                                    className="border-border bg-card focus:ring-primary"
+                                    required
+                                />
+                                <InputError message={errorsUpload.calendar_file} className="mt-1" />
+                            </div>
+                        </div>
+
+                        <DialogFooter className="gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsUploadModalOpen(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={processingUpload || !uploadData.calendar_file}
+                            >
+                                {processingUpload ? 'Mengunggah...' : 'Unggah'}
                             </Button>
                         </DialogFooter>
                     </form>

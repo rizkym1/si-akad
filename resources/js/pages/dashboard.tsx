@@ -74,7 +74,7 @@ export default function Dashboard({
                         </div>
                         <div>
                             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                                Selamat Datang di Pusat Kendali
+                                Selamat Datang Admin
                             </h1>
                             <p className="mt-1.5 flex items-center text-sm font-medium text-muted-foreground">
                                 <Activity className="mr-1.5 h-4 w-4 text-emerald-500" />

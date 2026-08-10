@@ -114,6 +114,19 @@ export default function TeacherAttendanceIndex({
         }));
     };
 
+    const handleCheckAllPresent = () => {
+        setFormData((prev) => {
+            const next = { ...prev };
+            students.forEach(student => {
+                next[student.id] = {
+                    ...next[student.id],
+                    status: 'present'
+                };
+            });
+            return next;
+        });
+    };
+
     const handleSave = () => {
         setErrorMessage(null);
 
@@ -238,8 +251,16 @@ export default function TeacherAttendanceIndex({
                             </div>
                         )}
 
-                        {/* Tombol Simpan */}
-                        <div className="mb-4 flex justify-end">
+                        {/* Tombol Aksi */}
+                        <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
+                            {students.length > 0 && (
+                                <button
+                                    onClick={handleCheckAllPresent}
+                                    className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-primary/20 bg-primary/10 px-6 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary/20 active:scale-95"
+                                >
+                                    Ceklis Hadir Semua
+                                </button>
+                            )}
                             <button
                                 onClick={handleSave}
                                 className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow transition hover:opacity-90 active:scale-95 border-0"

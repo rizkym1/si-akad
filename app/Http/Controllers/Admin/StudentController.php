@@ -14,15 +14,18 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $search = $request->input('search');
         $classId = $request->input('class_id');
-        $schoolYearId = $request->input('school_year_id');
         $status = $request->input('status');
+
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+
+        // Default to active school year if no filter is explicitly applied and not searching or filtering by class
+        $schoolYearId = $request->has('school_year_id')
+            ? $request->input('school_year_id')
+            : ($request->has('class_id') || $request->has('search') ? '' : ($activeSchoolYear ? (string)$activeSchoolYear->id : ''));
 
         $entries = $request->input('entries', 10);
 

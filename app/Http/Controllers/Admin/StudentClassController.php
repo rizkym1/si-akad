@@ -25,10 +25,13 @@ class StudentClassController extends Controller
         $direction = $request->input('direction', 'asc');
 
         $studentClasses = StudentClass::with(['schoolYear', 'teacher'])
+            ->leftJoin('school_years', 'student_classes.school_year_id', '=', 'school_years.id')
+            ->select('student_classes.*')
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%');
+                $query->where('student_classes.name', 'like', '%' . $search . '%');
             })
-            ->orderBy($sort, $direction)
+            ->orderBy('school_years.is_active', 'desc')
+            ->orderBy($sort === 'name' ? 'student_classes.name' : $sort, $direction)
             ->paginate($entries)
             ->withQueryString();
 

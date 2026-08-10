@@ -4,11 +4,11 @@ import { InertiaPagination } from '@/components/ui/inertia-pagination';
 import { SortableHeader } from '@/components/ui/sortable-header';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { AddStudentClassModal } from './add-modal';
 import { EditStudentClassModal } from './edit-modal';
-import { Search, Trash2, LibraryBig } from 'lucide-react';
+import { Search, Trash2, LibraryBig, TrendingUp } from 'lucide-react';
 
 interface StudentClass {
     id: number;
@@ -203,18 +203,30 @@ export default function StudentClassIndex({
                                                     </td>
                                                     <td className="px-6 py-3">
                                                         {item.school_year ? (
-                                                            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2.5 py-1 text-xs font-semibold text-foreground">
-                                                                {item.school_year.name}
-                                                                {item.school_year.is_active ? (
-                                                                    <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                                                                ) : null}
-                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-medium text-foreground">
+                                                                    {item.school_year.name}
+                                                                </span>
+                                                                {item.school_year.is_active && (
+                                                                    <span className="inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-semibold text-green-600 ring-1 ring-green-600/20 dark:text-green-400 border-none">
+                                                                        Tahun Aktif
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         ) : (
                                                             <span className="text-muted-foreground">-</span>
                                                         )}
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
                                                         <div className="flex justify-end gap-2 pr-1">
+                                                            <Link
+                                                                href={route('admin.student-classes.promotions.create', item.id)}
+                                                                className="inline-flex items-center justify-center rounded-md border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground focus:ring-2 focus:ring-primary/50 focus:outline-none"
+                                                                title="Kenaikan Kelas"
+                                                            >
+                                                                <TrendingUp className="h-3.5 w-3.5 mr-1" />
+                                                                Naik Kelas
+                                                            </Link>
                                                             <EditStudentClassModal
                                                                 studentClass={item}
                                                                 schoolYears={schoolYears}

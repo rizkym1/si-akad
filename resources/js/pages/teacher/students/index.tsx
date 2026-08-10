@@ -5,6 +5,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Eye, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { InertiaPagination } from '@/components/ui/inertia-pagination';
 
 interface Student {
     id: number;
@@ -28,7 +29,17 @@ export default function TeacherStudentsIndex({
     school_years,
     filters,
 }: {
-    students: { data: Student[], links: any[] };
+    students: {
+        data: Student[];
+        current_page: number;
+        last_page: number;
+        prev_page_url: string | null;
+        next_page_url: string | null;
+        links: { url: string | null; label: string; active: boolean }[];
+        from?: number;
+        to?: number;
+        total?: number;
+    };
     school_years?: { id: number; name: string; is_active: boolean }[];
     student_classes: { id: number; name: string; school_year_id: number }[];
     filters: { search?: string; class_id?: string; school_year_id?: string };
@@ -120,42 +131,49 @@ export default function TeacherStudentsIndex({
 
                         <div className="relative overflow-x-auto border border-border shadow-md sm:rounded-lg">
                             {students.data.length > 0 ? (
-                                <table className="w-full text-left text-sm text-muted-foreground">
-                                    <thead className="bg-muted text-foreground">
-                                        <tr className="border-b border-border">
-                                            <th className="w-16 px-6 py-4 text-center">No</th>
-                                            <SortableHeader column="nis" label="NIS" />
-                                            <SortableHeader column="full_name" label="Nama Lengkap" />
-                                            <th className="px-6 py-4 text-center">L/P</th>
-                                            <th className="px-6 py-4 text-center">Kelas</th>
-                                            <th className="w-24 px-6 py-4 text-center">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {students.data.map((student, i) => (
-                                            <tr key={student.id} className="border-b border-border bg-card hover:bg-muted/50 transition-colors">
-                                                <td className="px-6 py-4 text-center text-foreground font-medium">{i + 1}</td>
-                                                <td className="px-6 py-4 text-foreground">{student.nis || '-'}</td>
-                                                <td className="px-6 py-4 text-foreground font-semibold">{student.full_name}</td>
-                                                <td className="px-6 py-4 text-center text-foreground">
-                                                    {(student.gender === 'Laki-Laki' || student.gender === 'L' || student.gender === 'male') ? 'L' :
-                                                     (student.gender === 'Perempuan' || student.gender === 'P' || student.gender === 'female') ? 'P' : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-center text-foreground">
-                                                    {student.student_class?.name || '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <Link href={route('teacher.students.show', student.id)}>
-                                                        <Button variant="secondary" size="sm" className="h-8">
-                                                            <Eye className="mr-1.5 h-3.5 w-3.5" />
-                                                            Detail
-                                                        </Button>
-                                                    </Link>
-                                                </td>
+                                <>
+                                    <table className="w-full text-left text-sm text-muted-foreground">
+                                        <thead className="bg-muted text-foreground">
+                                            <tr className="border-b border-border">
+                                                <th className="w-16 px-6 py-4 text-center">No</th>
+                                                <SortableHeader column="nis" label="NIS" />
+                                                <SortableHeader column="full_name" label="Nama Lengkap" />
+                                                <th className="px-6 py-4 text-center">L/P</th>
+                                                <th className="px-6 py-4 text-center">Kelas</th>
+                                                <th className="w-24 px-6 py-4 text-center">Aksi</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {students.data.map((student, i) => (
+                                                <tr key={student.id} className="border-b border-border bg-card hover:bg-muted/50 transition-colors">
+                                                    <td className="px-6 py-4 text-center text-foreground font-medium">{(students.from ?? 1) + i}</td>
+                                                    <td className="px-6 py-4 text-foreground">{student.nis || '-'}</td>
+                                                    <td className="px-6 py-4 text-foreground font-semibold">{student.full_name}</td>
+                                                    <td className="px-6 py-4 text-center text-foreground">
+                                                        {(student.gender === 'Laki-Laki' || student.gender === 'L' || student.gender === 'male') ? 'L' :
+                                                         (student.gender === 'Perempuan' || student.gender === 'P' || student.gender === 'female') ? 'P' : '-'}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center text-foreground">
+                                                        {student.student_class?.name || '-'}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <Link href={route('teacher.students.show', student.id)}>
+                                                            <Button variant="secondary" size="sm" className="h-8">
+                                                                <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                                                Detail
+                                                            </Button>
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    {students.links && students.links.length > 3 && (
+                                        <div className="border-t border-border bg-card px-6 py-4">
+                                            <InertiaPagination pagination={students} />
+                                        </div>
+                                    )}
+                                </>
                             ) : (
                                 <div className="p-12 text-center text-muted-foreground">
                                     Tidak ada data siswa ditemukan.

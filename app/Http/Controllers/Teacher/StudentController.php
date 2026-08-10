@@ -16,15 +16,24 @@ class StudentController extends Controller
         $student_classes = StudentClass::where('teacher_id', $teacherId)->get();
         $classIds = $student_classes->pluck('id')->toArray();
 
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+
+        // Default to active school year if no filter is explicitly applied
+        $selectedSchoolYearId = $request->has('school_year_id')
+            ? $request->school_year_id
+            : ($request->has('class_id') ? '' : ($activeSchoolYear ? (string)$activeSchoolYear->id : ''));
+
+        $selectedClassId = $request->input('class_id', '');
+
         // Akses daftar siswa (view only)
         $query = Student::with(['studentClass', 'schoolYear'])
                         ->whereIn('class_id', $classIds);
 
-        if ($request->has('class_id') && $request->class_id != '') {
-            $query->where('class_id', $request->class_id);
-        } elseif ($request->has('school_year_id') && $request->school_year_id != '') {
-            $query->whereHas('studentClass', function ($q) use ($request) {
-                $q->where('school_year_id', $request->school_year_id);
+        if ($selectedClassId != '') {
+            $query->where('class_id', $selectedClassId);
+        } elseif ($selectedSchoolYearId != '') {
+            $query->whereHas('studentClass', function ($q) use ($selectedSchoolYearId) {
+                $q->where('school_year_id', $selectedSchoolYearId);
             });
         }
 
@@ -42,13 +51,19 @@ class StudentController extends Controller
         $entries = $request->input('entries', 10);
         $students = $query->orderBy($sort, $direction)->paginate($entries)->withQueryString();
 
-        $school_years = \App\Models\SchoolYear::whereIn('id', $student_classes->pluck('school_year_id')->unique())->get();
+        $school_years = \App\Models\SchoolYear::whereIn('id', $student_classes->pluck('school_year_id')->unique())
+            ->orderBy('id', 'desc')
+            ->get();
 
         return Inertia::render('teacher/students/index', [
             'students' => $students,
             'student_classes' => $student_classes,
             'school_years' => $school_years,
-            'filters' => $request->only(['search', 'class_id', 'school_year_id']),
+            'filters' => [
+                'search' => $request->input('search', ''),
+                'class_id' => $selectedClassId,
+                'school_year_id' => $selectedSchoolYearId,
+            ],
         ]);
     }
 

@@ -276,18 +276,21 @@ export default function UserIndex({
                                                                             Edit Data
                                                                         </Link>
                                                                     </DropdownMenuItem>
-                                                                    <DropdownMenuItem asChild>
-                                                                        <button 
-                                                                            onClick={() => {
-                                                                                if (confirm(`Reset password untuk ${user.name}? Password akan direset ke NIK atau 'password'.`)) {
-                                                                                    router.post(route('admin.users.reset-password', user.id), {}, { preserveScroll: true });
-                                                                                }
+                                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} asChild>
+                                                                        <DeleteDialog
+                                                                            title="Konfirmasi Reset Password"
+                                                                            description={`Reset password untuk ${user.name}? Password akan direset ke NIK atau 'password'.`}
+                                                                            confirmText="Ya, Reset"
+                                                                            onConfirm={() => {
+                                                                                router.post(route('admin.users.reset-password', user.id), {}, { preserveScroll: true });
                                                                             }}
-                                                                            className="flex items-center w-full cursor-pointer p-2 text-yellow-600 focus:text-yellow-700 focus:bg-yellow-50"
-                                                                        >
-                                                                            <Key className="mr-2 h-4 w-4" />
-                                                                            Reset Password
-                                                                        </button>
+                                                                            trigger={
+                                                                                <button className="flex items-center w-full cursor-pointer p-2 text-yellow-600 focus:text-yellow-700 focus:bg-yellow-50">
+                                                                                    <Key className="mr-2 h-4 w-4" />
+                                                                                    Reset Password
+                                                                                </button>
+                                                                            }
+                                                                        />
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuSeparator />
                                                                     <div className="px-2 py-1.5">

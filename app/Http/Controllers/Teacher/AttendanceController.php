@@ -21,8 +21,32 @@ class AttendanceController extends Controller
         $classIds = $classes->pluck('id')->toArray();
 
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
-        $targetSchoolYearId = $request->school_year_id ?? ($activeSchoolYear ? $activeSchoolYear->id : null);
-        $targetClassId = $request->class_id ?? ($classIds[0] ?? null);
+        
+        // Prioritize requested school_year_id, or active school year, or first school year
+        if ($request->filled('school_year_id')) {
+            $targetSchoolYearId = (int)$request->school_year_id;
+        } elseif ($activeSchoolYear) {
+            $targetSchoolYearId = $activeSchoolYear->id;
+        } else {
+            $targetSchoolYearId = $schoolYears->first()?->id ?? null;
+        }
+
+        // Classes belonging to target school year for this teacher
+        $classesInYear = $classes->where('school_year_id', $targetSchoolYearId);
+
+        // Target class: if explicitly requested, use it; otherwise default to first class in selected year, or first class of teacher
+        if ($request->filled('class_id')) {
+            $targetClassId = (int)$request->class_id;
+            if (!$request->filled('school_year_id')) {
+                $foundClass = $classes->where('id', $targetClassId)->first();
+                if ($foundClass) {
+                    $targetSchoolYearId = $foundClass->school_year_id;
+                }
+            }
+        } else {
+            $targetClassId = $classesInYear->first()?->id ?? ($classIds[0] ?? null);
+        }
+
         $targetDate = $request->date ?? date('Y-m-d'); // Default hari ini
         $search = $request->search ?? '';
 
@@ -35,13 +59,12 @@ class AttendanceController extends Controller
                 $q->where('date', $targetDate);
             }]);
 
-        if ($targetSchoolYearId) {
+        if ($targetClassId) {
+            $studentsQuery->where('class_id', $targetClassId);
+        } elseif ($targetSchoolYearId) {
             $studentsQuery->whereHas('studentClass', function ($q) use ($targetSchoolYearId) {
                 $q->where('school_year_id', $targetSchoolYearId);
             });
-        }
-        if ($targetClassId) {
-            $studentsQuery->where('class_id', $targetClassId);
         }
         if ($search) {
             $studentsQuery->where(function($q) use ($search) {
