@@ -6,6 +6,17 @@ Dokumen ini berfungsi sebagai rekam jejak (*changelog & context*) agar riwayat p
 
 ## 📅 Log Pembaruan Terkini
 
+### [2026-08-16] Pembuatan Dokumentasi Desain Sistem (UML) dan Template Kode
+- **Tujuan**: Mendokumentasikan alur logika sistem yang ada melalui diagram UML untuk keperluan pemeliharaan dan pengembangan lanjutan, serta membuat potongan kode referensi.
+- **Perubahan/Dokumen Baru**:
+  - **Fitur Kenaikan Kelas & Kelulusan**: Telah dibuat *Class Diagram*, *Activity Diagram*, *Sequence Diagram*, serta *Product Backlog* dan *Sprint Planning*.
+  - **Fitur Upload PDF Kalender Pendidikan**: Telah dibuat *Class Diagram*, *Activity Diagram*, *Sequence Diagram*, dan penyesuaian gaya presentasi diagram dengan standar yang diinginkan.
+  - **Template Kode**: Menyusun *markdown artifact* untuk potongan kode referensi Backend & Frontend untuk kedua fitur tersebut dengan format *carousel*.
+- **Status**: ✅ Selesai.
+
+---
+
+
 ### [2026-08-10] Peningkatan Fitur Kalender, Storage, dan Absensi
 - **Tujuan**: Menambahkan kapabilitas upload dokumen legal kalender per tahun ajaran, memperbaiki tautan penyimpanan, dan mempercepat alur kerja absensi guru.
 - **Perubahan File**:

@@ -83,6 +83,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Kalender Pendidikan
         Route::get('academic-calendars', [\App\Http\Controllers\Admin\AcademicCalendarController::class, 'index'])->name('academic-calendars.index');
+
+        // Penilaian Anak (RDM)
+        Route::get('nilai-kokurikuler', [\App\Http\Controllers\Admin\NilaiKokurikulerController::class, 'index'])
+            ->name('nilai-kokurikuler.index');
+        Route::get('nilai-kokurikuler/{id}/penilaian', [\App\Http\Controllers\Admin\NilaiKokurikulerController::class, 'penilaian'])
+            ->name('nilai-kokurikuler.penilaian');
     });
 
     // Portal khusus Orang Tua (Parent)

@@ -117,7 +117,7 @@ const teacherNavItems: NavItem[] = [
     },
     {
         title: 'Penilaian Anak',
-        href: '/admin/nilai-kokurikuler',
+        href: '/teacher/nilai-kokurikuler',
         icon: Award,
     },
 ];

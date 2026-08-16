@@ -54,11 +54,14 @@ class NilaiKokurikulerController extends Controller
 
         // school_years sudah diambil di atas
 
+        $baseRoute = auth()->user()->role === 'teacher' ? 'teacher.nilai-kokurikuler' : 'admin.nilai-kokurikuler';
+
         return Inertia::render('admin/nilai-kokurikuler/index', [
             'kelasList'     => $kelasList,
             'school_years'  => $school_years,
             'selectedKelas' => (string)$selectedKelas,
             'siswaList'     => $siswaList,
+            'baseRoute'     => $baseRoute,
         ]);
     }
 
@@ -76,10 +79,13 @@ class NilaiKokurikulerController extends Controller
         }
 
         $rapor = $this->rdmService->getRaporPerkembanganAnak($student->nisn);
+        
+        $baseRoute = auth()->user()->role === 'teacher' ? 'teacher.nilai-kokurikuler' : 'admin.nilai-kokurikuler';
 
         return Inertia::render('admin/nilai-kokurikuler/penilaian', [
             'student' => $student,
             'rapor'   => $rapor,
+            'baseRoute' => $baseRoute,
         ]);
     }
 }

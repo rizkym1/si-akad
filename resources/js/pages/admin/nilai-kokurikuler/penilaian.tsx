@@ -21,20 +21,20 @@ interface KriteriaRapor {
 interface Props {
     student: Student;
     rapor: KriteriaRapor[];
+    baseRoute: string;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Penilaian Anak',
-        href: '/admin/nilai-kokurikuler',
-    },
-    {
-        title: 'Detail',
-        href: '#',
-    },
-];
-
-export default function PenilaianPerkembanganAnakDetail({ student, rapor }: Props) {
+export default function PenilaianPerkembanganAnakDetail({ student, rapor, baseRoute = 'admin.nilai-kokurikuler' }: Props) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Penilaian Anak',
+            href: route(baseRoute + '.index'),
+        },
+        {
+            title: 'Detail',
+            href: '#',
+        },
+    ];
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Rapor - ${student?.full_name}`} />
@@ -45,7 +45,7 @@ export default function PenilaianPerkembanganAnakDetail({ student, rapor }: Prop
                         {/* Header */}
                         <div className="mb-4 flex items-center gap-3">
                             <Link
-                                href="/admin/nilai-kokurikuler"
+                                href={route(baseRoute + '.index')}
                                 className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                             >
                                 ← Kembali

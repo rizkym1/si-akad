@@ -24,21 +24,22 @@ interface Props {
     kelasList: Kelas[];
     school_years?: { id: number; name: string; is_active: boolean }[];
     selectedKelas: string;
+    baseRoute: string;
 }
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Penilaian Anak',
-        href: '/admin/nilai-kokurikuler',
-    },
-];
 
 export default function NilaiKokurikulerIndex({
     siswaList = [],
     kelasList = [],
     school_years = [],
     selectedKelas = '',
+    baseRoute = 'admin.nilai-kokurikuler',
 }: Props) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Penilaian Anak',
+            href: route(baseRoute + '.index'),
+        },
+    ];
     const [search, setSearch] = useState('');
     
     const safeSiswaList = Array.isArray(siswaList) ? siswaList : [];
@@ -52,7 +53,7 @@ export default function NilaiKokurikulerIndex({
 
     const handleKelasChange = (kelasId: string) => {
         router.get(
-            route('admin.nilai-kokurikuler.index'),
+            route(baseRoute + '.index'),
             { class_id: kelasId },
             { preserveState: true, replace: true },
         );
@@ -171,7 +172,7 @@ export default function NilaiKokurikulerIndex({
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex justify-end gap-2 pr-1">
-                                                        <Link href={route('admin.nilai-kokurikuler.penilaian', item.id)}>
+                                                        <Link href={route(baseRoute + '.penilaian', item.id)}>
                                                             <button className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-all hover:bg-muted focus:ring-2 focus:ring-primary/50 shadow-sm opacity-90 group-hover:opacity-100">
                                                                 <PenTool className="h-3.5 w-3.5 mr-1.5" />
                                                                 Lihat Penilaian
